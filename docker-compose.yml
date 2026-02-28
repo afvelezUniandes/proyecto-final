@@ -1,0 +1,65 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: travelhub_user
+      POSTGRES_PASSWORD: travelhub_pass
+      POSTGRES_DB: travelhub
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - travelhub-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U travelhub_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "5000:5000"
+    environment:
+      AUTH_DATABASE_URL: postgresql://travelhub_user:travelhub_pass@postgres:5432/travelhub
+      JWT_SECRET: mi_secreto_super_seguro_jwt_2024
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - travelhub-net
+
+  catalog-service:
+    build: ./catalog-service
+    ports:
+      - "5001:5001"
+    environment:
+      CATALOG_DATABASE_URL: postgresql://travelhub_user:travelhub_pass@postgres:5432/travelhub
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - travelhub-net
+
+  client-gateway:
+    build: ./client-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:5000
+      CATALOG_SERVICE_URL: http://catalog-service:5001
+      JWT_SECRET: mi_secreto_super_seguro_jwt_2024
+    depends_on:
+      - auth-service
+      - catalog-service
+    networks:
+      - travelhub-net
+
+volumes:
+  postgres_data:
+
+networks:
+  travelhub-net:
+    driver: bridge
