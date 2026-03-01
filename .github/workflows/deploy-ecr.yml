@@ -1,0 +1,76 @@
+name: Build and Push to ECR
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: proyecto-final
+  ECR_REGISTRY: 108633434648.dkr.ecr.us-east-1.amazonaws.com
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        service:
+          - name: auth-service
+            path: ./auth-service
+            tag: auth
+          - name: catalog-service
+            path: ./catalog-service
+            tag: catalog
+          - name: client-gateway
+            path: ./client-gateway
+            tag: gateway
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.service.path }}
+          file: ${{ matrix.service.path }}/Dockerfile
+          push: true
+          tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ matrix.service.tag }}-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Image info
+        run: |
+          echo "✅ Image pushed successfully!"
+          echo "Repository: ${{ env.ECR_REPOSITORY }}"
+          echo "Tag: ${{ matrix.service.tag }}-latest"
+          echo "Full URI: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ matrix.service.tag }}-latest"
+    name: Deployment Notification
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+      - name: Success notification
+        run: |
+          echo "✅ All images successfully pushed to ECR"
+          echo "🚀 Ready to deploy to ECS"
