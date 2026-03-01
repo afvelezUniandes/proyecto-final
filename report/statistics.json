@@ -1,0 +1,34 @@
+{
+  "Total" : {
+    "transaction" : "Total",
+    "sampleCount" : 30268,
+    "errorCount" : 10,
+    "errorPct" : 0.03303819,
+    "meanResTime" : 1569.833355358791,
+    "medianResTime" : 1686.0,
+    "minResTime" : 90.0,
+    "maxResTime" : 5403.0,
+    "pct1ResTime" : 3191.0,
+    "pct2ResTime" : 3403.0,
+    "pct3ResTime" : 4019.970000000005,
+    "throughput" : 33.46419912237739,
+    "receivedKBytesPerSec" : 77.19950980263441,
+    "sentKBytesPerSec" : 5.620939696336826
+  },
+  "GET /catalog/hotels" : {
+    "transaction" : "GET /catalog/hotels",
+    "sampleCount" : 30268,
+    "errorCount" : 10,
+    "errorPct" : 0.03303819,
+    "meanResTime" : 1569.833355358791,
+    "medianResTime" : 1686.0,
+    "minResTime" : 90.0,
+    "maxResTime" : 5403.0,
+    "pct1ResTime" : 3191.0,
+    "pct2ResTime" : 3403.0,
+    "pct3ResTime" : 4019.970000000005,
+    "throughput" : 33.46419912237739,
+    "receivedKBytesPerSec" : 77.19950980263441,
+    "sentKBytesPerSec" : 5.620939696336826
+  }
+}

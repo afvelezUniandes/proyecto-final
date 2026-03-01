@@ -1,6 +1,8 @@
 # TravelHub - Plataforma de Reservas de Hoteles
 
-Sistema de microservicios para gestión de hoteles y reservas, desarrollado con Flask, PostgreSQL y Docker.
+Sistema de microservicios para gestión de hoteles y reservas, desarrollado con Flask, PostgreSQL y Docker. Desplegado en AWS ECS con balanceador de carga (ALB) y base de datos RDS PostgreSQL.
+
+🌐 **Endpoint en Producción**: http://proyecto-final-alb-274129795.us-east-1.elb.amazonaws.com
 
 ## 🏗️ Arquitectura
 
@@ -20,7 +22,24 @@ Este proyecto utiliza **arquitectura hexagonal** (ports and adapters) con 3 micr
 
 ## 🚀 Quick Start
 
-### Opción 1: Usando Docker (Recomendado)
+### ☁️ Producción (AWS ECS)
+
+El sistema está desplegado y accesible públicamente:
+
+```bash
+# Endpoint de producción
+BASE_URL="http://proyecto-final-alb-274129795.us-east-1.elb.amazonaws.com"
+
+# Health check
+curl "$BASE_URL/health"
+
+# Listar hoteles
+curl "$BASE_URL/catalog/hotels?page=1&per_page=5"
+```
+
+**Ver**: [JMETER_GUIDE.md](JMETER_GUIDE.md) para pruebas de carga
+
+### 🐳 Opción 1: Usando Docker (Desarrollo Local)
 
 ```bash
 # 1. Levantar todos los servicios (las tablas se crean automáticamente)
@@ -35,7 +54,7 @@ curl http://localhost:8000/
 
 **Nota**: SQLAlchemy crea las tablas automáticamente al iniciar cada servicio. No necesitas ejecutar scripts SQL manualmente excepto el seed.
 
-### Opción 2: Desarrollo Local (sin Docker)
+### 💻 Opción 2: Desarrollo Local (sin Docker)
 
 ```bash
 # 1. Crear y activar entorno virtual
@@ -60,6 +79,7 @@ Para instrucciones detalladas, ver:
 - [VENV_GUIDE.md](VENV_GUIDE.md) - Guía de entorno virtual
 - [POSTMAN_GUIDE.md](POSTMAN_GUIDE.md) - Pruebas con Postman + Docker
 - [TESTING.md](TESTING.md) - Ejecución de tests unitarios
+- [JMETER_GUIDE.md](JMETER_GUIDE.md) - Pruebas de carga con JMeter
 
 ## 📋 Funcionalidades Principales
 
@@ -85,12 +105,25 @@ Para instrucciones detalladas, ver:
 
 ## 🛠️ Stack Tecnológico
 
+### Backend & Infraestructura
+
 - **Backend**: Python 3.10 + Flask
 - **ORM**: SQLAlchemy
 - **Base de datos**: PostgreSQL 15
 - **Autenticación**: JWT (PyJWT)
 - **Contenedores**: Docker + Docker Compose
 - **Arquitectura**: Hexagonal (Ports & Adapters)
+
+### Despliegue en AWS
+
+- **Compute**: ECS Fargate (256 CPU / 512 MB memoria)
+- **Base de datos**: RDS PostgreSQL (db.t3.micro)
+- **Balanceador**: Application Load Balancer (ALB)
+- **Networking**: VPC, Security Groups, Target Groups
+- **Monitoreo**: CloudWatch Logs + Metrics
+- **Registry**: ECR (Elastic Container Registry)
+- **CI/CD**: GitHub Actions (build y push automático a ECR)
+- **Costo estimado**: ~$52-57/mes
 
 ## 📁 Estructura del Proyecto
 
@@ -167,6 +200,25 @@ El proyecto incluye un seed de datos de prueba:
 - Precios realistas en COP
 - Imágenes de ejemplo (picsum.photos)
 
+**Cargar seed localmente**:
+
+```bash
+docker exec -i proyecto-final-postgres-1 psql -U travelhub_user -d travelhub < seed_catalog.sql
+```
+
+**Cargar seed en RDS**:
+
+```bash
+python load_seed.py  # Requiere acceso temporal al RDS
+```
+
+## 📈 Archivos de Resultados
+
+- `report/` - Reporte HTML de JMeter con gráficas y percentiles
+- `results.jtl` - Datos raw de la prueba de carga (30,329 requests)
+- `jmeter-load-test.jmx` - Plan de pruebas JMeter (25→50→100 usuarios)
+- `postman-collection.json` - Colección Postman con tests automatizados
+
 ## 🔐 Seguridad
 
 - Contraseñas hasheadas con Werkzeug (pbkdf2:sha256)
@@ -175,6 +227,37 @@ El proyecto incluye un seed de datos de prueba:
 - Variables de entorno para secretos
 
 ## 🧪 Testing
+
+### Pruebas de Carga (JMeter)
+
+El proyecto incluye un plan de pruebas de carga con **3 niveles incrementales**:
+
+- **Nivel 1**: 25 usuarios concurrentes × 5 minutos
+- **Nivel 2**: 50 usuarios concurrentes × 5 minutos
+- **Nivel 3**: 100 usuarios concurrentes × 5 minutos
+
+**Endpoint probado**: `GET /catalog/hotels` (100 hoteles en base de datos)
+
+#### Ver Resultados
+
+Para ver los resultados de las pruebas ejecutadas:
+
+```bash
+# Abrir reporte HTML con gráficas y métricas detalladas
+open report/index.html
+```
+
+El reporte incluye:
+
+- ✅ Dashboard con resumen ejecutivo
+- 📊 Response Time Percentiles (P50, P90, P95, P99)
+- 📈 Gráficas de latencia y throughput over time
+- 🎯 Error rate y distribución de códigos HTTP
+- 📉 Estadísticas por Thread Group (25, 50, 100 usuarios)
+
+**Documentación completa**: [JMETER_GUIDE.md](JMETER_GUIDE.md)
+
+### Pruebas Funcionales (Postman)
 
 Para pruebas con **Postman**, ver [POSTMAN_GUIDE.md](POSTMAN_GUIDE.md) - Guía completa con ejemplos.
 
@@ -198,9 +281,63 @@ curl "http://localhost:8000/catalog/hotels?ciudad=Bogotá&estrellas=5"
 curl "http://localhost:8000/catalog/hotels?page=2&per_page=10"
 ```
 
-## 🚢 Despliegue a AWS ECS (Futuro)
+## ☁️ Despliegue en AWS ECS
 
-Este proyecto está preparado para desplegarse en AWS ECS. Los Dockerfiles están optimizados y el docker-compose puede adaptarse a task definitions de ECS.
+### Infraestructura Actual
+
+**Estado**: ✅ Desplegado y operacional
+
+- **Cluster ECS**: `proyecto-final-cluster`
+- **Service**: `travelhub-service` (1 tarea corriendo)
+- **Task Definition**: `travelhub-microservices:2`
+  - 3 contenedores: auth-service, catalog-service, client-gateway
+  - Recursos: 256 CPU (0.25 vCPU) / 512 MB memoria total
+  - Health checks: `/health` cada 30s
+  - Logs: CloudWatch `/ecs/travelhub-microservices`
+- **ALB**: `proyecto-final-alb`
+  - DNS: http://proyecto-final-alb-274129795.us-east-1.elb.amazonaws.com
+  - Target Group: `proyecto-final-tg` (IP targets, puerto 5002)
+  - Health check: `GET /health` cada 30s
+  - Estado: ✅ Healthy
+- **RDS PostgreSQL**: `travelhub-db.cipyouuaqkqn.us-east-1.rds.amazonaws.com`
+  - Instancia: db.t3.micro
+  - Base de datos: 100 hoteles, 1000 habitaciones
+  - Backups: 7 días
+- **Security Groups**:
+  - `travelhub-alb-sg`: Permite HTTP (80) desde Internet
+  - `travelhub-ecs-sg`: Permite tráfico desde ALB al puerto 5002
+  - `travelhub-rds-sg`: Permite PostgreSQL (5432) desde ECS
+
+### Monitoreo
+
+**CloudWatch Metrics**:
+
+- CPU Utilization (ECS)
+- Memory Utilization (ECS)
+- Target Response Time (ALB)
+- Request Count (ALB)
+- HTTP 2xx/4xx/5xx counts
+
+**Logs**: CloudWatch Logs `/ecs/travelhub-microservices` (retención: 1 día)
+
+### Costos Mensuales Estimados
+
+| Servicio        | Configuración                | Costo/mes   |
+| --------------- | ---------------------------- | ----------- |
+| **ECS Fargate** | 256 CPU, 512 MB, 730h        | $16.37      |
+| **ALB**         | 730h + 0.1GB procesados      | $21-26      |
+| **RDS**         | db.t3.micro, 20GB, 7d backup | $14.71      |
+| **ECR**         | <500MB imágenes              | $0.05       |
+| **CloudWatch**  | Logs básicos                 | <$1         |
+| **Total**       |                              | **~$52-57** |
+
+### CI/CD
+
+GitHub Actions configurado para:
+
+1. Build de imágenes Docker al hacer push
+2. Push automático a ECR
+3. Tags: `latest` + SHA del commit
 
 ## 📝 Notas de Desarrollo
 

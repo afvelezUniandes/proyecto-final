@@ -60,3 +60,8 @@ htmlcov/
 coverage.xml
 *.cover
 .hypothesis/
+
+# JMeter Results (archivos grandes)
+results.jtl
+jmeter.log
+# report/  ← NO ignorar, queremos commitear el reporte HTML
