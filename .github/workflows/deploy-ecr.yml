@@ -13,22 +13,36 @@ env:
   ECR_REGISTRY: 108633434648.dkr.ecr.us-east-1.amazonaws.com
 
 jobs:
-  build-and-push:
-    name: Build and Push Docker Images
+  # Detectar qué servicios han cambiado
+  detect-changes:
+    name: Detect Changes
     runs-on: ubuntu-latest
+    outputs:
+      auth: ${{ steps.filter.outputs.auth }}
+      catalog: ${{ steps.filter.outputs.catalog }}
+      gateway: ${{ steps.filter.outputs.gateway }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    strategy:
-      matrix:
-        service:
-          - name: auth-service
-            path: ./auth-service
-            tag: auth
-          - name: catalog-service
-            path: ./catalog-service
-            tag: catalog
-          - name: client-gateway
-            path: ./client-gateway
-            tag: gateway
+      - name: Check for changes
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            auth:
+              - 'auth-service/**'
+            catalog:
+              - 'catalog-service/**'
+            gateway:
+              - 'client-gateway/**'
+
+  # Build y push para auth-service
+  build-auth:
+    name: Build Auth Service
+    needs: detect-changes
+    if: needs.detect-changes.outputs.auth == 'true'
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -42,37 +56,114 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ${{ matrix.service.path }}
-          file: ${{ matrix.service.path }}/Dockerfile
-          push: true
-          tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ matrix.service.tag }}-latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+        run: |
+          docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:auth-latest ./auth-service
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:auth-latest
 
       - name: Image info
         run: |
-          echo "✅ Image pushed successfully!"
-          echo "Repository: ${{ env.ECR_REPOSITORY }}"
-          echo "Tag: ${{ matrix.service.tag }}-latest"
-          echo "Full URI: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ matrix.service.tag }}-latest"
+          echo "✅ Auth service image pushed successfully!"
+          echo "Tag: auth-latest"
+          echo "Full URI: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:auth-latest"
 
-  deploy-notification:
-    name: Deployment Notification
-    needs: build-and-push
+  # Build y push para catalog-service
+  build-catalog:
+    name: Build Catalog Service
+    needs: detect-changes
+    if: needs.detect-changes.outputs.catalog == 'true'
     runs-on: ubuntu-latest
-    if: success()
 
     steps:
-      - name: Success notification
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
         run: |
-          echo "✅ All images successfully pushed to ECR"
-          echo "🚀 Ready to deploy to ECS"
+          docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:catalog-latest ./catalog-service
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:catalog-latest
+
+      - name: Image info
+        run: |
+          echo "✅ Catalog service image pushed successfully!"
+          echo "Tag: catalog-latest"
+          echo "Full URI: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:catalog-latest"
+
+  # Build y push para client-gateway
+  build-gateway:
+    name: Build Gateway Service
+    needs: detect-changes
+    if: needs.detect-changes.outputs.gateway == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:gateway-latest ./client-gateway
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:gateway-latest
+
+      - name: Image info
+        run: |
+          echo "✅ Gateway service image pushed successfully!"
+          echo "Tag: gateway-latest"
+          echo "Full URI: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:gateway-latest"
+
+  # Notificación de deployment
+  deploy-notification:
+    name: Deployment Summary
+    needs: [detect-changes, build-auth, build-catalog, build-gateway]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Summary
+        run: |
+          echo "## Deployment Summary 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Services Built:" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.detect-changes.outputs.auth }}" == "true" ]; then
+            echo "- ✅ Auth Service" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ⏭️ Auth Service (no changes)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.detect-changes.outputs.catalog }}" == "true" ]; then
+            echo "- ✅ Catalog Service" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ⏭️ Catalog Service (no changes)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.detect-changes.outputs.gateway }}" == "true" ]; then
+            echo "- ✅ Gateway Service" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ⏭️ Gateway Service (no changes)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Deployment workflow completed!" >> $GITHUB_STEP_SUMMARY
