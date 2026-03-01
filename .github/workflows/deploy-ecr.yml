@@ -16,7 +16,7 @@ jobs:
   build-and-push:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         service:
@@ -64,6 +64,8 @@ jobs:
           echo "Repository: ${{ env.ECR_REPOSITORY }}"
           echo "Tag: ${{ matrix.service.tag }}-latest"
           echo "Full URI: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ matrix.service.tag }}-latest"
+
+  deploy-notification:
     name: Deployment Notification
     needs: build-and-push
     runs-on: ubuntu-latest
