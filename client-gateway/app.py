@@ -34,6 +34,36 @@ def hello():
         'catalog': CATALOG_SERVICE_URL
     }}
 
+@app.route('/health')
+def health():
+    """Health check endpoint para ALB"""
+    health_status = {
+        'status': 'healthy',
+        'service': 'client-gateway',
+        'backends': {}
+    }
+    status_code = 200
+    
+    # Verificar conectividad con auth service
+    try:
+        response = requests.get(f'{AUTH_SERVICE_URL}/health', timeout=2)
+        health_status['backends']['auth'] = 'connected' if response.status_code == 200 else 'degraded'
+    except:
+        health_status['backends']['auth'] = 'unreachable'
+        health_status['status'] = 'degraded'
+        status_code = 200  # Gateway sigue healthy aunque backends fallen
+    
+    # Verificar conectividad con catalog service
+    try:
+        response = requests.get(f'{CATALOG_SERVICE_URL}/health', timeout=2)
+        health_status['backends']['catalog'] = 'connected' if response.status_code == 200 else 'degraded'
+    except:
+        health_status['backends']['catalog'] = 'unreachable'
+        health_status['status'] = 'degraded'
+        status_code = 200  # Gateway sigue healthy aunque backends fallen
+    
+    return jsonify(health_status), status_code
+
 # Auth endpoints (sin validación de token)
 @app.route('/auth/sign-up', methods=['POST'])
 def sign_up():
@@ -78,4 +108,5 @@ def get_rooms():
         return jsonify({'error': 'Catalog service unavailable'}), 503
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    port = int(os.getenv('PORT', 8000))
+    app.run(host='0.0.0.0', port=port)

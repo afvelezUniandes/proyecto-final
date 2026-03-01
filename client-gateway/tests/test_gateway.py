@@ -241,3 +241,19 @@ class TestJWTValidation:
         
         # El código maneja tokens sin Bearer, así que debería funcionar
         assert response.status_code == 200
+
+    def test_health_endpoint(self, client):
+        """Test del endpoint /health para ALB"""
+        with patch('requests.get') as mock_get:
+            # Mock de las respuestas de los servicios backend
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {'status': 'healthy'}
+            mock_get.return_value = mock_response
+            
+            response = client.get('/health')
+            assert response.status_code == 200
+            data = json.loads(response.data)
+            assert data['service'] == 'client-gateway'
+            assert 'backends' in data
+

@@ -48,6 +48,10 @@ env/
 # PostgreSQL
 *.sql.bak
 
+# AWS Configuration (contiene credenciales)
+aws-ecs-task-definition.json
+aws-*.json
+
 # Testing and Coverage
 .pytest_cache/
 htmlcov/

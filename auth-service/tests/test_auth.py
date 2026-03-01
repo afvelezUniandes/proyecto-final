@@ -168,3 +168,14 @@ class TestAuthEndpoints:
         assert response.status_code == 200
         data = json.loads(response.data)
         assert 'Auth Service' in data['message']
+
+    def test_health_endpoint(self, client):
+        """Test del endpoint /health para ALB"""
+        response = client.get('/health')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data['status'] == 'healthy'
+        assert data['service'] == 'auth-service'
+        # En tests, la BD puede no estar disponible
+        assert 'database' in data
+
