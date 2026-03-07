@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 from sqlalchemy.orm import sessionmaker
 from adapters.orm.models import Hotel, Habitacion, Base
 from sqlalchemy import create_engine
@@ -10,8 +10,33 @@ DATABASE_URL = os.getenv('CATALOG_DATABASE_URL', 'postgresql://user:password@loc
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 
+def make_cache_key_hotels():
+    """Genera una cache key basada en los parámetros de la query"""
+    args = request.args
+    key_parts = [
+        f"nombre:{args.get('nombre', '')}",
+        f"ciudad:{args.get('ciudad', '')}",
+        f"pais:{args.get('pais', '')}",
+        f"estrellas:{args.get('estrellas', '')}",
+        f"activo:{args.get('activo', '')}",
+        f"page:{args.get('page', '1')}",
+        f"per_page:{args.get('per_page', '20')}"
+    ]
+    return 'hotels:' + ':'.join(key_parts)
+
 @bp.route('/hotels', methods=['GET'])
 def get_hotels():
+    cache = current_app.cache
+    cache_key = make_cache_key_hotels()
+    
+    # Intentar obtener del cache
+    cached_result = cache.get(cache_key)
+    if cached_result:
+        response = jsonify(cached_result)
+        response.headers['X-Cache'] = 'HIT'
+        return response
+    
+    # Si no está en cache, consultar la base de datos
     session = Session()
     query = session.query(Hotel)
     # Filtros
@@ -49,15 +74,34 @@ def get_hotels():
         } for h in hotels
     ]
     session.close()
-    return jsonify({
+    
+    response_data = {
         'total': total,
         'page': page,
         'per_page': per_page,
         'hotels': result
-    })
+    }
+    
+    # Guardar en cache
+    cache.set(cache_key, response_data)
+    
+    response = jsonify(response_data)
+    response.headers['X-Cache'] = 'MISS'
+    return response
 
 @bp.route('/rooms', methods=['GET'])
 def get_rooms():
+    cache = current_app.cache
+    cache_key = 'rooms:all'
+    
+    # Intentar obtener del cache
+    cached_result = cache.get(cache_key)
+    if cached_result:
+        response = jsonify(cached_result)
+        response.headers['X-Cache'] = 'HIT'
+        return response
+    
+    # Si no está en cache, consultar la base de datos
     session = Session()
     rooms = session.query(Habitacion).all()
     result = [
@@ -73,4 +117,33 @@ def get_rooms():
         } for r in rooms
     ]
     session.close()
-    return jsonify(result)
+    
+    # Guardar en cache
+    cache.set(cache_key, result)
+    
+    response = jsonify(result)
+    response.headers['X-Cache'] = 'MISS'
+    return response
+
+@bp.route('/cache/clear', methods=['POST'])
+def clear_cache():
+    """Endpoint para limpiar el cache manualmente"""
+    try:
+        cache = current_app.cache
+        cache.clear()
+        return jsonify({'message': 'Cache cleared successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/cache/stats', methods=['GET'])
+def cache_stats():
+    """Endpoint para ver estadísticas del cache (útil para debugging)"""
+    try:
+        cache = current_app.cache
+        return jsonify({
+            'cache_type': 'SimpleCache',
+            'default_ttl': int(os.getenv('CACHE_TTL', 300)),
+            'info': 'In-memory cache (per instance)'
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

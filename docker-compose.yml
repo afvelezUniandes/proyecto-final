@@ -37,6 +37,7 @@ services:
       - "5001:5001"
     environment:
       CATALOG_DATABASE_URL: postgresql://travelhub_user:travelhub_pass@postgres:5432/travelhub
+      CACHE_TTL: 300
     depends_on:
       postgres:
         condition: service_healthy

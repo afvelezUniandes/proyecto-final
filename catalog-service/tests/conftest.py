@@ -14,6 +14,14 @@ from adapters.orm.models import Base
 def app():
     """Fixture de aplicación Flask"""
     flask_app.config['TESTING'] = True
+    # Configurar cache simple para tests (no requiere Redis)
+    flask_app.config['CACHE_TYPE'] = 'SimpleCache'
+    flask_app.config['CACHE_DEFAULT_TIMEOUT'] = 300
+    
+    # Reinicializar el cache con la nueva configuración
+    from flask_caching import Cache
+    flask_app.cache = Cache(flask_app)
+    
     yield flask_app
 
 @pytest.fixture

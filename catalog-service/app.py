@@ -2,10 +2,17 @@ from flask import Flask, jsonify
 from sqlalchemy import text
 from adapters.http.hotels import bp as hotels_bp
 from adapters.orm.models import Base
-from config import engine
+from config import engine, CACHE_CONFIG
+from flask_caching import Cache
 import os
 
 app = Flask(__name__)
+app.config.from_mapping(CACHE_CONFIG)
+cache = Cache(app)
+
+# Hacer el cache accesible para los blueprints
+app.cache = cache
+
 app.register_blueprint(hotels_bp)
 
 @app.route('/')
