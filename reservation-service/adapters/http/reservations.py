@@ -6,25 +6,24 @@ import os
 import datetime
 import random
 import string
-import jwt
 
 bp = Blueprint('reservations', __name__)
 
 DATABASE_URL = os.getenv('RESERVATION_DATABASE_URL', 'postgresql://user:password@localhost:5432/travelhub')
-SECRET_KEY = os.getenv('JWT_SECRET', 'supersecretkey')
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 
 
-def get_user_id_from_token(request):
-    """Extrae el user_id del JWT del header Authorization."""
-    token = request.headers.get('Authorization', '')
-    if token.startswith('Bearer '):
-        token = token[7:]
+def get_user_id_from_request(request):
+    """Lee el user_id del header X-User-Id inyectado por el client-gateway.
+    El gateway ya validó el JWT — los micros confían en este header.
+    """
+    user_id = request.headers.get('X-User-Id')
+    if not user_id:
+        return None
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        return payload.get('user_id')
-    except jwt.InvalidTokenError:
+        return int(user_id)
+    except (ValueError, TypeError):
         return None
 
 
@@ -56,7 +55,7 @@ def reserva_to_dict(r):
 # ──────────────────────────────────────────────
 @bp.route('/reservations', methods=['GET'])
 def get_reservations():
-    user_id = get_user_id_from_token(request)
+    user_id = get_user_id_from_request(request)
     if not user_id:
         return jsonify({'error': 'Unauthorized'}), 401
 
@@ -77,7 +76,7 @@ def get_reservations():
 # ──────────────────────────────────────────────
 @bp.route('/reservations/<int:reserva_id>', methods=['GET'])
 def get_reservation(reserva_id):
-    user_id = get_user_id_from_token(request)
+    user_id = get_user_id_from_request(request)
     if not user_id:
         return jsonify({'error': 'Unauthorized'}), 401
 
@@ -99,7 +98,7 @@ def get_reservation(reserva_id):
 # ──────────────────────────────────────────────
 @bp.route('/reservations', methods=['POST'])
 def create_reservation():
-    user_id = get_user_id_from_token(request)
+    user_id = get_user_id_from_request(request)
     if not user_id:
         return jsonify({'error': 'Unauthorized'}), 401
 
@@ -162,7 +161,7 @@ def create_reservation():
 # ──────────────────────────────────────────────
 @bp.route('/reservations/<int:reserva_id>/cancel', methods=['PATCH'])
 def cancel_reservation(reserva_id):
-    user_id = get_user_id_from_token(request)
+    user_id = get_user_id_from_request(request)
     if not user_id:
         return jsonify({'error': 'Unauthorized'}), 401
 

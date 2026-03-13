@@ -1,22 +1,10 @@
 import pytest
 import json
-import jwt
 import datetime
-
-TEST_SECRET = 'test_secret'
-
-
-def make_token(user_id=1):
-    """Genera un JWT de prueba."""
-    return jwt.encode(
-        {'user_id': user_id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)},
-        TEST_SECRET,
-        algorithm='HS256'
-    )
 
 
 def auth_header(user_id=1):
-    return {'Authorization': f'Bearer {make_token(user_id)}'}
+    return {'X-User-Id': str(user_id)}
 
 
 # ─────────────────────────────────────────────

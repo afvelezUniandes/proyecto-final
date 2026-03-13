@@ -14,72 +14,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.uniandes.travelhub_android.data.Reservation
-import com.uniandes.travelhub_android.data.ReservationStatus
+import com.uniandes.travelhub_android.data.ApiClient
+import com.uniandes.travelhub_android.data.ReservationApi
+import com.uniandes.travelhub_android.data.TokenStore
 import com.uniandes.travelhub_android.ui.components.BottomNavBar
 import com.uniandes.travelhub_android.ui.theme.*
+import java.text.SimpleDateFormat
+import java.util.Locale
 
-internal val mockReservations = listOf(
-    Reservation(
-        id = "TH-2026-0842",
-        hotelName = "Hotel Tequendama",
-        hotelColor = 0xFFDBEAFE,
-        status = ReservationStatus.CONFIRMADA,
-        city = "Bogotá, Colombia",
-        checkIn = "15 Mar",
-        checkOut = "20 Mar",
-        nights = 5,
-        totalCop = "\$2.250.000",
-        roomType = "Suite Ejecutiva",
-        guests = "2 adultos",
-        createdAt = "01 Mar 2026"
-    ),
-    Reservation(
-        id = "TH-2026-0901",
-        hotelName = "W Bogota",
-        hotelColor = 0xFFFEF3C7,
-        status = ReservationStatus.CONFIRMADA,
-        city = "Zona T, Bogotá",
-        checkIn = "01 Abr",
-        checkOut = "04 Abr",
-        nights = 3,
-        totalCop = "\$1.860.000",
-        roomType = "Habitación Deluxe",
-        guests = "2 adultos",
-        createdAt = "10 Mar 2026"
-    ),
-    Reservation(
-        id = "TH-2026-0654",
-        hotelName = "Dann Carlton Med.",
-        hotelColor = 0xFFEDE9FE,
-        status = ReservationStatus.COMPLETADA,
-        city = "Medellín, Colombia",
-        checkIn = "10 Feb",
-        checkOut = "14 Feb",
-        nights = 4,
-        totalCop = "\$1.200.000",
-        roomType = "Habitación Estándar",
-        guests = "1 adulto",
-        createdAt = "05 Feb 2026"
-    ),
-    Reservation(
-        id = "TH-2026-0412",
-        hotelName = "Hilton Cartagena",
-        hotelColor = 0xFFFFE4E6,
-        status = ReservationStatus.CANCELADA,
-        city = "Cartagena, Colombia",
-        checkIn = "20 Ene",
-        checkOut = "25 Ene",
-        nights = 5,
-        totalCop = "\$2.100.000",
-        roomType = "Suite Playa",
-        guests = "2 adultos",
-        createdAt = "10 Ene 2026"
-    )
-)
+internal fun nightsBetween(fechaCheckin: String, fechaCheckout: String): Int {
+    return try {
+        val fmt = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val d1 = fmt.parse(fechaCheckin) ?: return 0
+        val d2 = fmt.parse(fechaCheckout) ?: return 0
+        ((d2.time - d1.time) / (1000L * 60 * 60 * 24)).toInt()
+    } catch (e: Exception) { 0 }
+}
 
 @Composable
 fun ReservationsScreen(
@@ -87,19 +41,42 @@ fun ReservationsScreen(
     onHomeClick: () -> Unit,
     onNotificationsClick: () -> Unit
 ) {
+    val context = LocalContext.current
+    var reservations by remember { mutableStateOf<List<ReservationApi>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMsg by remember { mutableStateOf<String?>(null) }
     var selectedTab by remember { mutableStateOf("Activas") }
+
     val tabs = listOf("Activas", "Pasadas", "Canceladas", "Todas")
 
-    val filtered = when (selectedTab) {
-        "Activas" -> mockReservations.filter { it.status == ReservationStatus.CONFIRMADA }
-        "Pasadas" -> mockReservations.filter { it.status == ReservationStatus.COMPLETADA }
-        "Canceladas" -> mockReservations.filter { it.status == ReservationStatus.CANCELADA }
-        else -> mockReservations
+    LaunchedEffect(Unit) {
+        val token = TokenStore.get(context) ?: run {
+            errorMsg = "No hay sesión activa"
+            isLoading = false
+            return@LaunchedEffect
+        }
+        try {
+            val resp = ApiClient.api.getReservations("Bearer $token")
+            if (resp.isSuccessful) {
+                reservations = resp.body() ?: emptyList()
+            } else {
+                errorMsg = "Error al cargar reservas (${resp.code()})"
+            }
+        } catch (e: Exception) {
+            errorMsg = "Sin conexión al servidor"
+        }
+        isLoading = false
     }
 
-    val proximas = filtered.filter { it.status == ReservationStatus.CONFIRMADA }
-    val completadas = filtered.filter { it.status == ReservationStatus.COMPLETADA }
-    val canceladas = filtered.filter { it.status == ReservationStatus.CANCELADA }
+    val filtered = when (selectedTab) {
+        "Activas"    -> reservations.filter { it.estado == "confirmada" }
+        "Pasadas"    -> reservations.filter { it.estado == "completada" }
+        "Canceladas" -> reservations.filter { it.estado == "cancelada" }
+        else         -> reservations
+    }
+    val proximas    = filtered.filter { it.estado == "confirmada" }
+    val completadas = filtered.filter { it.estado == "completada" }
+    val canceladas  = filtered.filter { it.estado == "cancelada" }
 
     Scaffold(
         bottomBar = {
@@ -112,141 +89,137 @@ fun ReservationsScreen(
             )
         }
     ) { padding ->
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(TravelBackground)
                 .padding(padding)
         ) {
-            item {
-                Text(
-                    text = "Mis Reservas",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF111827),
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)
-                )
-
-                // Pull to refresh label
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text(
-                        "↓ Desliza para actualizar",
-                        fontSize = 12.sp,
-                        color = TravelBlue
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Tabs
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    tabs.forEach { tab ->
-                        val isSelected = selectedTab == tab
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(
-                                    if (isSelected) TravelBlue else Color.White
-                                )
-                                .clickable { selectedTab = tab }
-                                .padding(horizontal = 14.dp, vertical = 8.dp)
-                        ) {
+            if (isLoading) {
+                CircularProgressIndicator(color = TravelBlue, modifier = Modifier.align(Alignment.Center))
+            } else {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    item {
+                        Text(
+                            text = "Mis Reservas",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF111827),
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)
+                        )
+                        if (errorMsg != null) {
                             Text(
-                                tab,
-                                color = if (isSelected) Color.White else Color(0xFF111827),
+                                errorMsg!!,
                                 fontSize = 13.sp,
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                                color = TravelRed,
+                                modifier = Modifier.padding(horizontal = 20.dp)
                             )
                         }
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Tabs
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            tabs.forEach { tab ->
+                                val isSelected = selectedTab == tab
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(20.dp))
+                                        .background(if (isSelected) TravelBlue else Color.White)
+                                        .clickable { selectedTab = tab }
+                                        .padding(horizontal = 14.dp, vertical = 8.dp)
+                                ) {
+                                    Text(
+                                        tab,
+                                        color = if (isSelected) Color.White else Color(0xFF111827),
+                                        fontSize = 13.sp,
+                                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
-                }
 
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            // Sección PRÓXIMAS
-            if (proximas.isNotEmpty()) {
-                item {
-                    Text(
-                        "PRÓXIMAS",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TravelGray,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                    )
-                }
-                items(proximas) { res ->
-                    ReservationCard(res, onClick = { onReservationClick(res.id) })
-                }
-            }
-
-            // Sección COMPLETADAS
-            if (completadas.isNotEmpty()) {
-                item {
-                    Text(
-                        "COMPLETADAS",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TravelGray,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                    )
-                }
-                items(completadas) { res ->
-                    ReservationCard(res, onClick = { onReservationClick(res.id) })
-                }
-            }
-
-            // Sección CANCELADAS
-            if (canceladas.isNotEmpty()) {
-                item {
-                    Text(
-                        "CANCELADAS",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TravelGray,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                    )
-                }
-                items(canceladas) { res ->
-                    ReservationCard(res, onClick = { onReservationClick(res.id) })
-                }
-            }
-
-            if (filtered.isEmpty()) {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(40.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("No hay reservas en esta categoría", color = TravelGray)
+                    if (proximas.isNotEmpty()) {
+                        item {
+                            Text(
+                                "PRÓXIMAS", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TravelGray,
+                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                            )
+                        }
+                        items(proximas) { res ->
+                            ReservationCard(res, onClick = { onReservationClick(res.id.toString()) })
+                        }
                     }
+
+                    if (completadas.isNotEmpty()) {
+                        item {
+                            Text(
+                                "COMPLETADAS", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TravelGray,
+                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                            )
+                        }
+                        items(completadas) { res ->
+                            ReservationCard(res, onClick = { onReservationClick(res.id.toString()) })
+                        }
+                    }
+
+                    if (canceladas.isNotEmpty()) {
+                        item {
+                            Text(
+                                "CANCELADAS", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TravelGray,
+                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                            )
+                        }
+                        items(canceladas) { res ->
+                            ReservationCard(res, onClick = { onReservationClick(res.id.toString()) })
+                        }
+                    }
+
+                    if (filtered.isEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().padding(40.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("No hay reservas en esta categoría", color = TravelGray)
+                            }
+                        }
+                    }
+
+                    item { Spacer(modifier = Modifier.height(16.dp)) }
                 }
             }
-
-            item { Spacer(modifier = Modifier.height(16.dp)) }
         }
     }
 }
 
 @Composable
-fun ReservationCard(reservation: Reservation, onClick: () -> Unit) {
-    val statusColor = when (reservation.status) {
-        ReservationStatus.CONFIRMADA -> TravelGreen
-        ReservationStatus.COMPLETADA -> TravelGray
-        ReservationStatus.CANCELADA -> TravelRed
+fun ReservationCard(reservation: ReservationApi, onClick: () -> Unit) {
+    val statusColor = when (reservation.estado) {
+        "confirmada" -> TravelGreen
+        "completada" -> TravelGray
+        "cancelada"  -> TravelRed
+        else -> TravelGray
     }
-    val statusLabel = when (reservation.status) {
-        ReservationStatus.CONFIRMADA -> "Confirmada"
-        ReservationStatus.COMPLETADA -> "Completada ✓"
-        ReservationStatus.CANCELADA -> "Cancelada"
+    val statusLabel = when (reservation.estado) {
+        "confirmada" -> "Confirmada"
+        "completada" -> "Completada ✓"
+        "cancelada"  -> "Cancelada"
+        else -> reservation.estado.replaceFirstChar { it.uppercase() }
     }
+    val cardBgColor = when (reservation.estado) {
+        "confirmada" -> Color(0xFFDBEAFE)
+        "completada" -> Color(0xFFEDE9FE)
+        "cancelada"  -> Color(0xFFFFE4E6)
+        else -> Color(0xFFF3F4F6)
+    }
+    val nights = nightsBetween(reservation.fecha_checkin, reservation.fecha_checkout)
 
     Card(
         modifier = Modifier
@@ -258,15 +231,11 @@ fun ReservationCard(reservation: Reservation, onClick: () -> Unit) {
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
-            // Barra de estado lateral
             Box(
                 modifier = Modifier
                     .width(4.dp)
                     .fillMaxHeight()
-                    .background(
-                        statusColor,
-                        RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
-                    )
+                    .background(statusColor, RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
             )
             Row(
                 modifier = Modifier
@@ -274,12 +243,11 @@ fun ReservationCard(reservation: Reservation, onClick: () -> Unit) {
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Logo
                 Box(
                     modifier = Modifier
                         .size(70.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(reservation.hotelColor)),
+                        .background(cardBgColor),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(Icons.Default.Hotel, null, tint = TravelBlue, modifier = Modifier.size(32.dp))
@@ -288,7 +256,10 @@ fun ReservationCard(reservation: Reservation, onClick: () -> Unit) {
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(reservation.hotelName, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
+                    Text(
+                        "Hotel #${reservation.hotel_id}",
+                        fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827)
+                    )
                     Box(
                         modifier = Modifier
                             .padding(vertical = 4.dp)
@@ -298,35 +269,35 @@ fun ReservationCard(reservation: Reservation, onClick: () -> Unit) {
                     ) {
                         Text(statusLabel, color = statusColor, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                     }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.LocationOn, null, tint = TravelRed, modifier = Modifier.size(12.dp))
-                        Text(" ${reservation.city}", fontSize = 12.sp, color = TravelGray)
-                    }
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 2.dp)) {
                         Icon(Icons.Default.CalendarMonth, null, tint = TravelGray, modifier = Modifier.size(12.dp))
                         Text(
-                            " ${reservation.checkIn} → ${reservation.checkOut} · ${reservation.nights} noches",
-                            fontSize = 12.sp,
-                            color = TravelGray
+                            " ${reservation.fecha_checkin} → ${reservation.fecha_checkout} · $nights noches",
+                            fontSize = 12.sp, color = TravelGray
                         )
                     }
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            "Codigo: ",
-                            fontSize = 12.sp,
-                            color = TravelGray
-                        )
+                        Text("Cód: ", fontSize = 12.sp, color = TravelGray)
                         Row {
-                            Text(reservation.id, fontSize = 12.sp, color = TravelBlue, fontWeight = FontWeight.SemiBold)
+                            Text(reservation.codigo, fontSize = 12.sp, color = TravelBlue, fontWeight = FontWeight.SemiBold)
                             Spacer(modifier = Modifier.weight(1f))
-                            Text(reservation.totalCop, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
+                            Text(
+                                "${"%.0f".format(reservation.monto_total)}",
+                                fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827)
+                            )
                         }
                     }
-                    Text("COP total", fontSize = 11.sp, color = TravelGray, modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.End))
+                    Text(
+                        "${reservation.moneda} total",
+                        fontSize = 11.sp, color = TravelGray,
+                        modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.End)
+                    )
                 }
             }
         }

@@ -35,7 +35,33 @@ data class Room(
     val disponible: Boolean
 )
 
-// --- Reservas (mock) ---
+// --- Reservas (API real) ---
+data class ReservationApi(
+    val id: Int,
+    val usuario_id: Int,
+    val habitacion_id: Int,
+    val hotel_id: Int,
+    val fecha_checkin: String,
+    val fecha_checkout: String,
+    val num_huespedes: Int,
+    val fecha_creacion: String,
+    val codigo: String,
+    val monto_total: Double,
+    val moneda: String,
+    val estado: String   // "confirmada" | "cancelada" | "completada"
+)
+
+data class CreateReservationRequest(
+    val habitacion_id: Int,
+    val hotel_id: Int,
+    val fecha_checkin: String,
+    val fecha_checkout: String,
+    val num_huespedes: Int,
+    val monto_total: Double,
+    val moneda: String = "COP"
+)
+
+// --- Reservas (UI local — para pantallas sin API) ---
 data class Reservation(
     val id: String,
     val hotelName: String,

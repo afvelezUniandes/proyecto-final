@@ -20,7 +20,9 @@ def verify_token(f):
         try:
             if token.startswith('Bearer '):
                 token = token[7:]
-            jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+            payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+            # Inyectar user_id como atributo de request para usarlo en los proxies
+            request.user_id = payload.get('user_id')
         except jwt.ExpiredSignatureError:
             return jsonify({'error': 'Token has expired'}), 401
         except jwt.InvalidTokenError:
@@ -113,7 +115,7 @@ def get_rooms():
 @verify_token
 def get_reservations():
     try:
-        headers = {'Authorization': request.headers.get('Authorization')}
+        headers = {'X-User-Id': str(request.user_id)}
         response = requests.get(f'{RESERVATION_SERVICE_URL}/reservations', params=request.args, headers=headers, timeout=5)
         return jsonify(response.json()), response.status_code
     except requests.exceptions.RequestException:
@@ -123,7 +125,7 @@ def get_reservations():
 @verify_token
 def get_reservation(reserva_id):
     try:
-        headers = {'Authorization': request.headers.get('Authorization')}
+        headers = {'X-User-Id': str(request.user_id)}
         response = requests.get(f'{RESERVATION_SERVICE_URL}/reservations/{reserva_id}', headers=headers, timeout=5)
         return jsonify(response.json()), response.status_code
     except requests.exceptions.RequestException:
@@ -133,7 +135,7 @@ def get_reservation(reserva_id):
 @verify_token
 def create_reservation():
     try:
-        headers = {'Authorization': request.headers.get('Authorization')}
+        headers = {'X-User-Id': str(request.user_id)}
         response = requests.post(f'{RESERVATION_SERVICE_URL}/reservations', json=request.json, headers=headers, timeout=5)
         return jsonify(response.json()), response.status_code
     except requests.exceptions.RequestException:
@@ -143,7 +145,7 @@ def create_reservation():
 @verify_token
 def cancel_reservation(reserva_id):
     try:
-        headers = {'Authorization': request.headers.get('Authorization')}
+        headers = {'X-User-Id': str(request.user_id)}
         response = requests.patch(f'{RESERVATION_SERVICE_URL}/reservations/{reserva_id}/cancel', headers=headers, timeout=5)
         return jsonify(response.json()), response.status_code
     except requests.exceptions.RequestException:
