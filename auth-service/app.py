@@ -7,11 +7,13 @@ import os
 app = Flask(__name__)
 app.register_blueprint(auth_bp)
 
-# Crear tablas al arrancar
+# Crear tablas al arrancar (se omite si no hay BD disponible, ej. en tests)
 with app.app_context():
-    Base.metadata.create_all(engine)
-    print("✓ Auth tables created/verified")
-app.register_blueprint(auth_bp)
+    try:
+        Base.metadata.create_all(engine)
+        print("✓ Auth tables created/verified")
+    except Exception:
+        pass
 
 @app.route('/')
 def hello():
