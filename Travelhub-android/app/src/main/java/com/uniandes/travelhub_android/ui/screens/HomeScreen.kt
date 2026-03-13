@@ -1,20 +1,406 @@
 package com.uniandes.travelhub_android.ui.screens
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.uniandes.travelhub_android.data.ApiClient
+import com.uniandes.travelhub_android.data.Hotel
+import com.uniandes.travelhub_android.ui.components.BottomNavBar
+import com.uniandes.travelhub_android.ui.theme.*
+import kotlinx.coroutines.launch
 
-// Stub temporal — se implementará en Fase 2
 @Composable
 fun HomeScreen(
     onHotelClick: (Int) -> Unit,
     onReservationsClick: () -> Unit,
     onNotificationsClick: () -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
+    val scope = rememberCoroutineScope()
+
+    var ciudad by remember { mutableStateOf("") }
+    var checkIn by remember { mutableStateOf("") }
+    var checkOut by remember { mutableStateOf("") }
+    var huespedes by remember { mutableStateOf("2 adultos") }
+    var hotels by remember { mutableStateOf<List<Hotel>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(false) }
+    var hasSearched by remember { mutableStateOf(false) }
+    var errorMsg by remember { mutableStateOf<String?>(null) }
+    var selectedFilter by remember { mutableStateOf("Estrellas") }
+
+    fun search() {
+        scope.launch {
+            isLoading = true
+            hasSearched = true
+            errorMsg = null
+            try {
+                val response = ApiClient.api.getHotels(
+                    ciudad = ciudad.ifBlank { null }
+                )
+                if (response.isSuccessful) {
+                    var result = response.body()?.hotels ?: emptyList()
+                    result = when (selectedFilter) {
+                        "Estrellas" -> result.sortedByDescending { it.estrellas }
+                        "Precio" -> result.sortedBy { it.estrellas } // precio no viene del API, usar estrellas como proxy
+                        else -> result
+                    }
+                    hotels = result
+                } else {
+                    errorMsg = "Error al cargar hoteles"
+                }
+            } catch (e: Exception) {
+                errorMsg = "Sin conexión al servidor"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    Scaffold(
+        bottomBar = {
+            BottomNavBar(
+                selected = "Inicio",
+                onHomeClick = {},
+                onSearchClick = {},
+                onReservationsClick = onReservationsClick,
+                onNotificationsClick = onNotificationsClick
+            )
+        }
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(TravelBackground)
+                .padding(padding)
+        ) {
+            // Header azul con formulario de búsqueda
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(TravelBlue)
+                        .padding(horizontal = 20.dp, vertical = 24.dp)
+                ) {
+                    Column {
+                        Text(
+                            text = "Hola, Viajero!",
+                            color = Color.White,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "¿A dónde quieres viajar?",
+                            color = Color.White.copy(alpha = 0.85f),
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+
+                        Card(
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(4.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                // Ciudad
+                                Text("CIUDAD", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
+                                Spacer(modifier = Modifier.height(4.dp))
+                                OutlinedTextField(
+                                    value = ciudad,
+                                    onValueChange = { ciudad = it },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    placeholder = { Text("📍 Bogotá, Colombia", color = TravelGray) },
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(10.dp),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = TravelBlue,
+                                        unfocusedBorderColor = TravelGrayLight,
+                                        focusedContainerColor = Color(0xFFF9FAFB),
+                                        unfocusedContainerColor = Color(0xFFF9FAFB)
+                                    )
+                                )
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                // Fechas
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text("CHECK-IN", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        OutlinedTextField(
+                                            value = checkIn,
+                                            onValueChange = { checkIn = it },
+                                            placeholder = { Text("📅 15 Mar 2026", color = TravelGray, fontSize = 13.sp) },
+                                            singleLine = true,
+                                            shape = RoundedCornerShape(10.dp),
+                                            colors = OutlinedTextFieldDefaults.colors(
+                                                focusedBorderColor = TravelBlue,
+                                                unfocusedBorderColor = TravelGrayLight,
+                                                focusedContainerColor = Color(0xFFF9FAFB),
+                                                unfocusedContainerColor = Color(0xFFF9FAFB)
+                                            )
+                                        )
+                                    }
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text("CHECK-OUT", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        OutlinedTextField(
+                                            value = checkOut,
+                                            onValueChange = { checkOut = it },
+                                            placeholder = { Text("📅 20 Mar 2026", color = TravelGray, fontSize = 13.sp) },
+                                            singleLine = true,
+                                            shape = RoundedCornerShape(10.dp),
+                                            colors = OutlinedTextFieldDefaults.colors(
+                                                focusedBorderColor = TravelBlue,
+                                                unfocusedBorderColor = TravelGrayLight,
+                                                focusedContainerColor = Color(0xFFF9FAFB),
+                                                unfocusedContainerColor = Color(0xFFF9FAFB)
+                                            )
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                // Huéspedes + Botón
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedTextField(
+                                        value = huespedes,
+                                        onValueChange = { huespedes = it },
+                                        modifier = Modifier.weight(1f),
+                                        placeholder = { Text("👥 2 adultos", color = TravelGray) },
+                                        singleLine = true,
+                                        shape = RoundedCornerShape(10.dp),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = TravelBlue,
+                                            unfocusedBorderColor = TravelGrayLight,
+                                            focusedContainerColor = Color(0xFFF9FAFB),
+                                            unfocusedContainerColor = Color(0xFFF9FAFB)
+                                        )
+                                    )
+                                    Button(
+                                        onClick = { search() },
+                                        modifier = Modifier.height(56.dp),
+                                        shape = RoundedCornerShape(10.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = TravelOrange)
+                                    ) {
+                                        Icon(Icons.Default.Search, contentDescription = null)
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text("Buscar", fontWeight = FontWeight.SemiBold)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Resultados
+            if (hasSearched) {
+                item {
+                    Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
+                        if (isLoading) {
+                            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(color = TravelBlue)
+                            }
+                        } else {
+                            errorMsg?.let {
+                                Text(it, color = TravelRed, modifier = Modifier.padding(vertical = 8.dp))
+                            }
+
+                            if (!isLoading && errorMsg == null) {
+                                Text(
+                                    text = "Resultados${if (ciudad.isNotBlank()) " en $ciudad" else ""}",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF111827)
+                                )
+                                Text(
+                                    text = "${hotels.size} hospedajes encontrados",
+                                    fontSize = 13.sp,
+                                    color = TravelGray,
+                                    modifier = Modifier.padding(bottom = 12.dp)
+                                )
+
+                                // Chips de filtro
+                                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    items(listOf("Estrellas", "Precio", "Ordenar")) { filter ->
+                                        FilterChip(
+                                            selected = selectedFilter == filter,
+                                            onClick = {
+                                                selectedFilter = filter
+                                                search()
+                                            },
+                                            label = { Text(filter, fontSize = 13.sp) },
+                                            colors = FilterChipDefaults.filterChipColors(
+                                                selectedContainerColor = TravelBlue,
+                                                selectedLabelColor = Color.White
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                items(hotels) { hotel ->
+                    HotelCard(hotel = hotel, onClick = { onHotelClick(hotel.id) })
+                }
+
+                if (!isLoading && hotels.isEmpty() && errorMsg == null) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(40.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("No se encontraron hoteles", color = TravelGray)
+                        }
+                    }
+                }
+            } else {
+                // Estado inicial — sugerencia
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(40.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                Icons.Default.Search,
+                                contentDescription = null,
+                                tint = TravelGrayLight,
+                                modifier = Modifier.size(64.dp)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                "Busca hoteles por ciudad",
+                                color = TravelGray,
+                                fontSize = 15.sp
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun HotelCard(hotel: Hotel, onClick: () -> Unit) {
+    val hotelColors = listOf(
+        Color(0xFFDBEAFE), Color(0xFFFEF3C7), Color(0xFFDCFCE7),
+        Color(0xFFEDE9FE), Color(0xFFFFE4E6)
+    )
+    val hotelColor = hotelColors[hotel.id % hotelColors.size]
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 6.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
+            // Logo hotel
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(hotelColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        Icons.Default.Hotel,
+                        contentDescription = null,
+                        tint = TravelBlue,
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Text(
+                        text = hotel.nombre.take(10),
+                        fontSize = 9.sp,
+                        color = TravelBlue,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Text(
+                        text = hotel.nombre,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF111827),
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(
+                        onClick = {},
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.FavoriteBorder,
+                            contentDescription = null,
+                            tint = TravelGray,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+
+                // Ubicación
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = TravelRed, modifier = Modifier.size(14.dp))
+                    Text(" ${hotel.ciudad}, ${hotel.pais}", fontSize = 12.sp, color = TravelGray)
+                }
+
+                // Estrellas
+                Row(modifier = Modifier.padding(vertical = 4.dp)) {
+                    repeat(hotel.estrellas) {
+                        Text("★", color = Color(0xFFF59E0B), fontSize = 12.sp)
+                    }
+                    repeat(5 - hotel.estrellas) {
+                        Text("★", color = TravelGrayLight, fontSize = 12.sp)
+                    }
+                    Text(" ${hotel.estrellas} estrellas", fontSize = 12.sp, color = TravelGray)
+                }
+
+                // Amenidades chip (mock)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    items(listOf("WiFi", "Piscina", "Gym").take(3)) { amenity ->
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(TravelBlueLight.copy(alpha = 0.5f))
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Text(amenity, fontSize = 11.sp, color = TravelBlue)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
