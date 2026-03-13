@@ -8,6 +8,7 @@ app = Flask(__name__)
 
 AUTH_SERVICE_URL = os.getenv('AUTH_SERVICE_URL', 'http://localhost:5000')
 CATALOG_SERVICE_URL = os.getenv('CATALOG_SERVICE_URL', 'http://localhost:5001')
+RESERVATION_SERVICE_URL = os.getenv('RESERVATION_SERVICE_URL', 'http://localhost:5002')
 JWT_SECRET = os.getenv('JWT_SECRET', 'supersecretkey')
 
 def verify_token(f):
@@ -106,6 +107,47 @@ def get_rooms():
         return jsonify(response.json()), response.status_code
     except requests.exceptions.RequestException as e:
         return jsonify({'error': 'Catalog service unavailable'}), 503
+
+# Reservation endpoints (requieren token JWT)
+@app.route('/reservations', methods=['GET'])
+@verify_token
+def get_reservations():
+    try:
+        headers = {'Authorization': request.headers.get('Authorization')}
+        response = requests.get(f'{RESERVATION_SERVICE_URL}/reservations', params=request.args, headers=headers, timeout=5)
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Reservation service unavailable'}), 503
+
+@app.route('/reservations/<int:reserva_id>', methods=['GET'])
+@verify_token
+def get_reservation(reserva_id):
+    try:
+        headers = {'Authorization': request.headers.get('Authorization')}
+        response = requests.get(f'{RESERVATION_SERVICE_URL}/reservations/{reserva_id}', headers=headers, timeout=5)
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Reservation service unavailable'}), 503
+
+@app.route('/reservations', methods=['POST'])
+@verify_token
+def create_reservation():
+    try:
+        headers = {'Authorization': request.headers.get('Authorization')}
+        response = requests.post(f'{RESERVATION_SERVICE_URL}/reservations', json=request.json, headers=headers, timeout=5)
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Reservation service unavailable'}), 503
+
+@app.route('/reservations/<int:reserva_id>/cancel', methods=['PATCH'])
+@verify_token
+def cancel_reservation(reserva_id):
+    try:
+        headers = {'Authorization': request.headers.get('Authorization')}
+        response = requests.patch(f'{RESERVATION_SERVICE_URL}/reservations/{reserva_id}/cancel', headers=headers, timeout=5)
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Reservation service unavailable'}), 503
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 8000))

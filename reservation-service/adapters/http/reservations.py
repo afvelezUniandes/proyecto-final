@@ -1,0 +1,184 @@
+from flask import Blueprint, jsonify, request
+from sqlalchemy.orm import sessionmaker
+from adapters.orm.models import Reserva, Pago
+from sqlalchemy import create_engine, text
+import os
+import datetime
+import random
+import string
+import jwt
+
+bp = Blueprint('reservations', __name__)
+
+DATABASE_URL = os.getenv('RESERVATION_DATABASE_URL', 'postgresql://user:password@localhost:5432/travelhub')
+SECRET_KEY = os.getenv('JWT_SECRET', 'supersecretkey')
+engine = create_engine(DATABASE_URL)
+Session = sessionmaker(bind=engine)
+
+
+def get_user_id_from_token(request):
+    """Extrae el user_id del JWT del header Authorization."""
+    token = request.headers.get('Authorization', '')
+    if token.startswith('Bearer '):
+        token = token[7:]
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        return payload.get('user_id')
+    except jwt.InvalidTokenError:
+        return None
+
+
+def generate_codigo():
+    year = datetime.datetime.utcnow().year
+    suffix = ''.join(random.choices(string.digits, k=4))
+    return f"TH-{year}-{suffix}"
+
+
+def reserva_to_dict(r):
+    return {
+        'id': r.id,
+        'usuario_id': r.usuario_id,
+        'habitacion_id': r.habitacion_id,
+        'hotel_id': r.hotel_id,
+        'fecha_checkin': str(r.fecha_checkin),
+        'fecha_checkout': str(r.fecha_checkout),
+        'num_huespedes': r.num_huespedes,
+        'fecha_creacion': str(r.fecha_creacion),
+        'codigo': r.codigo,
+        'monto_total': float(r.monto_total),
+        'moneda': r.moneda,
+        'estado': r.estado,
+    }
+
+
+# ──────────────────────────────────────────────
+# GET /reservations  — listar reservas del usuario
+# ──────────────────────────────────────────────
+@bp.route('/reservations', methods=['GET'])
+def get_reservations():
+    user_id = get_user_id_from_token(request)
+    if not user_id:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    session = Session()
+    try:
+        estado = request.args.get('estado')
+        query = session.query(Reserva).filter(Reserva.usuario_id == user_id)
+        if estado:
+            query = query.filter(Reserva.estado == estado)
+        reservas = query.order_by(Reserva.fecha_creacion.desc()).all()
+        return jsonify([reserva_to_dict(r) for r in reservas]), 200
+    finally:
+        session.close()
+
+
+# ──────────────────────────────────────────────
+# GET /reservations/<id>  — detalle de una reserva
+# ──────────────────────────────────────────────
+@bp.route('/reservations/<int:reserva_id>', methods=['GET'])
+def get_reservation(reserva_id):
+    user_id = get_user_id_from_token(request)
+    if not user_id:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    session = Session()
+    try:
+        reserva = session.query(Reserva).filter(
+            Reserva.id == reserva_id,
+            Reserva.usuario_id == user_id
+        ).first()
+        if not reserva:
+            return jsonify({'error': 'Reservation not found'}), 404
+        return jsonify(reserva_to_dict(reserva)), 200
+    finally:
+        session.close()
+
+
+# ──────────────────────────────────────────────
+# POST /reservations  — crear reserva
+# ──────────────────────────────────────────────
+@bp.route('/reservations', methods=['POST'])
+def create_reservation():
+    user_id = get_user_id_from_token(request)
+    if not user_id:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    data = request.json
+    required = ['habitacion_id', 'hotel_id', 'fecha_checkin', 'fecha_checkout', 'num_huespedes', 'monto_total']
+    for field in required:
+        if field not in data:
+            return jsonify({'error': f'Missing field: {field}'}), 400
+
+    session = Session()
+    try:
+        checkin = datetime.date.fromisoformat(data['fecha_checkin'])
+        checkout = datetime.date.fromisoformat(data['fecha_checkout'])
+        if checkout <= checkin:
+            return jsonify({'error': 'checkout must be after checkin'}), 400
+
+        codigo = generate_codigo()
+        # Garantizar unicidad del código
+        while session.query(Reserva).filter(Reserva.codigo == codigo).first():
+            codigo = generate_codigo()
+
+        reserva = Reserva(
+            usuario_id=user_id,
+            habitacion_id=data['habitacion_id'],
+            hotel_id=data['hotel_id'],
+            fecha_checkin=checkin,
+            fecha_checkout=checkout,
+            num_huespedes=data['num_huespedes'],
+            monto_total=data['monto_total'],
+            moneda=data.get('moneda', 'COP'),
+            estado='confirmada',
+            codigo=codigo
+        )
+        session.add(reserva)
+        session.flush()
+
+        # Crear pago automático
+        pago = Pago(
+            reserva_id=reserva.id,
+            monto=data['monto_total'],
+            metodo_pago=data.get('metodo_pago', 'tarjeta'),
+            estado='completado'
+        )
+        session.add(pago)
+        session.commit()
+
+        return jsonify(reserva_to_dict(reserva)), 201
+    except ValueError as e:
+        session.rollback()
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        session.rollback()
+        return jsonify({'error': 'Internal server error'}), 500
+    finally:
+        session.close()
+
+
+# ──────────────────────────────────────────────
+# PATCH /reservations/<id>/cancel  — cancelar reserva
+# ──────────────────────────────────────────────
+@bp.route('/reservations/<int:reserva_id>/cancel', methods=['PATCH'])
+def cancel_reservation(reserva_id):
+    user_id = get_user_id_from_token(request)
+    if not user_id:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    session = Session()
+    try:
+        reserva = session.query(Reserva).filter(
+            Reserva.id == reserva_id,
+            Reserva.usuario_id == user_id
+        ).first()
+        if not reserva:
+            return jsonify({'error': 'Reservation not found'}), 404
+        if reserva.estado != 'confirmada':
+            return jsonify({'error': 'Only confirmed reservations can be cancelled'}), 400
+
+        reserva.estado = 'cancelada'
+        session.commit()
+        return jsonify(reserva_to_dict(reserva)), 200
+    finally:
+        session.close()

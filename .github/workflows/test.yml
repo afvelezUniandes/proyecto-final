@@ -26,6 +26,8 @@ jobs:
             path: ./catalog-service
           - name: Client Gateway
             path: ./client-gateway
+          - name: Reservation Service
+            path: ./reservation-service
 
     steps:
       - name: Checkout code
