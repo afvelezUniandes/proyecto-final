@@ -48,6 +48,20 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    // Navigation
+    implementation(libs.androidx.navigation.compose)
+    // Retrofit + OkHttp
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.gson)
+    implementation(libs.okhttp.logging)
+    // Coroutines
+    implementation(libs.kotlinx.coroutines.android)
+    // DataStore
+    implementation(libs.androidx.datastore.preferences)
+    // Coil (imágenes)
+    implementation(libs.coil.compose)
+    // Material Icons Extended
+    implementation(libs.androidx.compose.material.icons.extended)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
