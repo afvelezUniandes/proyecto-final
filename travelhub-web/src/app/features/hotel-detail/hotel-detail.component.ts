@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { LanguageSelectorComponent } from '../../shared/language-selector/language-selector.component';
 import { CatalogService } from '../../core/services/catalog.service';
 import { ReservationService } from '../../core/services/reservation.service';
@@ -37,18 +38,22 @@ export class HotelDetailComponent implements OnInit {
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;
-    this.catalog.getHotel(+id).subscribe({
-      next: (h) => {
-        this.hotel = h;
-        this.catalog.getRooms(+id).subscribe({
-          next: (r) => {
-            this.rooms = r;
-            this.loading = false;
-          },
-          error: () => {
-            this.loading = false;
-          },
-        });
+    const qp = this.route.snapshot.queryParams;
+    this.checkIn = qp['checkIn'] || '';
+    this.checkOut = qp['checkOut'] || '';
+    this.adultos = +qp['huespedes'] || 1;
+
+    forkJoin({
+      hotel: this.catalog.getHotel(+id),
+      rooms: this.catalog.getRooms(+id),
+    }).subscribe({
+      next: ({ hotel, rooms }) => {
+        this.hotel = hotel;
+        this.rooms = rooms;
+        // Auto-select first available room
+        const firstAvailable = rooms.find((r) => r.disponible);
+        if (firstAvailable) this.selectedRoomId = firstAvailable.id;
+        this.loading = false;
       },
       error: () => {
         this.error = 'Hotel no encontrado.';

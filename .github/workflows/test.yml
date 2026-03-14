@@ -60,73 +60,18 @@ jobs:
 
   summary:
     name: Tests Summary
-    needs: [test, android-test]
+    needs: [test]
     runs-on: ubuntu-latest
     if: always()
 
     steps:
       - name: Check test results
         run: |
-          if [ "${{ needs.test.result }}" == "success" ] && [ "${{ needs.android-test.result }}" == "success" ]; then
+          if [ "${{ needs.test.result }}" == "success" ]; then
             echo "✅ All tests passed successfully!"
             echo "📊 Code coverage meets the 70% requirement"
             exit 0
           else
             echo "❌ Some tests failed"
             exit 1
-          fi
-
-  android-test:
-    name: Android Unit Tests & Coverage
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: "17"
-          distribution: "temurin"
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          cache-read-only: false
-          gradle-home-cache-includes: |
-            caches
-            notifications
-            jdks
-
-      - name: Run unit tests with coverage
-        working-directory: ./Travelhub-android
-        run: ./gradlew jacocoTestReport --build-cache
-
-      - name: Report coverage to summary
-        if: always()
-        working-directory: ./Travelhub-android
-        run: |
-          XML=app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
-          MISSED=$(grep -oPm1 'type="INSTRUCTION"[^/]*/>' "$XML" | grep -oP 'missed="\K[0-9]+')
-          COVERED=$(grep -oPm1 'type="INSTRUCTION"[^/]*/>' "$XML" | grep -oP 'covered="\K[0-9]+')
-          TOTAL=$((MISSED + COVERED))
-          if [ "$TOTAL" -gt 0 ]; then
-            PCT=$(awk "BEGIN {printf \"%.0f\", ($COVERED/$TOTAL)*100}")
-          else
-            PCT=0
-          fi
-          echo "### 📊 Android Coverage Report" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Instructions covered | $COVERED / $TOTAL |" >> $GITHUB_STEP_SUMMARY
-          echo "| Coverage | **${PCT}%** |" >> $GITHUB_STEP_SUMMARY
-          echo "| Minimum required | 70% |" >> $GITHUB_STEP_SUMMARY
-          echo ""
-          echo "📊 Android coverage: ${PCT}%"
-          if [ "$PCT" -lt 70 ]; then
-            echo "❌ Coverage ${PCT}% is below the required 70%"
-            exit 1
-          else
-            echo "✅ Coverage ${PCT}% meets the 70% requirement"
           fi

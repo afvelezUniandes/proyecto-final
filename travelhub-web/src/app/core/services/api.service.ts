@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, timeout } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -19,7 +19,7 @@ export class ApiService {
     });
     return this.http
       .get<T>(`${this.baseUrl}${path}`, { params: httpParams })
-      .pipe(catchError(this.handleError));
+      .pipe(timeout(3000), catchError(this.handleError));
   }
 
   post<T>(path: string, body: unknown): Observable<T> {

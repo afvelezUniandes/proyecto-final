@@ -78,6 +78,12 @@
                 }
               </div>
               <div class="flex flex-col gap-2">
+                <a
+                  [routerLink]="['/reservations', r.id]"
+                  class="text-[#1D4ED8] border border-[#1D4ED8]/30 text-xs px-3 py-1.5 rounded-lg hover:bg-blue-50 transition text-center"
+                >
+                  Ver Detalle
+                </a>
                 @if (
                   r.estado.toLowerCase() !== 'cancelada' && r.estado.toLowerCase() !== 'completada'
                 ) {

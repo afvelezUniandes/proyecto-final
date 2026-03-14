@@ -81,7 +81,13 @@ export class SearchComponent implements OnInit {
   }
 
   goToDetail(id: number | string) {
-    this.router.navigate(['/hotel', id]);
+    this.router.navigate(['/hotel', id], {
+      queryParams: {
+        checkIn: this.checkIn || '',
+        checkOut: this.checkOut || '',
+        huespedes: this.huespedes || 1,
+      },
+    });
   }
 
   prevPage() {

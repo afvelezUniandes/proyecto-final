@@ -1,0 +1,168 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Topbar -->
+  <nav class="bg-[#1D4ED8] px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 bg-[#F97316] rounded-lg flex items-center justify-center">
+        <span class="text-white font-bold">T</span>
+      </div>
+      <a routerLink="/home" class="text-white font-bold text-lg">TravelHub</a>
+    </div>
+    <div class="flex items-center gap-4">
+      <a routerLink="/home" class="text-white/90 text-sm hover:text-white">Inicio</a>
+      <a routerLink="/reservations" class="text-white/90 text-sm hover:text-white">Mis Reservas</a>
+      <app-language-selector />
+    </div>
+  </nav>
+
+  @if (loading) {
+    <div class="flex justify-center py-32">
+      <div
+        class="w-10 h-10 border-4 border-[#1D4ED8] border-t-transparent rounded-full animate-spin"
+      ></div>
+    </div>
+  }
+
+  @if (error) {
+    <div class="max-w-2xl mx-auto px-6 py-8">
+      <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4">{{ error }}</div>
+      <a routerLink="/reservations" class="mt-4 inline-block text-[#1D4ED8] text-sm"
+        >← Volver a mis reservas</a
+      >
+    </div>
+  }
+
+  @if (!loading && reservation) {
+    <div class="max-w-2xl mx-auto px-6 py-8 space-y-6">
+      <!-- Breadcrumb -->
+      <div class="text-sm text-gray-400">
+        <a routerLink="/reservations" class="hover:text-[#1D4ED8]">Mis Reservas</a>
+        <span class="mx-2">›</span>
+        <span class="text-gray-700">Reserva {{ reservation.codigo || '#' + reservation.id }}</span>
+      </div>
+
+      <!-- Header card -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h1 class="text-xl font-bold text-gray-900">
+              Reserva {{ reservation.codigo || '#' + reservation.id }}
+            </h1>
+            @if (reservation.fecha_creacion) {
+              <p class="text-gray-400 text-xs mt-1">
+                Creada el {{ formatDate(reservation.fecha_creacion) }}
+              </p>
+            }
+          </div>
+          <span
+            class="text-sm px-3 py-1 rounded-full font-semibold border {{
+              estadoClass(reservation.estado)
+            }}"
+          >
+            {{ reservation.estado }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Hotel info -->
+      @if (hotel) {
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div
+            class="bg-gradient-to-r from-blue-400 to-blue-600 h-32 flex items-center justify-center"
+          >
+            <span class="text-6xl">🏨</span>
+          </div>
+          <div class="p-5">
+            <h2 class="font-bold text-gray-900 text-lg">{{ hotel.nombre }}</h2>
+            <p class="text-gray-500 text-sm mt-1">📍 {{ hotel.ciudad }}, {{ hotel.pais }}</p>
+            <div class="flex items-center gap-1 mt-1">
+              @for (s of stars(hotel.estrellas || 0); track $index) {
+                <span class="text-yellow-400 text-sm">{{ s }}</span>
+              }
+            </div>
+            @if (hotel.direccion) {
+              <p class="text-gray-400 text-xs mt-2">{{ hotel.direccion }}</p>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Dates & guests -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <h3 class="font-semibold text-gray-700 mb-4">Detalles de la estadía</h3>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div class="bg-gray-50 rounded-xl p-4">
+            <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Check-in</p>
+            <p class="text-gray-900 font-medium">
+              {{ formatDate(reservation.fecha_inicio || reservation.fecha_checkin || '') }}
+            </p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-4">
+            <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Check-out</p>
+            <p class="text-gray-900 font-medium">
+              {{ formatDate(reservation.fecha_fin || reservation.fecha_checkout || '') }}
+            </p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-4">
+            <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Duración</p>
+            <p class="text-gray-900 font-medium">{{ nights() }} noche(s)</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-4">
+            <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Huéspedes</p>
+            <p class="text-gray-900 font-medium">
+              {{ reservation.adultos || reservation.num_huespedes || 1 }} adulto(s)
+              @if (reservation.ninos) {
+                + {{ reservation.ninos }} niño(s)
+              }
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment summary -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <h3 class="font-semibold text-gray-700 mb-4">Resumen de pago</h3>
+        <div class="flex justify-between items-center py-3 border-b border-gray-50">
+          <span class="text-gray-500 text-sm">Habitación #{{ reservation.habitacion_id }}</span>
+          <span class="text-gray-700 text-sm">{{ nights() }} noche(s)</span>
+        </div>
+        <div class="flex justify-between items-center pt-3">
+          <span class="font-bold text-gray-900">Total</span>
+          <span class="text-[#1D4ED8] font-bold text-xl">
+            {{ formatPrice(reservation.total || reservation.monto_total || 0) }}
+            <span class="text-gray-400 text-sm font-normal">{{ reservation.moneda || 'COP' }}</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-3">
+        <a
+          routerLink="/reservations"
+          class="flex-1 text-center border border-gray-200 text-gray-600 text-sm font-semibold py-3 rounded-xl hover:border-[#1D4ED8] hover:text-[#1D4ED8] transition"
+        >
+          ← Volver al listado
+        </a>
+        @if (
+          reservation.estado.toLowerCase() !== 'cancelada' &&
+          reservation.estado.toLowerCase() !== 'completada'
+        ) {
+          @if (cancelSuccess) {
+            <div
+              class="flex-1 text-center bg-green-50 border border-green-200 text-green-700 text-sm font-semibold py-3 rounded-xl"
+            >
+              ✓ Reserva cancelada
+            </div>
+          } @else {
+            <button
+              (click)="cancel()"
+              [disabled]="canceling"
+              class="flex-1 bg-red-600 text-white text-sm font-semibold py-3 rounded-xl hover:bg-red-700 disabled:opacity-60 transition"
+            >
+              {{ canceling ? 'Cancelando...' : '✕ Cancelar reserva' }}
+            </button>
+          }
+        }
+      </div>
+    </div>
+  }
+</div>
