@@ -26,6 +26,7 @@ import com.uniandes.travelhub_android.data.ApiClient
 import com.uniandes.travelhub_android.data.ReservationApi
 import com.uniandes.travelhub_android.data.TokenStore
 import com.uniandes.travelhub_android.ui.theme.*
+import com.uniandes.travelhub_android.util.DateUtils
 import kotlinx.coroutines.launch
 
 @Composable
@@ -127,7 +128,7 @@ fun ReservationDetailScreen(
                     "cancelada"  -> TravelRed
                     else         -> TravelGray
                 }
-                val nights = nightsBetween(data.fecha_checkin, data.fecha_checkout)
+                val nights = DateUtils.nightsBetween(data.fecha_checkin, data.fecha_checkout)
 
                 Column(
                     modifier = Modifier

@@ -20,7 +20,7 @@ class Usuario(Base):
     telefono = Column(String(20))
     pais = Column(String(50))
     idioma_preferido = Column(String(5))
-    rol = Column(Enum(RolEnum), nullable=False, default=RolEnum.USER)
+    rol = Column(Enum(RolEnum, values_callable=lambda x: [e.value for e in x]), nullable=False, default=RolEnum.USER)
 
 class AdminHotel(Base):
     __tablename__ = 'admin_hotel'

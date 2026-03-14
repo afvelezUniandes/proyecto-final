@@ -25,18 +25,8 @@ import com.uniandes.travelhub_android.data.ReservationApi
 import com.uniandes.travelhub_android.data.TokenStore
 import com.uniandes.travelhub_android.ui.components.BottomNavBar
 import com.uniandes.travelhub_android.ui.theme.*
-import java.text.SimpleDateFormat
-import java.util.Locale
+import com.uniandes.travelhub_android.util.DateUtils
 import kotlinx.coroutines.launch
-
-internal fun nightsBetween(fechaCheckin: String, fechaCheckout: String): Int {
-    return try {
-        val fmt = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val d1 = fmt.parse(fechaCheckin) ?: return 0
-        val d2 = fmt.parse(fechaCheckout) ?: return 0
-        ((d2.time - d1.time) / (1000L * 60 * 60 * 24)).toInt()
-    } catch (e: Exception) { 0 }
-}
 
 private const val TAB_ACTIVE = "active"
 private const val TAB_PAST = "past"
@@ -232,7 +222,7 @@ fun ReservationCard(reservation: ReservationApi, onClick: () -> Unit) {
         "cancelada"  -> Color(0xFFFFE4E6)
         else -> Color(0xFFF3F4F6)
     }
-    val nights = nightsBetween(reservation.fecha_checkin, reservation.fecha_checkout)
+    val nights = DateUtils.nightsBetween(reservation.fecha_checkin, reservation.fecha_checkout)
 
     Card(
         modifier = Modifier

@@ -30,6 +30,7 @@ import com.uniandes.travelhub_android.data.CreateReservationRequest
 import com.uniandes.travelhub_android.data.Room
 import com.uniandes.travelhub_android.data.TokenStore
 import com.uniandes.travelhub_android.ui.theme.*
+import com.uniandes.travelhub_android.util.DateUtils
 import kotlinx.coroutines.launch
 
 private val amenidades = listOf("WiFi", "Piscina", "Gym", "Restaurante", "Spa", "Bar")
@@ -91,7 +92,7 @@ fun HotelDetailScreen(
     }
 
     val availableRooms = rooms.filter { it.disponible && it.id !in occupiedIds }
-    val nights = nightsBetween(checkIn, checkOut).takeIf { it > 0 } ?: 1
+    val nights = DateUtils.nightsBetween(checkIn, checkOut).takeIf { it > 0 } ?: 1
     val precioNoche = selectedRoom?.precio_noche?.toInt() ?: 0
     val total = precioNoche * nights
 

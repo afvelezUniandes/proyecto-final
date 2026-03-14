@@ -39,6 +39,7 @@ import com.uniandes.travelhub_android.ui.theme.TravelBlue
 import com.uniandes.travelhub_android.ui.theme.TravelGray
 import com.uniandes.travelhub_android.ui.theme.TravelGrayLight
 import com.uniandes.travelhub_android.ui.theme.TravelOrange
+import com.uniandes.travelhub_android.util.ValidationUtils
 import kotlinx.coroutines.launch
 
 @Composable
@@ -225,12 +226,11 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit = {}) {
                 // Botón Iniciar Sesión
                 Button(
                     onClick = {
-                        val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
-                        if (email.isBlank() || password.isBlank()) {
+                        if (ValidationUtils.isEmptyFields(email, password)) {
                             errorMessage = context.getString(R.string.err_empty_fields)
                             return@Button
                         }
-                        if (!emailRegex.matches(email.trim())) {
+                        if (!ValidationUtils.isValidEmail(email)) {
                             errorMessage = context.getString(R.string.err_invalid_email)
                             return@Button
                         }

@@ -24,11 +24,8 @@ import com.uniandes.travelhub_android.data.ApiClient
 import com.uniandes.travelhub_android.data.Hotel
 import com.uniandes.travelhub_android.ui.components.BottomNavBar
 import com.uniandes.travelhub_android.ui.theme.*
+import com.uniandes.travelhub_android.util.SearchUtils
 import kotlinx.coroutines.launch
-
-private const val FILTER_STARS = "stars"
-private const val FILTER_PRICE_ASC = "price_asc"
-private const val FILTER_PRICE_DESC = "price_desc"
 
 @Composable
 fun SearchScreen(
@@ -47,7 +44,7 @@ fun SearchScreen(
     var hotels by remember { mutableStateOf<List<Hotel>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
-    var selectedFilter by remember { mutableStateOf(FILTER_STARS) }
+    var selectedFilter by remember { mutableStateOf(SearchUtils.FILTER_STARS) }
 
     fun loadHotels() {
         scope.launch {
@@ -57,11 +54,7 @@ fun SearchScreen(
                 val resp = ApiClient.api.getHotels(ciudad = ciudad.ifBlank { null })
                 if (resp.isSuccessful) {
                     val result = resp.body()?.hotels ?: emptyList()
-                    hotels = when (selectedFilter) {
-                        FILTER_PRICE_ASC -> result.sortedBy { it.estrellas }
-                        FILTER_PRICE_DESC -> result.sortedByDescending { it.estrellas }
-                        else -> result.sortedByDescending { it.estrellas }
-                    }
+                    hotels = SearchUtils.applyFilter(result, selectedFilter)
                 } else {
                     errorMsg = "Error al cargar hoteles (${resp.code()})"
                 }
@@ -143,9 +136,9 @@ fun SearchScreen(
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         val filterItems = listOf(
-                            FILTER_STARS to R.string.search_filter_stars,
-                            FILTER_PRICE_ASC to R.string.search_filter_price_asc,
-                            FILTER_PRICE_DESC to R.string.search_filter_price_desc
+                            SearchUtils.FILTER_STARS to R.string.search_filter_stars,
+                            SearchUtils.FILTER_PRICE_ASC to R.string.search_filter_price_asc,
+                            SearchUtils.FILTER_PRICE_DESC to R.string.search_filter_price_desc
                         )
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             items(filterItems) { (key, labelRes) ->

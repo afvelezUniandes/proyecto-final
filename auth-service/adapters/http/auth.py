@@ -30,7 +30,7 @@ def sign_up():
         telefono=data.get('telefono', ''),
         pais=data.get('pais', ''),
         idioma_preferido=data.get('idioma_preferido', 'es'),
-        rol=RolEnum(data.get('rol', 'user'))
+        rol=RolEnum(data.get('rol', 'user').lower())
     )
     session.add(user)
     session.commit()
