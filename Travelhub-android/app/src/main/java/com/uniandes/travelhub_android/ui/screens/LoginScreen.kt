@@ -203,8 +203,13 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 // Botón Iniciar Sesión
                 Button(
                     onClick = {
+                        val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
                         if (email.isBlank() || password.isBlank()) {
                             errorMessage = "Por favor ingresa tu correo y contraseña"
+                            return@Button
+                        }
+                        if (!emailRegex.matches(email.trim())) {
+                            errorMessage = "Correo electrónico inválido"
                             return@Button
                         }
                         scope.launch {
@@ -250,39 +255,6 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                             fontWeight = FontWeight.SemiBold
                         )
                     }
-                }
-
-                // Divisor "o"
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    HorizontalDivider(modifier = Modifier.weight(1f), color = TravelGrayLight)
-                    Text(
-                        text = "  o  ",
-                        color = TravelGray,
-                        fontSize = 13.sp
-                    )
-                    HorizontalDivider(modifier = Modifier.weight(1f), color = TravelGrayLight)
-                }
-
-                // Botón Google (placeholder visual)
-                OutlinedButton(
-                    onClick = {},
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF111827)),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, TravelGrayLight)
-                ) {
-                    Text(
-                        text = "Continuar con Google",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Medium
-                    )
                 }
 
                 // Crear cuenta

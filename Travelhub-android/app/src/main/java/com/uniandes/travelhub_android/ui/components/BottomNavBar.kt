@@ -15,7 +15,6 @@ import com.uniandes.travelhub_android.ui.theme.TravelGray
 @Composable
 fun BottomNavBar(
     selected: String,
-    notificationCount: Int = 3,
     onHomeClick: () -> Unit,
     onSearchClick: () -> Unit,
     onReservationsClick: () -> Unit,
@@ -65,22 +64,10 @@ fun BottomNavBar(
             )
         )
         NavigationBarItem(
-            selected = selected == "Alertas",
+            selected = selected == "Perfil",
             onClick = onNotificationsClick,
-            icon = {
-                BadgedBox(
-                    badge = {
-                        if (notificationCount > 0) {
-                            Badge(containerColor = Color.Red) {
-                                Text(notificationCount.toString(), color = Color.White)
-                            }
-                        }
-                    }
-                ) {
-                    Icon(Icons.Default.Notifications, contentDescription = "Alertas", modifier = Modifier.size(24.dp))
-                }
-            },
-            label = { Text("Alertas") },
+            icon = { Icon(Icons.Default.Person, contentDescription = "Perfil", modifier = Modifier.size(24.dp)) },
+            label = { Text("Perfil") },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = TravelBlue,
                 selectedTextColor = TravelBlue,

@@ -56,4 +56,16 @@ interface ApiService {
         @Query("fecha_checkin") fechaCheckin: String,
         @Query("fecha_checkout") fechaCheckout: String
     ): Response<OccupiedRoomsResponse>
+
+    // Profile endpoints
+    @GET("/auth/profile")
+    suspend fun getProfile(
+        @Header("Authorization") token: String
+    ): Response<UserProfile>
+
+    @PUT("/auth/profile")
+    suspend fun updateProfile(
+        @Header("Authorization") token: String,
+        @Body request: UpdateProfileRequest
+    ): Response<UserProfile>
 }

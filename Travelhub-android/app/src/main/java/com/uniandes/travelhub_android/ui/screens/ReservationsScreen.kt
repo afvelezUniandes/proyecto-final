@@ -85,6 +85,7 @@ fun ReservationsScreen(
     val canceladas  = filtered.filter { it.estado == "cancelada" }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             BottomNavBar(
                 selected = "Reservas",
@@ -99,7 +100,7 @@ fun ReservationsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(TravelBackground)
-                .padding(padding)
+                .padding(bottom = padding.calculateBottomPadding())
         ) {
             if (isLoading) {
                 CircularProgressIndicator(color = TravelBlue, modifier = Modifier.align(Alignment.Center))
@@ -109,6 +110,7 @@ fun ReservationsScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .statusBarsPadding()
                                 .padding(start = 20.dp, end = 8.dp, top = 20.dp, bottom = 4.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically

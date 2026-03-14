@@ -6,12 +6,26 @@ import os
 import datetime
 import random
 import string
+import requests as http_requests
 
 bp = Blueprint('reservations', __name__)
 
 DATABASE_URL = os.getenv('RESERVATION_DATABASE_URL', 'postgresql://user:password@localhost:5432/travelhub')
+NOTIFICATION_SERVICE_URL = os.getenv('NOTIFICATION_SERVICE_URL', 'http://localhost:5003')
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
+
+
+def _notify(user_id: int, tipo: str, titulo: str, mensaje: str):
+    """Envía notificación al notification-service. Falla silenciosamente."""
+    try:
+        http_requests.post(
+            f'{NOTIFICATION_SERVICE_URL}/notifications',
+            json={'user_id': user_id, 'tipo': tipo, 'titulo': titulo, 'mensaje': mensaje},
+            timeout=3
+        )
+    except Exception:
+        pass
 
 
 def get_user_id_from_request(request):
@@ -145,6 +159,13 @@ def create_reservation():
         session.add(pago)
         session.commit()
 
+        _notify(
+            user_id=user_id,
+            tipo='reserva_creada',
+            titulo='Reserva confirmada',
+            mensaje=f'Tu reserva {reserva.codigo} ha sido confirmada. Check-in: {checkin}, Check-out: {checkout}.'
+        )
+
         return jsonify(reserva_to_dict(reserva)), 201
     except ValueError as e:
         session.rollback()
@@ -215,6 +236,14 @@ def cancel_reservation(reserva_id):
 
         reserva.estado = 'cancelada'
         session.commit()
+
+        _notify(
+            user_id=user_id,
+            tipo='reserva_cancelada',
+            titulo='Reserva cancelada',
+            mensaje=f'Tu reserva {reserva.codigo} ha sido cancelada exitosamente.'
+        )
+
         return jsonify(reserva_to_dict(reserva)), 200
     finally:
         session.close()

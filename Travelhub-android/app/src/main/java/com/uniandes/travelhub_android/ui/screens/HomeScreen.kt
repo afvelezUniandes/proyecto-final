@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import com.uniandes.travelhub_android.data.Hotel
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -26,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import com.uniandes.travelhub_android.data.ApiClient
-import com.uniandes.travelhub_android.data.Hotel
 import com.uniandes.travelhub_android.ui.components.BottomNavBar
 import com.uniandes.travelhub_android.ui.theme.*
 import kotlinx.coroutines.launch
@@ -41,12 +41,11 @@ private val DISPLAY = DateTimeFormatter.ofPattern("dd MMM yyyy")  // "14 Mar 202
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onHotelClick: (hotelId: Int, checkIn: String, checkOut: String, adultos: Int, ninos: Int) -> Unit,
+    onSearchClick: (ciudad: String, checkIn: String, checkOut: String, adultos: Int, ninos: Int) -> Unit,
     onReservationsClick: () -> Unit,
     onNotificationsClick: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-
     val today = remember { LocalDate.now() }
     val tomorrow = remember { today.plusDays(1) }
 
@@ -56,11 +55,6 @@ fun HomeScreen(
     var checkOutDate by remember { mutableStateOf(tomorrow) }
     var adultos by remember { mutableStateOf(2) }
     var ninos by remember { mutableStateOf(0) }
-    var hotels by remember { mutableStateOf<List<Hotel>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(false) }
-    var hasSearched by remember { mutableStateOf(false) }
-    var errorMsg by remember { mutableStateOf<String?>(null) }
-    var selectedFilter by remember { mutableStateOf("Estrellas") }
 
     var showCheckInPicker by remember { mutableStateOf(false) }
     var showCheckOutPicker by remember { mutableStateOf(false) }
@@ -132,35 +126,8 @@ fun HomeScreen(
         } catch (_: Exception) { }
     }
 
-    fun search() {
-        scope.launch {
-            isLoading = true
-            hasSearched = true
-            errorMsg = null
-            try {
-                val response = ApiClient.api.getHotels(
-                    ciudad = ciudad.ifBlank { null }
-                )
-                if (response.isSuccessful) {
-                    var result = response.body()?.hotels ?: emptyList()
-                    result = when (selectedFilter) {
-                        "Estrellas" -> result.sortedByDescending { it.estrellas }
-                        "Precio" -> result.sortedBy { it.estrellas } // precio no viene del API, usar estrellas como proxy
-                        else -> result
-                    }
-                    hotels = result
-                } else {
-                    errorMsg = "Error al cargar hoteles"
-                }
-            } catch (e: Exception) {
-                errorMsg = "Sin conexión al servidor"
-            } finally {
-                isLoading = false
-            }
-        }
-    }
-
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             BottomNavBar(
                 selected = "Inicio",
@@ -175,7 +142,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(TravelBackground)
-                .padding(padding)
+                .padding(bottom = padding.calculateBottomPadding())
         ) {
             // Header azul con formulario de búsqueda
             item {
@@ -183,6 +150,7 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(TravelBlue)
+                        .statusBarsPadding()
                         .padding(horizontal = 20.dp, vertical = 24.dp)
                 ) {
                     Column {
@@ -294,7 +262,7 @@ fun HomeScreen(
                                 Spacer(modifier = Modifier.height(12.dp))
 
                                 Button(
-                                    onClick = { search() },
+                                    onClick = { onSearchClick(ciudad, checkIn, checkOut, adultos, ninos) },
                                     modifier = Modifier.fillMaxWidth().height(52.dp),
                                     shape = RoundedCornerShape(10.dp),
                                     colors = ButtonDefaults.buttonColors(containerColor = TravelOrange)
@@ -308,94 +276,6 @@ fun HomeScreen(
                                     )
                                 }
                             }
-                        }
-                    }
-                }
-            }
-
-            // Resultados
-            if (hasSearched) {
-                item {
-                    Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
-                        if (isLoading) {
-                            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator(color = TravelBlue)
-                            }
-                        } else {
-                            errorMsg?.let {
-                                Text(it, color = TravelRed, modifier = Modifier.padding(vertical = 8.dp))
-                            }
-
-                            if (!isLoading && errorMsg == null) {
-                                Text(
-                                    text = "Resultados${if (ciudad.isNotBlank()) " en $ciudad" else ""}",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF111827)
-                                )
-                                Text(
-                                    text = "${hotels.size} hospedajes encontrados",
-                                    fontSize = 13.sp,
-                                    color = TravelGray,
-                                    modifier = Modifier.padding(bottom = 12.dp)
-                                )
-
-                                // Chips de filtro
-                                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    items(listOf("Estrellas", "Precio", "Ordenar")) { filter ->
-                                        FilterChip(
-                                            selected = selectedFilter == filter,
-                                            onClick = {
-                                                selectedFilter = filter
-                                                search()
-                                            },
-                                            label = { Text(filter, fontSize = 13.sp) },
-                                            colors = FilterChipDefaults.filterChipColors(
-                                                selectedContainerColor = TravelBlue,
-                                                selectedLabelColor = Color.White
-                                            )
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                items(hotels) { hotel ->
-                    HotelCard(hotel = hotel, onClick = { onHotelClick(hotel.id, checkIn, checkOut, adultos, ninos) })
-                }
-
-                if (!isLoading && hotels.isEmpty() && errorMsg == null) {
-                    item {
-                        Box(
-                            modifier = Modifier.fillMaxWidth().padding(40.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("No se encontraron hoteles", color = TravelGray)
-                        }
-                    }
-                }
-            } else {
-                // Estado inicial — sugerencia
-                item {
-                    Box(
-                        modifier = Modifier.fillMaxWidth().padding(40.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                Icons.Default.Search,
-                                contentDescription = null,
-                                tint = TravelGrayLight,
-                                modifier = Modifier.size(64.dp)
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                "Busca hoteles por ciudad",
-                                color = TravelGray,
-                                fontSize = 15.sp
-                            )
                         }
                     }
                 }

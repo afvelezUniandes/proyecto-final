@@ -9,9 +9,10 @@ import androidx.navigation.navArgument
 import com.uniandes.travelhub_android.ui.screens.HomeScreen
 import com.uniandes.travelhub_android.ui.screens.HotelDetailScreen
 import com.uniandes.travelhub_android.ui.screens.LoginScreen
-import com.uniandes.travelhub_android.ui.screens.NotificationsScreen
+import com.uniandes.travelhub_android.ui.screens.ProfileScreen
 import com.uniandes.travelhub_android.ui.screens.ReservationDetailScreen
 import com.uniandes.travelhub_android.ui.screens.ReservationsScreen
+import com.uniandes.travelhub_android.ui.screens.SearchScreen
 
 @Composable
 fun NavGraph() {
@@ -33,15 +34,50 @@ fun NavGraph() {
 
         composable(Routes.HOME) {
             HomeScreen(
-                onHotelClick = { hotelId, checkIn, checkOut, adultos, ninos ->
-                    navController.navigate(Routes.hotelDetail(hotelId, checkIn, checkOut, adultos, ninos))
+                onSearchClick = { ciudad, checkIn, checkOut, adultos, ninos ->
+                    navController.navigate(Routes.search(ciudad, checkIn, checkOut, adultos, ninos))
                 },
                 onReservationsClick = {
                     navController.navigate(Routes.RESERVATIONS)
                 },
                 onNotificationsClick = {
-                    navController.navigate(Routes.NOTIFICATIONS)
+                    navController.navigate(Routes.PROFILE)
                 }
+            )
+        }
+
+        composable(
+            route = Routes.SEARCH,
+            arguments = listOf(
+                navArgument("ciudad") { type = NavType.StringType; defaultValue = "" },
+                navArgument("checkIn") { type = NavType.StringType; defaultValue = "" },
+                navArgument("checkOut") { type = NavType.StringType; defaultValue = "" },
+                navArgument("adultos") { type = NavType.IntType; defaultValue = 2 },
+                navArgument("ninos") { type = NavType.IntType; defaultValue = 0 }
+            )
+        ) { backStackEntry ->
+            val ciudad = backStackEntry.arguments?.getString("ciudad") ?: ""
+            val checkIn = backStackEntry.arguments?.getString("checkIn") ?: ""
+            val checkOut = backStackEntry.arguments?.getString("checkOut") ?: ""
+            val adultos = backStackEntry.arguments?.getInt("adultos") ?: 2
+            val ninos = backStackEntry.arguments?.getInt("ninos") ?: 0
+            SearchScreen(
+                ciudad = ciudad,
+                checkIn = checkIn,
+                checkOut = checkOut,
+                adultos = adultos,
+                ninos = ninos,
+                onBack = { navController.popBackStack() },
+                onHotelClick = { hotelId, ci, co, ad, ni ->
+                    navController.navigate(Routes.hotelDetail(hotelId, ci, co, ad, ni))
+                },
+                onHomeClick = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.HOME) { inclusive = true }
+                    }
+                },
+                onReservationsClick = { navController.navigate(Routes.RESERVATIONS) },
+                onNotificationsClick = { navController.navigate(Routes.PROFILE) }
             )
         }
 
@@ -85,7 +121,7 @@ fun NavGraph() {
                     }
                 },
                 onNotificationsClick = {
-                    navController.navigate(Routes.NOTIFICATIONS)
+                    navController.navigate(Routes.PROFILE)
                 }
             )
         }
@@ -101,16 +137,19 @@ fun NavGraph() {
             )
         }
 
-        composable(Routes.NOTIFICATIONS) {
-            NotificationsScreen(
-                onBack = { navController.popBackStack() },
+        composable(Routes.PROFILE) {
+            ProfileScreen(
                 onHomeClick = {
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.HOME) { inclusive = true }
                     }
                 },
-                onReservationsClick = {
-                    navController.navigate(Routes.RESERVATIONS)
+                onSearchClick = { navController.navigate(Routes.HOME) },
+                onReservationsClick = { navController.navigate(Routes.RESERVATIONS) },
+                onLogoutClick = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }

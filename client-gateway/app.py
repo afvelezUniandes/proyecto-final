@@ -173,6 +173,27 @@ def cancel_reservation(reserva_id):
     except requests.exceptions.RequestException:
         return jsonify({'error': 'Reservation service unavailable'}), 503
 
+# Profile endpoints
+@app.route('/auth/profile', methods=['GET'])
+@verify_token
+def get_profile():
+    try:
+        headers = {'X-User-Id': str(request.user_id)}
+        response = requests.get(f'{AUTH_SERVICE_URL}/profile', headers=headers, timeout=5)
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Auth service unavailable'}), 503
+
+@app.route('/auth/profile', methods=['PUT'])
+@verify_token
+def update_profile():
+    try:
+        headers = {'X-User-Id': str(request.user_id)}
+        response = requests.put(f'{AUTH_SERVICE_URL}/profile', json=request.json, headers=headers, timeout=5)
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Auth service unavailable'}), 503
+
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 8000))
     app.run(host='0.0.0.0', port=port)

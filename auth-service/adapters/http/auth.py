@@ -56,3 +56,77 @@ def sign_in():
 def sign_out():
     # En JWT, el sign-out es manejado en el cliente (borrar token)
     return jsonify({'message': 'Signed out'}), 200
+
+
+def _get_user_id_from_header(req) -> int | None:
+    user_id = req.headers.get('X-User-Id')
+    try:
+        return int(user_id) if user_id else None
+    except (ValueError, TypeError):
+        return None
+
+
+@bp.route('/profile', methods=['GET'])
+def get_profile():
+    user_id = _get_user_id_from_header(request)
+    if not user_id:
+        return jsonify({'error': 'Unauthorized'}), 401
+    session = Session()
+    try:
+        user = session.query(Usuario).filter_by(id=user_id).first()
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        return jsonify({
+            'id': user.id,
+            'nombre': user.nombre,
+            'email': user.email,
+            'telefono': user.telefono or '',
+            'pais': user.pais or '',
+            'idioma_preferido': user.idioma_preferido or 'es',
+        }), 200
+    finally:
+        session.close()
+
+
+@bp.route('/profile', methods=['PUT'])
+def update_profile():
+    user_id = _get_user_id_from_header(request)
+    if not user_id:
+        return jsonify({'error': 'Unauthorized'}), 401
+    data = request.get_json(silent=True) or {}
+    session = Session()
+    try:
+        user = session.query(Usuario).filter_by(id=user_id).first()
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        if 'nombre' in data:
+            user.nombre = data['nombre']
+        if 'telefono' in data:
+            user.telefono = data['telefono']
+        if 'pais' in data:
+            user.pais = data['pais']
+        if 'idioma_preferido' in data:
+            user.idioma_preferido = data['idioma_preferido']
+
+        # Cambio de email: verificar unicidad
+        if 'email' in data and data['email'] != user.email:
+            if session.query(Usuario).filter_by(email=data['email']).first():
+                return jsonify({'error': 'Email ya está en uso'}), 409
+            user.email = data['email']
+
+        # Cambio de contraseña
+        if 'password' in data and data['password']:
+            user.password_hash = generate_password_hash(data['password'])
+
+        session.commit()
+        return jsonify({
+            'id': user.id,
+            'nombre': user.nombre,
+            'email': user.email,
+            'telefono': user.telefono or '',
+            'pais': user.pais or '',
+            'idioma_preferido': user.idioma_preferido or 'es',
+        }), 200
+    finally:
+        session.close()

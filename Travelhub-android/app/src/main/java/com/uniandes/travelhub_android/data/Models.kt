@@ -79,18 +79,24 @@ data class Reservation(
 
 enum class ReservationStatus { CONFIRMADA, COMPLETADA, CANCELADA }
 
-// --- Notificaciones (mock) ---
-data class Notification(
-    val id: String,
-    val title: String,
-    val body: String,
-    val subtitle: String,
-    val type: NotificationType,
-    val isRead: Boolean,
-    val isToday: Boolean
+// --- Perfil de usuario ---
+data class UserProfile(
+    val id: Int,
+    val nombre: String,
+    val email: String,
+    val telefono: String,
+    val pais: String,
+    val idioma_preferido: String
 )
 
-enum class NotificationType { CONFIRMED, EMAIL, CREATED, CANCELLED, COMPLETED }
+data class UpdateProfileRequest(
+    val nombre: String? = null,
+    val email: String? = null,
+    val telefono: String? = null,
+    val pais: String? = null,
+    val idioma_preferido: String? = null,
+    val password: String? = null
+)
 
 // --- Disponibilidad ---
 data class OccupiedRoomsResponse(
