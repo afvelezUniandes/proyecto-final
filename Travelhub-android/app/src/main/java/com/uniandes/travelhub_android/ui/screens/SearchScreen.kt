@@ -18,11 +18,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.uniandes.travelhub_android.R
 import com.uniandes.travelhub_android.data.ApiClient
 import com.uniandes.travelhub_android.data.Hotel
 import com.uniandes.travelhub_android.ui.components.BottomNavBar
 import com.uniandes.travelhub_android.ui.theme.*
 import kotlinx.coroutines.launch
+
+private const val FILTER_STARS = "stars"
+private const val FILTER_PRICE_ASC = "price_asc"
+private const val FILTER_PRICE_DESC = "price_desc"
 
 @Composable
 fun SearchScreen(
@@ -41,7 +47,7 @@ fun SearchScreen(
     var hotels by remember { mutableStateOf<List<Hotel>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
-    var selectedFilter by remember { mutableStateOf("Estrellas") }
+    var selectedFilter by remember { mutableStateOf(FILTER_STARS) }
 
     fun loadHotels() {
         scope.launch {
@@ -52,8 +58,8 @@ fun SearchScreen(
                 if (resp.isSuccessful) {
                     val result = resp.body()?.hotels ?: emptyList()
                     hotels = when (selectedFilter) {
-                        "Precio (↑)" -> result.sortedBy { it.estrellas }
-                        "Precio (↓)" -> result.sortedByDescending { it.estrellas }
+                        FILTER_PRICE_ASC -> result.sortedBy { it.estrellas }
+                        FILTER_PRICE_DESC -> result.sortedByDescending { it.estrellas }
                         else -> result.sortedByDescending { it.estrellas }
                     }
                 } else {
@@ -105,7 +111,7 @@ fun SearchScreen(
                     Spacer(modifier = Modifier.width(4.dp))
                     Column {
                         Text(
-                            text = if (ciudad.isNotBlank()) ciudad else "Todos los destinos",
+                            text = if (ciudad.isNotBlank()) ciudad else stringResource(R.string.search_all_destinations),
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp
@@ -114,7 +120,8 @@ fun SearchScreen(
                         Text(
                             text = buildString {
                                 if (checkIn.isNotBlank() && checkOut.isNotBlank()) append("$checkIn → $checkOut · ")
-                                append("$guests ${if (guests == 1) "huésped" else "huéspedes"}")
+                                val guestLabel = if (guests == 1) stringResource(R.string.search_guest_singular) else stringResource(R.string.search_guest_plural)
+                                append("$guests $guestLabel")
                             },
                             color = Color.White.copy(alpha = 0.85f),
                             fontSize = 12.sp
@@ -129,21 +136,26 @@ fun SearchScreen(
                     Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
                         if (!isLoading) {
                             Text(
-                                text = if (errorMsg == null) "${hotels.size} hospedajes encontrados" else "",
+                                text = if (errorMsg == null) stringResource(R.string.search_results, hotels.size) else "",
                                 fontSize = 13.sp,
                                 color = TravelGray
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
+                        val filterItems = listOf(
+                            FILTER_STARS to R.string.search_filter_stars,
+                            FILTER_PRICE_ASC to R.string.search_filter_price_asc,
+                            FILTER_PRICE_DESC to R.string.search_filter_price_desc
+                        )
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(listOf("Estrellas", "Precio (↑)", "Precio (↓)")) { filter ->
+                            items(filterItems) { (key, labelRes) ->
                                 FilterChip(
-                                    selected = selectedFilter == filter,
+                                    selected = selectedFilter == key,
                                     onClick = {
-                                        selectedFilter = filter
+                                        selectedFilter = key
                                         loadHotels()
                                     },
-                                    label = { Text(filter, fontSize = 13.sp) },
+                                    label = { Text(stringResource(labelRes), fontSize = 13.sp) },
                                     colors = FilterChipDefaults.filterChipColors(
                                         selectedContainerColor = TravelBlue,
                                         selectedLabelColor = Color.White
@@ -192,7 +204,7 @@ fun SearchScreen(
                                     modifier = Modifier.size(64.dp)
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
-                                Text("No se encontraron hoteles", color = TravelGray, fontSize = 15.sp)
+                                Text(stringResource(R.string.search_no_results), color = TravelGray, fontSize = 15.sp)
                             }
                         }
                     }

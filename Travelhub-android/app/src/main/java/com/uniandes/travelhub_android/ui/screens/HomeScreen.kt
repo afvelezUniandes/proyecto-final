@@ -22,11 +22,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.uniandes.travelhub_android.R
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import com.uniandes.travelhub_android.data.ApiClient
+import com.uniandes.travelhub_android.data.LangStore
 import com.uniandes.travelhub_android.ui.components.BottomNavBar
 import com.uniandes.travelhub_android.ui.theme.*
 import kotlinx.coroutines.launch
@@ -45,6 +49,9 @@ fun HomeScreen(
     onReservationsClick: () -> Unit,
     onNotificationsClick: () -> Unit
 ) {
+    val context = LocalContext.current
+    val activity = context as android.app.Activity
+    val currentLang = remember { LangStore.get(context) }
     val scope = rememberCoroutineScope()
     val today = remember { LocalDate.now() }
     val tomorrow = remember { today.plusDays(1) }
@@ -86,9 +93,9 @@ fun HomeScreen(
                         }
                     }
                     showCheckInPicker = false
-                }) { Text("Aceptar") }
+                }) { Text(stringResource(R.string.btn_accept)) }
             },
-            dismissButton = { TextButton(onClick = { showCheckInPicker = false }) { Text("Cancelar") } }
+            dismissButton = { TextButton(onClick = { showCheckInPicker = false }) { Text(stringResource(R.string.btn_cancel)) } }
         ) { DatePicker(state = pickerState) }
     }
 
@@ -112,9 +119,9 @@ fun HomeScreen(
                         checkOutDate = LocalDate.ofEpochDay(ms / 86_400_000L)
                     }
                     showCheckOutPicker = false
-                }) { Text("Aceptar") }
+                }) { Text(stringResource(R.string.btn_accept)) }
             },
-            dismissButton = { TextButton(onClick = { showCheckOutPicker = false }) { Text("Cancelar") } }
+            dismissButton = { TextButton(onClick = { showCheckOutPicker = false }) { Text(stringResource(R.string.btn_cancel)) } }
         ) { DatePicker(state = pickerState) }
     }
 
@@ -154,18 +161,59 @@ fun HomeScreen(
                         .padding(horizontal = 20.dp, vertical = 24.dp)
                 ) {
                     Column {
-                        Text(
-                            text = "Hola, Viajero!",
-                            color = Color.White,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "¿A dónde quieres viajar?",
-                            color = Color.White.copy(alpha = 0.85f),
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
+                        // Fila título + chip idioma
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.home_greeting),
+                                    color = Color.White,
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = stringResource(R.string.home_subtitle),
+                                    color = Color.White.copy(alpha = 0.85f),
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.padding(bottom = 16.dp)
+                                )
+                            }
+                            // Chip selector de idioma
+                            Row(
+                                modifier = Modifier
+                                    .padding(top = 4.dp)
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(Color.White.copy(alpha = 0.15f))
+                                    .padding(3.dp),
+                                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                listOf("es" to "🇨🇴 ES", "en" to "🇺🇸 EN").forEach { (code, label) ->
+                                    val isSelected = currentLang == code
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .background(if (isSelected) Color.White else Color.Transparent)
+                                            .clickable(enabled = !isSelected) {
+                                                LangStore.save(context, code)
+                                                activity.recreate()
+                                            }
+                                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = label,
+                                            color = if (isSelected) TravelBlue else Color.White,
+                                            fontSize = 12.sp,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                        )
+                                    }
+                                }
+                            }
+                        }
 
                         Card(
                             shape = RoundedCornerShape(16.dp),
@@ -174,7 +222,7 @@ fun HomeScreen(
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 // Ciudad
-                                Text("CIUDAD", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
+                                Text(stringResource(R.string.home_city_label), fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
                                 Spacer(modifier = Modifier.height(4.dp))
                                 CityAutocompleteField(
                                     value = ciudad,
@@ -187,7 +235,7 @@ fun HomeScreen(
                                 // Fechas
                                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text("CHECK-IN", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
+                                        Text(stringResource(R.string.home_checkin_label), fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Box(
                                             modifier = Modifier
@@ -205,7 +253,7 @@ fun HomeScreen(
                                         }
                                     }
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text("CHECK-OUT", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
+                                        Text(stringResource(R.string.home_checkout_label), fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Box(
                                             modifier = Modifier
@@ -227,7 +275,7 @@ fun HomeScreen(
                                 Spacer(modifier = Modifier.height(12.dp))
 
                                 // Huéspedes
-                                Text("HUÉSPEDES", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
+                                Text(stringResource(R.string.home_guests_label), fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Box(
                                     modifier = Modifier
@@ -237,8 +285,8 @@ fun HomeScreen(
                                 ) {
                                     Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
                                         GuestStepper(
-                                            label = "Adultos",
-                                            subtitle = "+12 años",
+                                            label = stringResource(R.string.home_adults),
+                                            subtitle = stringResource(R.string.home_adults_age),
                                             value = adultos,
                                             min = 1,
                                             onDecrement = { adultos-- },
@@ -249,8 +297,8 @@ fun HomeScreen(
                                             color = TravelGrayLight
                                         )
                                         GuestStepper(
-                                            label = "Niños",
-                                            subtitle = "0–11 años",
+                                            label = stringResource(R.string.home_children),
+                                            subtitle = stringResource(R.string.home_children_age),
                                             value = ninos,
                                             min = 0,
                                             onDecrement = { ninos-- },
@@ -270,8 +318,9 @@ fun HomeScreen(
                                     Icon(Icons.Default.Search, contentDescription = null)
                                     Spacer(modifier = Modifier.width(8.dp))
                                     val nights = ChronoUnit.DAYS.between(checkInDate, checkOutDate)
+                                    val nightLabel = if (nights == 1L) stringResource(R.string.night_singular) else stringResource(R.string.night_plural)
                                     Text(
-                                        "Buscar · $nights ${if (nights == 1L) "noche" else "noches"}",
+                                        stringResource(R.string.home_search_btn, nights, nightLabel),
                                         fontWeight = FontWeight.SemiBold, fontSize = 16.sp
                                     )
                                 }
@@ -494,7 +543,10 @@ fun HotelCard(hotel: Hotel, onClick: () -> Unit) {
                     repeat(5 - hotel.estrellas) {
                         Text("★", color = TravelGrayLight, fontSize = 12.sp)
                     }
-                    Text(" ${hotel.estrellas} estrellas", fontSize = 12.sp, color = TravelGray)
+                    Text(
+                        text = " " + stringResource(R.string.hotel_stars_label, hotel.estrellas),
+                        fontSize = 12.sp, color = TravelGray
+                    )
                 }
 
                 // Amenidades chip (mock)

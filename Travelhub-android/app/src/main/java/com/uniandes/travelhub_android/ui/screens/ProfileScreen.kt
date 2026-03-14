@@ -18,17 +18,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.uniandes.travelhub_android.R
 import com.uniandes.travelhub_android.data.ApiClient
+import com.uniandes.travelhub_android.data.LangStore
 import com.uniandes.travelhub_android.data.TokenStore
 import com.uniandes.travelhub_android.data.UpdateProfileRequest
 import com.uniandes.travelhub_android.ui.components.BottomNavBar
 import com.uniandes.travelhub_android.ui.theme.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,6 +44,7 @@ fun ProfileScreen(
     onLogoutClick: () -> Unit
 ) {
     val context = LocalContext.current
+    val activity = context as android.app.Activity
     val scope = rememberCoroutineScope()
 
     // Campos del formulario
@@ -87,12 +92,12 @@ fun ProfileScreen(
         val trimmedEmail = email.trim()
         if (!emailRegex.matches(trimmedEmail)) {
             emailError = true
-            errorMsg = "Correo electrónico inválido"
+            errorMsg = context.getString(R.string.err_invalid_email)
             return
         }
         emailError = false
         if (password.isNotBlank() && password != confirmPassword) {
-            errorMsg = "Las contraseñas no coinciden"
+            errorMsg = context.getString(R.string.err_passwords_mismatch)
             return
         }
         scope.launch {
@@ -100,7 +105,7 @@ fun ProfileScreen(
             errorMsg = null
             successMsg = null
             val token = TokenStore.get(context) ?: run {
-                errorMsg = "Sin sesión"
+                errorMsg = context.getString(R.string.err_no_session)
                 isSaving = false
                 return@launch
             }
@@ -117,13 +122,19 @@ fun ProfileScreen(
                 if (resp.isSuccessful) {
                     password = ""
                     confirmPassword = ""
-                    successMsg = "Perfil actualizado correctamente"
+                    successMsg = context.getString(R.string.profile_updated)
                     isEditing = false
+                    val prevLang = LangStore.get(context)
+                    if (idioma != prevLang) {
+                        LangStore.save(context, idioma)
+                        delay(600)
+                        activity.recreate()
+                    }
                 } else {
-                    errorMsg = "Error al guardar (${resp.code()})"
+                    errorMsg = context.getString(R.string.err_save, resp.code().toString())
                 }
             } catch (e: Exception) {
-                errorMsg = "Sin conexión al servidor"
+                errorMsg = context.getString(R.string.err_no_connection)
             }
             isSaving = false
         }
@@ -199,7 +210,7 @@ fun ProfileScreen(
                 ) {
                     Icon(
                         if (isEditing) Icons.Default.Close else Icons.Default.Edit,
-                        contentDescription = if (isEditing) "Cancelar" else "Editar",
+                        contentDescription = if (isEditing) stringResource(R.string.profile_cancel_edit) else stringResource(R.string.profile_edit),
                         tint = Color.White
                     )
                 }
@@ -210,17 +221,16 @@ fun ProfileScreen(
                     CircularProgressIndicator(color = TravelBlue)
                 }
             } else {
-                // Sección información personal
-                ProfileSection(title = "Información Personal") {
+                ProfileSection(title = stringResource(R.string.profile_section_personal)) {
                     ProfileField(
-                        label = "Nombre completo",
+                        label = stringResource(R.string.profile_full_name),
                         value = nombre,
                         onValueChange = { nombre = it },
                         icon = Icons.Default.Person,
                         enabled = isEditing
                     )
                     ProfileField(
-                        label = "Correo electrónico",
+                        label = stringResource(R.string.profile_email),
                         value = email,
                         onValueChange = { email = it; emailError = false },
                         icon = Icons.Default.Email,
@@ -229,7 +239,7 @@ fun ProfileScreen(
                         isError = emailError
                     )
                     ProfileField(
-                        label = "Teléfono",
+                        label = stringResource(R.string.profile_phone),
                         value = telefono,
                         onValueChange = { telefono = it },
                         icon = Icons.Default.Phone,
@@ -237,7 +247,7 @@ fun ProfileScreen(
                         enabled = isEditing
                     )
                     ProfileField(
-                        label = "País",
+                        label = stringResource(R.string.profile_country),
                         value = pais,
                         onValueChange = { pais = it },
                         icon = Icons.Default.Public,
@@ -249,29 +259,31 @@ fun ProfileScreen(
                             value = idiomaOpciones.firstOrNull { it.first == idioma }?.second ?: idioma,
                             onValueChange = {},
                             readOnly = true,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable(enabled = isEditing) { idiomaExpanded = true },
-                            label = { Text("Idioma preferido") },
-                            leadingIcon = { Icon(Icons.Default.Language, null, tint = TravelGray) },
+                            modifier = Modifier.fillMaxWidth(),
+                            label = { Text(stringResource(R.string.profile_language)) },
+                            leadingIcon = { Icon(Icons.Default.Language, null, tint = if (isEditing) TravelGray else TravelGrayLight) },
                             trailingIcon = {
                                 Icon(
                                     if (idiomaExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                                     contentDescription = null,
-                                    tint = TravelGray
+                                    tint = if (isEditing) TravelGray else TravelGrayLight
                                 )
                             },
                             enabled = false,
                             singleLine = true,
                             shape = RoundedCornerShape(10.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                disabledBorderColor = TravelGrayLight,
+                                disabledBorderColor = if (isEditing) TravelBlue else TravelGrayLight,
                                 disabledTextColor = Color(0xFF111827),
                                 disabledLabelColor = TravelGray,
-                                disabledLeadingIconColor = TravelGray,
-                                disabledTrailingIconColor = TravelGray
+                                disabledLeadingIconColor = if (isEditing) TravelGray else TravelGrayLight,
+                                disabledTrailingIconColor = if (isEditing) TravelGray else TravelGrayLight
                             )
                         )
+                        // Invisible overlay to capture clicks (enabled = false blocks touch)
+                        if (isEditing) {
+                            Box(modifier = Modifier.matchParentSize().clickable { idiomaExpanded = true })
+                        }
                         DropdownMenu(
                             expanded = idiomaExpanded,
                             onDismissRequest = { idiomaExpanded = false },
@@ -294,12 +306,12 @@ fun ProfileScreen(
                 }
 
                 // Sección cambio de contraseña — solo visible en modo edición
-                if (isEditing) ProfileSection(title = "Cambiar Contraseña") {
+                if (isEditing) ProfileSection(title = stringResource(R.string.profile_section_password)) {
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Nueva contraseña") },
+                        label = { Text(stringResource(R.string.profile_new_password)) },
                         leadingIcon = { Icon(Icons.Default.Lock, null, tint = TravelGray) },
                         trailingIcon = {
                             IconButton(onClick = { showPassword = !showPassword }) {
@@ -323,7 +335,7 @@ fun ProfileScreen(
                         value = confirmPassword,
                         onValueChange = { confirmPassword = it },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Confirmar contraseña") },
+                        label = { Text(stringResource(R.string.profile_confirm_password)) },
                         leadingIcon = { Icon(Icons.Default.Lock, null, tint = TravelGray) },
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -374,15 +386,14 @@ fun ProfileScreen(
                     } else {
                         Icon(Icons.Default.Save, null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Guardar cambios", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                        Text(stringResource(R.string.profile_save_btn), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Botón cerrar sesión — solo visible cuando no se está editando
-                if (!isEditing)
-                OutlinedButton(
+                if (!isEditing) OutlinedButton(
                     onClick = {
                         scope.launch {
                             TokenStore.clear(context)
@@ -399,7 +410,7 @@ fun ProfileScreen(
                 ) {
                     Icon(Icons.Default.Logout, null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Cerrar sesión", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                    Text(stringResource(R.string.profile_logout_btn), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))

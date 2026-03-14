@@ -18,6 +18,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.uniandes.travelhub_android.R
 import com.uniandes.travelhub_android.data.ApiClient
 import com.uniandes.travelhub_android.data.ReservationApi
 import com.uniandes.travelhub_android.data.TokenStore
@@ -36,6 +38,11 @@ internal fun nightsBetween(fechaCheckin: String, fechaCheckout: String): Int {
     } catch (e: Exception) { 0 }
 }
 
+private const val TAB_ACTIVE = "active"
+private const val TAB_PAST = "past"
+private const val TAB_CANCELLED_KEY = "cancelled"
+private const val TAB_ALL = "all"
+
 @Composable
 fun ReservationsScreen(
     onReservationClick: (String) -> Unit,
@@ -47,14 +54,19 @@ fun ReservationsScreen(
     var reservations by remember { mutableStateOf<List<ReservationApi>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
-    var selectedTab by remember { mutableStateOf("Activas") }
+    var selectedTab by remember { mutableStateOf(TAB_ACTIVE) }
 
-    val tabs = listOf("Activas", "Pasadas", "Canceladas", "Todas")
+    val tabItems = listOf(
+        TAB_ACTIVE to R.string.tab_active,
+        TAB_PAST to R.string.tab_past,
+        TAB_CANCELLED_KEY to R.string.tab_cancelled,
+        TAB_ALL to R.string.tab_all
+    )
 
     suspend fun loadReservations() {
         isLoading = true
         val token = TokenStore.get(context) ?: run {
-            errorMsg = "No hay sesión activa"
+            errorMsg = context.getString(R.string.res_no_session)
             isLoading = false
             return
         }
@@ -64,10 +76,10 @@ fun ReservationsScreen(
                 reservations = resp.body() ?: emptyList()
                 errorMsg = null
             } else {
-                errorMsg = "Error al cargar reservas (${resp.code()})"
+                errorMsg = context.getString(R.string.err_loading_reservations)
             }
         } catch (e: Exception) {
-            errorMsg = "Sin conexión al servidor"
+            errorMsg = context.getString(R.string.err_no_connection)
         }
         isLoading = false
     }
@@ -75,10 +87,10 @@ fun ReservationsScreen(
     LaunchedEffect(Unit) { loadReservations() }
 
     val filtered = when (selectedTab) {
-        "Activas"    -> reservations.filter { it.estado == "confirmada" }
-        "Pasadas"    -> reservations.filter { it.estado == "completada" }
-        "Canceladas" -> reservations.filter { it.estado == "cancelada" }
-        else         -> reservations
+        TAB_ACTIVE    -> reservations.filter { it.estado == "confirmada" }
+        TAB_PAST      -> reservations.filter { it.estado == "completada" }
+        TAB_CANCELLED_KEY -> reservations.filter { it.estado == "cancelada" }
+        else          -> reservations
     }
     val proximas    = filtered.filter { it.estado == "confirmada" }
     val completadas = filtered.filter { it.estado == "completada" }
@@ -116,13 +128,13 @@ fun ReservationsScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Mis Reservas",
+                                text = stringResource(R.string.reservations_title),
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF111827)
                             )
                             IconButton(onClick = { scope.launch { loadReservations() } }) {
-                                Icon(Icons.Default.Refresh, contentDescription = "Actualizar", tint = TravelBlue)
+                                Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.reservations_refresh), tint = TravelBlue)
                             }
                         }
                         if (errorMsg != null) {
@@ -142,17 +154,17 @@ fun ReservationsScreen(
                                 .padding(horizontal = 20.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            tabs.forEach { tab ->
-                                val isSelected = selectedTab == tab
+                            tabItems.forEach { (key, labelRes) ->
+                                val isSelected = selectedTab == key
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(20.dp))
                                         .background(if (isSelected) TravelBlue else Color.White)
-                                        .clickable { selectedTab = tab }
+                                        .clickable { selectedTab = key }
                                         .padding(horizontal = 14.dp, vertical = 8.dp)
                                 ) {
                                     Text(
-                                        tab,
+                                        stringResource(labelRes),
                                         color = if (isSelected) Color.White else Color(0xFF111827),
                                         fontSize = 13.sp,
                                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
@@ -164,36 +176,21 @@ fun ReservationsScreen(
                     }
 
                     if (proximas.isNotEmpty()) {
-                        item {
-                            Text(
-                                "PRÓXIMAS", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TravelGray,
-                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                            )
-                        }
+                        item { Text(stringResource(R.string.res_section_upcoming), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TravelGray, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) }
                         items(proximas) { res ->
                             ReservationCard(res, onClick = { onReservationClick(res.id.toString()) })
                         }
                     }
 
                     if (completadas.isNotEmpty()) {
-                        item {
-                            Text(
-                                "COMPLETADAS", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TravelGray,
-                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                            )
-                        }
+                        item { Text(stringResource(R.string.res_section_completed), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TravelGray, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) }
                         items(completadas) { res ->
                             ReservationCard(res, onClick = { onReservationClick(res.id.toString()) })
                         }
                     }
 
                     if (canceladas.isNotEmpty()) {
-                        item {
-                            Text(
-                                "CANCELADAS", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TravelGray,
-                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                            )
-                        }
+                        item { Text(stringResource(R.string.res_section_cancelled), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TravelGray, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) }
                         items(canceladas) { res ->
                             ReservationCard(res, onClick = { onReservationClick(res.id.toString()) })
                         }
@@ -204,9 +201,7 @@ fun ReservationsScreen(
                             Box(
                                 modifier = Modifier.fillMaxWidth().padding(40.dp),
                                 contentAlignment = Alignment.Center
-                            ) {
-                                Text("No hay reservas en esta categoría", color = TravelGray)
-                            }
+                            ) { Text(stringResource(R.string.res_no_items), color = TravelGray) }
                         }
                     }
 
@@ -226,9 +221,9 @@ fun ReservationCard(reservation: ReservationApi, onClick: () -> Unit) {
         else -> TravelGray
     }
     val statusLabel = when (reservation.estado) {
-        "confirmada" -> "Confirmada"
-        "completada" -> "Completada ✓"
-        "cancelada"  -> "Cancelada"
+        "confirmada" -> stringResource(R.string.res_status_confirmed)
+        "completada" -> stringResource(R.string.res_status_completed)
+        "cancelada"  -> stringResource(R.string.res_status_cancelled)
         else -> reservation.estado.replaceFirstChar { it.uppercase() }
     }
     val cardBgColor = when (reservation.estado) {
@@ -290,7 +285,7 @@ fun ReservationCard(reservation: ReservationApi, onClick: () -> Unit) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 2.dp)) {
                         Icon(Icons.Default.CalendarMonth, null, tint = TravelGray, modifier = Modifier.size(12.dp))
                         Text(
-                            " ${reservation.fecha_checkin} → ${reservation.fecha_checkout} · $nights noches",
+                            " ${reservation.fecha_checkin} → ${reservation.fecha_checkout} · ${stringResource(R.string.res_nights, nights)}",
                             fontSize = 12.sp, color = TravelGray
                         )
                     }
@@ -301,7 +296,7 @@ fun ReservationCard(reservation: ReservationApi, onClick: () -> Unit) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Cód: ", fontSize = 12.sp, color = TravelGray)
+                        Text(stringResource(R.string.res_code_label), fontSize = 12.sp, color = TravelGray)
                         Row {
                             Text(reservation.codigo, fontSize = 12.sp, color = TravelBlue, fontWeight = FontWeight.SemiBold)
                             Spacer(modifier = Modifier.weight(1f))
@@ -312,7 +307,7 @@ fun ReservationCard(reservation: ReservationApi, onClick: () -> Unit) {
                         }
                     }
                     Text(
-                        "${reservation.moneda} total",
+                        stringResource(R.string.res_total, reservation.moneda),
                         fontSize = 11.sp, color = TravelGray,
                         modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.End)
                     )

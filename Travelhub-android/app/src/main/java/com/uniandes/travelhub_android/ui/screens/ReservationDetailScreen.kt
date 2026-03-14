@@ -20,6 +20,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.uniandes.travelhub_android.R
 import com.uniandes.travelhub_android.data.ApiClient
 import com.uniandes.travelhub_android.data.ReservationApi
 import com.uniandes.travelhub_android.data.TokenStore
@@ -42,12 +44,12 @@ fun ReservationDetailScreen(
 
     LaunchedEffect(reservationId) {
         val token = TokenStore.get(context) ?: run {
-            errorMsg = "No hay sesión activa"
+            errorMsg = context.getString(R.string.res_no_session)
             isLoading = false
             return@LaunchedEffect
         }
         val id = reservationId.toIntOrNull() ?: run {
-            errorMsg = "ID de reserva inválido"
+            errorMsg = context.getString(R.string.err_invalid_id)
             isLoading = false
             return@LaunchedEffect
         }
@@ -56,10 +58,10 @@ fun ReservationDetailScreen(
             if (resp.isSuccessful) {
                 reservation = resp.body()
             } else {
-                errorMsg = "Error al cargar la reserva (${resp.code()})"
+                errorMsg = context.getString(R.string.err_loading_reservation, resp.code().toString())
             }
         } catch (e: Exception) {
-            errorMsg = "Sin conexión al servidor"
+            errorMsg = context.getString(R.string.err_no_connection)
         }
         isLoading = false
     }
@@ -69,8 +71,8 @@ fun ReservationDetailScreen(
     if (showCancelDialog && res != null) {
         AlertDialog(
             onDismissRequest = { showCancelDialog = false },
-            title = { Text("Cancelar reserva") },
-            text = { Text("¿Estás seguro de que deseas cancelar la reserva ${res.codigo}?") },
+            title = { Text(stringResource(R.string.dlg_cancel_title)) },
+            text = { Text(stringResource(R.string.dlg_cancel_msg, res.codigo)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -83,19 +85,19 @@ fun ReservationDetailScreen(
                                 if (resp.isSuccessful) {
                                     onBack()
                                 } else {
-                                    cancelError = "No se pudo cancelar (${resp.code()})"
+                                    cancelError = context.getString(R.string.err_cancel_failed, resp.code().toString())
                                 }
                             } catch (e: Exception) {
-                                cancelError = "Sin conexión al servidor"
+                                cancelError = context.getString(R.string.err_no_connection)
                             }
                             isCancelling = false
                         }
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = TravelRed)
-                ) { Text("Sí, cancelar") }
+                ) { Text(stringResource(R.string.dlg_yes_cancel)) }
             },
             dismissButton = {
-                TextButton(onClick = { showCancelDialog = false }) { Text("No") }
+                TextButton(onClick = { showCancelDialog = false }) { Text(stringResource(R.string.dlg_no)) }
             }
         )
     }
@@ -113,8 +115,8 @@ fun ReservationDetailScreen(
                     modifier = Modifier.align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(errorMsg ?: "Reserva no encontrada", color = TravelRed)
-                    TextButton(onClick = onBack) { Text("Volver") }
+                    Text(errorMsg ?: stringResource(R.string.err_no_reservation), color = TravelRed)
+                    TextButton(onClick = onBack) { Text(stringResource(R.string.btn_back)) }
                 }
             }
             else -> {
@@ -141,10 +143,10 @@ fun ReservationDetailScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Volver", tint = TravelBlue)
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.btn_back), tint = TravelBlue)
                         }
                         Text(
-                            "Detalle de Reserva",
+                            stringResource(R.string.res_detail_title),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF111827),
@@ -179,18 +181,18 @@ fun ReservationDetailScreen(
                                 Column {
                                     Text(
                                         when (data.estado) {
-                                            "confirmada" -> "Reserva Confirmada"
-                                            "cancelada"  -> "Reserva Cancelada"
-                                            "completada" -> "Reserva Completada"
+                                            "confirmada" -> stringResource(R.string.res_status_confirmed)
+                                            "cancelada"  -> stringResource(R.string.res_status_cancelled)
+                                            "completada" -> stringResource(R.string.res_status_completed)
                                             else -> data.estado.replaceFirstChar { it.uppercase() }
                                         },
                                         fontWeight = FontWeight.Bold, fontSize = 15.sp, color = statusColor
                                     )
                                     Text(
                                         when (data.estado) {
-                                            "confirmada" -> "Tu reserva ha sido procesada exitosamente"
-                                            "cancelada"  -> "Esta reserva fue cancelada"
-                                            else         -> "Estadía completada"
+                                            "confirmada" -> stringResource(R.string.res_status_confirmed_sub)
+                                            "cancelada"  -> stringResource(R.string.res_status_cancelled_sub)
+                                            else         -> stringResource(R.string.res_status_completed_sub)
                                         },
                                         fontSize = 13.sp, color = statusColor.copy(alpha = 0.8f)
                                     )
@@ -245,12 +247,12 @@ fun ReservationDetailScreen(
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text(
-                                    "Detalles de la Reserva",
+                                    stringResource(R.string.res_details_card_title),
                                     fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827)
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
 
-                                Text("CÓDIGO DE RESERVA", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
+                                Text(stringResource(R.string.detail_code_label), fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Box(
                                     modifier = Modifier
@@ -268,12 +270,12 @@ fun ReservationDetailScreen(
                                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text("CHECK-IN", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
+                                        Text(stringResource(R.string.home_checkin_label), fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
                                         Text(data.fecha_checkin, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
                                     }
                                     Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = TravelGray)
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text("CHECK-OUT", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
+                                        Text(stringResource(R.string.home_checkout_label), fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
                                         Text(data.fecha_checkout, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
                                     }
                                 }
@@ -285,15 +287,15 @@ fun ReservationDetailScreen(
                                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text("HUÉSPEDES", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
+                                        Text(stringResource(R.string.detail_guests_label), fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
                                         Text(
-                                            "${data.num_huespedes} ${if (data.num_huespedes == 1) "adulto" else "adultos"}",
+                                            "${data.num_huespedes} ${if (data.num_huespedes == 1) stringResource(R.string.adult_singular) else stringResource(R.string.adult_plural)}",
                                             fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF111827)
                                         )
                                     }
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text("NOCHES", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
-                                        Text("$nights noches", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF111827))
+                                        Text(stringResource(R.string.detail_nights_label), fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
+                                        Text("$nights ${stringResource(R.string.night_plural)}", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF111827))
                                     }
                                 }
 
@@ -304,11 +306,11 @@ fun ReservationDetailScreen(
                                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text("MONEDA", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
+                                        Text(stringResource(R.string.detail_currency_label), fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
                                         Text(data.moneda, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF111827))
                                     }
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text("CREADA EL", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
+                                        Text(stringResource(R.string.detail_created_label), fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
                                         Text(data.fecha_creacion.take(10), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF111827))
                                     }
                                 }
@@ -325,13 +327,13 @@ fun ReservationDetailScreen(
                             elevation = CardDefaults.cardElevation(2.dp)
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
-                                Text("Resumen de Pago", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
+                                Text(stringResource(R.string.payment_summary_title), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text("Total por $nights noches", fontSize = 14.sp, color = TravelGray)
+                                    Text(stringResource(R.string.payment_total_nights, nights.toInt()), fontSize = 14.sp, color = TravelGray)
                                     Text("${"%.0f".format(data.monto_total)}", fontSize = 14.sp, color = Color(0xFF111827))
                                 }
                                 HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp), color = TravelGrayLight)
@@ -340,13 +342,13 @@ fun ReservationDetailScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.Bottom
                                 ) {
-                                    Text("Total", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
+                                    Text(stringResource(R.string.payment_total), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
                                     Column(horizontalAlignment = Alignment.End) {
                                         Text(
                                             "${"%.0f".format(data.monto_total)}",
                                             fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827)
                                         )
-                                        Text("${data.moneda} - Peso Colombiano", fontSize = 11.sp, color = TravelGray)
+                                        Text("${data.moneda} - ${stringResource(R.string.currency_cop)}", fontSize = 11.sp, color = TravelGray)
                                     }
                                 }
                             }
@@ -375,7 +377,7 @@ fun ReservationDetailScreen(
                                         strokeWidth = 2.dp
                                     )
                                 } else {
-                                    Text("Cancelar Reserva", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                                    Text(stringResource(R.string.res_cancel_btn), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                                 }
                             }
                         }

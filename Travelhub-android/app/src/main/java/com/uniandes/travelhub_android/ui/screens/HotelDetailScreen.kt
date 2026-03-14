@@ -20,7 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.uniandes.travelhub_android.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.uniandes.travelhub_android.data.ApiClient
@@ -123,7 +125,7 @@ fun HotelDetailScreen(
                                 color = Color(0xFF111827)
                             )
                             Text(
-                                text = "por noche · $nights ${if (nights == 1) "noche" else "noches"} = ${"$%,.0f".format(total.toDouble())}",
+                                text = "${stringResource(R.string.hotel_per_night)} · $nights ${if (nights == 1) stringResource(R.string.night_singular) else stringResource(R.string.night_plural)} = ${"$%,.0f".format(total.toDouble())}",
                                 fontSize = 12.sp,
                                 color = TravelGray
                             )
@@ -131,7 +133,7 @@ fun HotelDetailScreen(
                         Button(
                             onClick = {
                                 val room = selectedRoom ?: run {
-                                    reserveError = "Selecciona una habitación"
+                                    reserveError = context.getString(R.string.err_select_room)
                                     return@Button
                                 }
                                 isReserving = true
@@ -139,7 +141,7 @@ fun HotelDetailScreen(
                                 scope.launch {
                                     val token = TokenStore.get(context)
                                     if (token == null) {
-                                        reserveError = "Sesión expirada"
+                                        reserveError = context.getString(R.string.err_session_expired)
                                         isReserving = false
                                         return@launch
                                     }
@@ -158,10 +160,10 @@ fun HotelDetailScreen(
                                         if (resp.isSuccessful) {
                                             onReserveDone()
                                         } else {
-                                            reserveError = "Error al reservar (${resp.code()})"
+                                            reserveError = context.getString(R.string.err_reserving, resp.code().toString())
                                         }
                                     } catch (e: Exception) {
-                                        reserveError = "Sin conexión al servidor"
+                                        reserveError = context.getString(R.string.err_no_connection)
                                     }
                                     isReserving = false
                                 }
@@ -178,7 +180,7 @@ fun HotelDetailScreen(
                                     strokeWidth = 2.dp
                                 )
                             } else {
-                                Text("Reservar", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text(stringResource(R.string.hotel_reserve_btn), fontWeight = FontWeight.Bold, fontSize = 16.sp)
                             }
                         }
                     }
@@ -228,7 +230,7 @@ fun HotelDetailScreen(
                                 .clip(CircleShape)
                                 .background(Color.White.copy(alpha = 0.85f))
                         ) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = Color(0xFF111827))
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.hotel_back), tint = Color(0xFF111827))
                         }
                         IconButton(
                             onClick = {},
@@ -236,7 +238,7 @@ fun HotelDetailScreen(
                                 .clip(CircleShape)
                                 .background(Color.White.copy(alpha = 0.85f))
                         ) {
-                            Icon(Icons.Default.FavoriteBorder, contentDescription = "Favorito", tint = Color(0xFF111827))
+                            Icon(Icons.Default.FavoriteBorder, contentDescription = stringResource(R.string.hotel_favorite), tint = Color(0xFF111827))
                         }
                     }
 
@@ -284,7 +286,7 @@ fun HotelDetailScreen(
                                 )
                                 Row(modifier = Modifier.padding(top = 4.dp)) {
                                     repeat(5) { Text("★", color = Color(0xFFF59E0B), fontSize = 14.sp) }
-                                    Text(" 5 estrellas", fontSize = 13.sp, color = TravelOrange, fontWeight = FontWeight.Medium)
+                                    Text(" ${stringResource(R.string.hotel_stars_label, 5)}", fontSize = 13.sp, color = TravelOrange, fontWeight = FontWeight.Medium)
                                 }
                                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
                                     Icon(Icons.Default.LocationOn, null, tint = TravelRed, modifier = Modifier.size(14.dp))
@@ -298,7 +300,7 @@ fun HotelDetailScreen(
                                     fontWeight = FontWeight.Bold,
                                     color = TravelBlue
                                 )
-                                Text("COP / noche", fontSize = 11.sp, color = TravelGray)
+                                Text(stringResource(R.string.hotel_cop_per_night), fontSize = 11.sp, color = TravelGray)
                             }
                         }
 
@@ -315,17 +317,17 @@ fun HotelDetailScreen(
                                 Text("9.2", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                             }
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Excelente", fontWeight = FontWeight.SemiBold, color = Color(0xFF111827))
-                            Text(" · 328 reseñas", color = TravelGray, fontSize = 13.sp)
+                            Text(stringResource(R.string.hotel_excellent), fontWeight = FontWeight.SemiBold, color = Color(0xFF111827))
+                            Text(" · 328 ${stringResource(R.string.hotel_reviews_count_label)}", color = TravelGray, fontSize = 13.sp)
                         }
 
                         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = TravelGrayLight)
 
                         // Descripción
-                        Text("Descripción", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
+                        Text(stringResource(R.string.hotel_description_sec), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "Ubicado en el corazón de Bogotá, ofrece una experiencia única con vistas panorámicas a los cerros orientales. Elegancia clásica y confort.",
+                            text = stringResource(R.string.hotel_description_text),
                             fontSize = 14.sp,
                             color = TravelGray,
                             lineHeight = 22.sp
@@ -334,7 +336,7 @@ fun HotelDetailScreen(
                             onClick = {},
                             contentPadding = PaddingValues(0.dp)
                         ) {
-                            Text("Leer más →", color = TravelBlue, fontSize = 13.sp)
+                            Text(stringResource(R.string.hotel_read_more), color = TravelBlue, fontSize = 13.sp)
                         }
                     }
                 }
@@ -349,7 +351,7 @@ fun HotelDetailScreen(
                     elevation = CardDefaults.cardElevation(2.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Amenidades", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
+                        Text(stringResource(R.string.hotel_amenities_sec), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
                         Spacer(modifier = Modifier.height(12.dp))
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             items(amenidades) { amenity ->
@@ -389,21 +391,21 @@ fun HotelDetailScreen(
                     elevation = CardDefaults.cardElevation(2.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Habitaciones Disponibles", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
+                        Text(stringResource(R.string.hotel_rooms_sec), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
                         Spacer(modifier = Modifier.height(12.dp))
 
                         if (isLoading) {
                             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally), color = TravelBlue)
                         } else if (availableRooms.isEmpty()) {
                             if (checkIn.isNotBlank() && checkOut.isNotBlank()) {
-                                Text("⛔ No hay habitaciones disponibles para las fechas seleccionadas", color = TravelRed, fontSize = 13.sp)
+                                Text(stringResource(R.string.hotel_no_rooms_dates), color = TravelRed, fontSize = 13.sp)
                             } else {
-                                Text("No hay habitaciones disponibles", color = TravelGray)
+                                Text(stringResource(R.string.hotel_no_rooms), color = TravelGray)
                             }
                         } else {
                             if (checkIn.isNotBlank() && checkOut.isNotBlank()) {
                                 Text(
-                                    "$nights ${if (nights == 1) "noche" else "noches"} · $checkIn → $checkOut",
+                                    "$nights ${if (nights == 1) stringResource(R.string.night_singular) else stringResource(R.string.night_plural)} · $checkIn → $checkOut",
                                     fontSize = 12.sp, color = TravelBlue,
                                     modifier = Modifier.padding(bottom = 8.dp)
                                 )
@@ -434,7 +436,7 @@ fun HotelDetailScreen(
                                             Column {
                                                 Text(room.nombre, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color(0xFF111827))
                                                 Text(
-                                                    "${room.capacidad} personas · WiFi · Minibar",
+                                                    "${room.capacidad} ${stringResource(R.string.hotel_persons_label)} · WiFi · Minibar",
                                                     fontSize = 12.sp,
                                                     color = TravelGray
                                                 )
@@ -448,7 +450,7 @@ fun HotelDetailScreen(
                                                     fontSize = 14.sp,
                                                     color = Color(0xFF111827)
                                                 )
-                                                Text("COP/noche", fontSize = 11.sp, color = TravelGray)
+                                                Text(stringResource(R.string.hotel_cop_per_night_compact), fontSize = 11.sp, color = TravelGray)
                                             }
                                             Spacer(modifier = Modifier.width(8.dp))
                                             RadioButton(
@@ -479,9 +481,9 @@ fun HotelDetailScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Reseñas", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
+                            Text(stringResource(R.string.hotel_reviews_sec), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
                             TextButton(onClick = {}) {
-                                Text("Ver todas →", color = TravelBlue, fontSize = 13.sp)
+                                Text(stringResource(R.string.hotel_view_all), color = TravelBlue, fontSize = 13.sp)
                             }
                         }
                         reviews.forEach { (name, stars, date) ->

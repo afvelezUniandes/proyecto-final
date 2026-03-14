@@ -1,3 +1,150 @@
 <resources>
     <string name="app_name">Travelhub-android</string>
+
+    <!-- Common -->
+    <string name="btn_accept">Aceptar</string>
+    <string name="btn_cancel">Cancelar</string>
+    <string name="btn_back">Volver</string>
+    <string name="night_singular">noche</string>
+    <string name="night_plural">noches</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Inicio</string>
+    <string name="nav_search">Buscar</string>
+    <string name="nav_reservations">Reservas</string>
+    <string name="nav_profile">Perfil</string>
+
+    <!-- Login -->
+    <string name="login_tagline">Tu próxima aventura te espera</string>
+    <string name="login_title">Iniciar sesión</string>
+    <string name="login_subtitle">Accede a tu cuenta TravelHub</string>
+    <string name="login_email_label">Correo electrónico</string>
+    <string name="login_email_placeholder">ejemplo@correo.com</string>
+    <string name="login_password_label">Contraseña</string>
+    <string name="login_forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="login_btn">Iniciar sesión</string>
+    <string name="login_no_account">¿No tienes cuenta?</string>
+    <string name="login_create_account">Crear cuenta</string>
+    <string name="login_language_btn">EN</string>
+
+    <!-- Errors -->
+    <string name="err_empty_fields">Por favor completa todos los campos</string>
+    <string name="err_invalid_email">Correo electrónico inválido</string>
+    <string name="err_getting_token">Error al obtener el token</string>
+    <string name="err_invalid_credentials">Credenciales inválidas</string>
+    <string name="err_no_server">Sin conexión al servidor</string>
+    <string name="err_no_connection">Sin conexión al servidor</string>
+    <string name="err_no_session">Sesión no encontrada. Por favor inicia sesión</string>
+    <string name="err_passwords_mismatch">Las contraseñas no coinciden</string>
+    <string name="err_save">Error al guardar (%1$s)</string>
+    <string name="err_invalid_id">ID de reserva inválido</string>
+    <string name="err_no_reservation">Reserva no encontrada</string>
+    <string name="err_loading_reservations">Error al cargar las reservas</string>
+    <string name="err_loading_reservation">Error al cargar la reserva (%1$s)</string>
+    <string name="err_cancel_failed">No se pudo cancelar (%1$s)</string>
+    <string name="err_select_room">Selecciona una habitación</string>
+    <string name="err_session_expired">Sesión expirada</string>
+    <string name="err_reserving">Error al reservar (%1$s)</string>
+
+    <!-- Home -->
+    <string name="home_greeting">¡Explora hoteles!</string>
+    <string name="home_subtitle">Encuentra el hotel perfecto para ti</string>
+    <string name="home_city_label">Ciudad</string>
+    <string name="home_checkin_label">CHECK-IN</string>
+    <string name="home_checkout_label">CHECK-OUT</string>
+    <string name="home_guests_label">Huéspedes</string>
+    <string name="home_adults">Adultos</string>
+    <string name="home_adults_age">18 años o más</string>
+    <string name="home_children">Niños</string>
+    <string name="home_children_age">De 0 a 17 años</string>
+    <string name="home_search_btn">Buscar · %1$d %2$s</string>
+    <string name="hotel_stars_label">%1$d estrellas</string>
+
+    <!-- Search -->
+    <string name="search_all_destinations">Todos los destinos</string>
+    <string name="search_guest_singular">huésped</string>
+    <string name="search_guest_plural">huéspedes</string>
+    <string name="search_results">%1$d hoteles encontrados</string>
+    <string name="search_filter_stars">Mejor valorados</string>
+    <string name="search_filter_price_asc">Precio: menor a mayor</string>
+    <string name="search_filter_price_desc">Precio: mayor a menor</string>
+    <string name="search_no_results">No se encontraron hoteles con los criterios seleccionados</string>
+
+    <!-- Profile -->
+    <string name="profile_edit">Editar</string>
+    <string name="profile_cancel_edit">Cancelar edición</string>
+    <string name="profile_section_personal">Información Personal</string>
+    <string name="profile_full_name">Nombre completo</string>
+    <string name="profile_email">Correo electrónico</string>
+    <string name="profile_phone">Teléfono</string>
+    <string name="profile_country">País</string>
+    <string name="profile_language">Idioma</string>
+    <string name="profile_section_password">Cambiar contraseña</string>
+    <string name="profile_new_password">Nueva contraseña</string>
+    <string name="profile_confirm_password">Confirmar contraseña</string>
+    <string name="profile_save_btn">Guardar cambios</string>
+    <string name="profile_logout_btn">Cerrar sesión</string>
+    <string name="profile_updated">Perfil actualizado correctamente</string>
+
+    <!-- Reservations list -->
+    <string name="tab_active">Próximas</string>
+    <string name="tab_past">Completadas</string>
+    <string name="tab_cancelled">Canceladas</string>
+    <string name="tab_all">Todas</string>
+    <string name="reservations_title">Mis Reservas</string>
+    <string name="reservations_refresh">Actualizar</string>
+    <string name="res_section_upcoming">PRÓXIMAS</string>
+    <string name="res_section_completed">COMPLETADAS</string>
+    <string name="res_section_cancelled">CANCELADAS</string>
+    <string name="res_no_items">No hay reservas</string>
+    <string name="res_no_session">Sesión no encontrada. Por favor inicia sesión</string>
+
+    <!-- Reservation detail -->
+    <string name="res_detail_title">Detalle de Reserva</string>
+    <string name="res_details_card_title">Detalles de la Reserva</string>
+    <string name="dlg_cancel_title">Cancelar reserva</string>
+    <string name="dlg_cancel_msg">¿Estás seguro de que deseas cancelar la reserva %1$s?</string>
+    <string name="dlg_yes_cancel">Sí, cancelar</string>
+    <string name="dlg_no">No</string>
+    <string name="res_status_confirmed">Reserva Confirmada</string>
+    <string name="res_status_cancelled">Reserva Cancelada</string>
+    <string name="res_status_completed">Reserva Completada</string>
+    <string name="res_status_confirmed_sub">Tu reserva ha sido procesada exitosamente</string>
+    <string name="res_status_cancelled_sub">Esta reserva fue cancelada</string>
+    <string name="res_status_completed_sub">Estadía completada</string>
+    <string name="detail_code_label">CÓDIGO DE RESERVA</string>
+    <string name="detail_guests_label">HUÉSPEDES</string>
+    <string name="detail_nights_label">NOCHES</string>
+    <string name="detail_currency_label">MONEDA</string>
+    <string name="detail_created_label">CREADA EL</string>
+    <string name="adult_singular">adulto</string>
+    <string name="adult_plural">adultos</string>
+    <string name="payment_summary_title">Resumen de Pago</string>
+    <string name="payment_total_nights">Total por %1$d noches</string>
+    <string name="payment_total">Total</string>
+    <string name="currency_cop">Peso Colombiano</string>
+    <string name="res_cancel_btn">Cancelar Reserva</string>
+    <string name="res_nights">%1$d noches</string>
+    <string name="res_code_label">Código</string>
+    <string name="res_total">%1$s</string>
+
+    <!-- Hotel detail -->
+    <string name="hotel_back">Volver</string>
+    <string name="hotel_favorite">Favorito</string>
+    <string name="hotel_excellent">Excelente</string>
+    <string name="hotel_reviews_count_label">reseñas</string>
+    <string name="hotel_description_sec">Descripción</string>
+    <string name="hotel_description_text">Ubicado en el corazón de Bogotá, ofrece una experiencia única con vistas panorámicas a los cerros orientales. Elegancia clásica y confort.</string>
+    <string name="hotel_read_more">Leer más →</string>
+    <string name="hotel_amenities_sec">Amenidades</string>
+    <string name="hotel_rooms_sec">Habitaciones Disponibles</string>
+    <string name="hotel_no_rooms">No hay habitaciones disponibles</string>
+    <string name="hotel_no_rooms_dates">⛔ No hay habitaciones disponibles para las fechas seleccionadas</string>
+    <string name="hotel_reviews_sec">Reseñas</string>
+    <string name="hotel_view_all">Ver todas →</string>
+    <string name="hotel_per_night">por noche</string>
+    <string name="hotel_cop_per_night">COP / noche</string>
+    <string name="hotel_cop_per_night_compact">COP/noche</string>
+    <string name="hotel_reserve_btn">Reservar</string>
+    <string name="hotel_persons_label">personas</string>
 </resources>
