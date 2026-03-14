@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { guestGuard } from './core/guards/auth.guard';
+import { authGuard, guestGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -27,6 +27,7 @@ export const routes: Routes = [
     path: 'reservations',
     loadComponent: () =>
       import('./features/reservations/reservations.component').then((m) => m.ReservationsComponent),
+    canActivate: [authGuard],
   },
   {
     path: 'reservations/:id',
@@ -34,11 +35,13 @@ export const routes: Routes = [
       import('./features/reservation-detail/reservation-detail.component').then(
         (m) => m.ReservationDetailComponent,
       ),
+    canActivate: [authGuard],
   },
   {
     path: 'profile',
     loadComponent: () =>
       import('./features/profile/profile.component').then((m) => m.ProfileComponent),
+    canActivate: [authGuard],
   },
   { path: '**', redirectTo: 'home' },
 ];

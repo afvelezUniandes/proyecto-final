@@ -1,0 +1,355 @@
+<div class="min-h-screen flex">
+  <!-- Language selector -->
+  <div class="fixed top-4 right-4 z-50">
+    <app-language-selector theme="light" />
+  </div>
+
+  <!-- Left: form -->
+  <div class="flex-1 flex items-center justify-center px-8 py-12 bg-white">
+    <div class="w-full max-w-sm">
+      <!-- Logo -->
+      <div class="flex items-center gap-3 mb-8">
+        <div class="w-10 h-10 bg-travelOrange rounded-xl flex items-center justify-center">
+          <span class="text-white font-bold text-lg">T</span>
+        </div>
+        <div>
+          <div class="font-bold text-travelGray-900">TravelHub</div>
+          <div class="text-xs text-travelGray-400">Portal de Hoteles</div>
+        </div>
+      </div>
+
+      @if (success) {
+        <!-- Success state -->
+        <div class="text-center py-8">
+          <div class="text-6xl mb-4">🎉</div>
+          <h2 class="text-2xl font-bold text-travelGray-900 mb-2">¡Cuenta creada!</h2>
+          <p class="text-travelGray-500 text-sm mb-6">
+            Tu hotel ha sido registrado exitosamente. Ya puedes iniciar sesión en el portal.
+          </p>
+          <button (click)="goToLogin()" class="btn-primary w-full justify-center flex">
+            Ir al inicio de sesión
+          </button>
+        </div>
+      } @else {
+        <!-- Step indicator -->
+        <div class="flex items-center gap-3 mb-6">
+          <div class="flex items-center gap-2">
+            <div
+              class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+              [class]="step() === 1 ? 'bg-travelBlue text-white' : 'bg-green-500 text-white'"
+            >
+              {{ step() === 1 ? '1' : '✓' }}
+            </div>
+            <span
+              class="text-xs font-medium"
+              [class.text-travelGray-900]="step() === 1"
+              [class.text-travelGray-400]="step() === 2"
+              >Tu cuenta</span
+            >
+          </div>
+          <div class="flex-1 h-px bg-travelGray-200"></div>
+          <div class="flex items-center gap-2">
+            <div
+              class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+              [class]="
+                step() === 2 ? 'bg-travelBlue text-white' : 'bg-travelGray-200 text-travelGray-400'
+              "
+            >
+              2
+            </div>
+            <span
+              class="text-xs font-medium"
+              [class.text-travelGray-900]="step() === 2"
+              [class.text-travelGray-400]="step() === 1"
+              >Tu hotel</span
+            >
+          </div>
+        </div>
+
+        @if (step() === 1) {
+          <!-- Step 1: Account -->
+          <h2 class="text-2xl font-bold text-travelGray-900 mb-1">Crea tu cuenta</h2>
+          <p class="text-travelGray-500 text-sm mb-6">Datos del administrador del hotel</p>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-travelGray-700 mb-1.5"
+                >Nombre completo</label
+              >
+              <input
+                [(ngModel)]="nombre"
+                name="nombre"
+                type="text"
+                placeholder="Juan Pérez"
+                class="input-field"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-travelGray-700 mb-1.5"
+                >Correo electrónico</label
+              >
+              <input
+                [(ngModel)]="email"
+                name="email"
+                type="email"
+                placeholder="admin@mihotel.com"
+                class="input-field"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-travelGray-700 mb-1.5">Contraseña</label>
+              <div class="relative">
+                <input
+                  [(ngModel)]="password"
+                  name="password"
+                  [type]="showPassword ? 'text' : 'password'"
+                  placeholder="Mínimo 6 caracteres"
+                  class="input-field pr-10"
+                />
+                <button
+                  type="button"
+                  (click)="showPassword = !showPassword"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-travelGray-400 hover:text-travelGray-600"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    @if (showPassword) {
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 4.411m0 0L21 21"
+                      />
+                    } @else {
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      />
+                    }
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-travelGray-700 mb-1.5"
+                >Confirmar contraseña</label
+              >
+              <input
+                [(ngModel)]="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                placeholder="Repite tu contraseña"
+                class="input-field"
+              />
+            </div>
+
+            @if (error()) {
+              <p class="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-lg">{{ error() }}</p>
+            }
+
+            <button (click)="nextStep()" class="btn-primary w-full justify-center flex">
+              Continuar →
+            </button>
+
+            <p class="text-center text-sm text-travelGray-500">
+              ¿Ya tienes cuenta?
+              <a routerLink="/login" class="text-travelBlue font-medium hover:underline"
+                >Inicia sesión</a
+              >
+            </p>
+          </div>
+        }
+
+        @if (step() === 2) {
+          <!-- Step 2: Hotel -->
+          <h2 class="text-2xl font-bold text-travelGray-900 mb-1">Registra tu hotel</h2>
+          <p class="text-travelGray-500 text-sm mb-6">Información del establecimiento</p>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-travelGray-700 mb-1.5"
+                >Nombre del hotel</label
+              >
+              <input
+                [(ngModel)]="hotelNombre"
+                name="hotelNombre"
+                type="text"
+                placeholder="Hotel El Paraíso"
+                class="input-field"
+              />
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm font-medium text-travelGray-700 mb-1.5">País</label>
+                <select [(ngModel)]="hotelPais" name="hotelPais" class="input-field">
+                  @for (pais of paises; track pais) {
+                    <option [value]="pais">{{ pais }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-travelGray-700 mb-1.5">Ciudad</label>
+                <input
+                  [(ngModel)]="hotelCiudad"
+                  name="hotelCiudad"
+                  type="text"
+                  placeholder="Bogotá"
+                  class="input-field"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-travelGray-700 mb-1.5">Dirección</label>
+              <input
+                [(ngModel)]="hotelDireccion"
+                name="hotelDireccion"
+                type="text"
+                placeholder="Cra 7 # 32-15"
+                class="input-field"
+              />
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm font-medium text-travelGray-700 mb-1.5">Teléfono</label>
+                <input
+                  [(ngModel)]="hotelTelefono"
+                  name="hotelTelefono"
+                  type="tel"
+                  placeholder="+57 300 000 0000"
+                  class="input-field"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-travelGray-700 mb-1.5"
+                  >Estrellas</label
+                >
+                <select [(ngModel)]="hotelEstrellas" name="hotelEstrellas" class="input-field">
+                  <option [value]="1">⭐ 1 estrella</option>
+                  <option [value]="2">⭐⭐ 2 estrellas</option>
+                  <option [value]="3">⭐⭐⭐ 3 estrellas</option>
+                  <option [value]="4">⭐⭐⭐⭐ 4 estrellas</option>
+                  <option [value]="5">⭐⭐⭐⭐⭐ 5 estrellas</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-travelGray-700 mb-1.5"
+                >Correo del hotel
+                <span class="text-travelGray-400 font-normal">(opcional)</span></label
+              >
+              <input
+                [(ngModel)]="hotelEmail"
+                name="hotelEmail"
+                type="email"
+                placeholder="contacto@mihotel.com"
+                class="input-field"
+              />
+            </div>
+
+            @if (error()) {
+              <p class="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-lg">{{ error() }}</p>
+            }
+
+            <div class="flex gap-3">
+              <button
+                (click)="prevStep()"
+                class="flex-1 border border-travelGray-200 text-travelGray-600 text-sm font-semibold py-2.5 rounded-xl hover:border-travelGray-300 transition"
+              >
+                ← Atrás
+              </button>
+              <button
+                (click)="onRegister()"
+                [disabled]="loading"
+                class="btn-primary flex-1 justify-center flex disabled:opacity-60"
+              >
+                @if (loading) {
+                  <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    />
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                  </svg>
+                } @else {
+                  Crear cuenta
+                }
+              </button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- Right: features panel -->
+  <div
+    class="hidden lg:flex lg:w-1/2 bg-travelBlue flex-col justify-center px-16 py-12 relative overflow-hidden"
+  >
+    <div class="absolute inset-0 opacity-10">
+      <div class="absolute top-20 right-20 w-64 h-64 rounded-full bg-white"></div>
+      <div class="absolute bottom-20 left-10 w-80 h-80 rounded-full bg-white"></div>
+    </div>
+    <div class="relative z-10">
+      <h2 class="text-white text-4xl font-bold leading-tight mb-4">Únete a<br />TravelHub</h2>
+      <p class="text-white/80 mb-12 text-lg">
+        Empieza a gestionar tu hotel de manera profesional hoy mismo.
+      </p>
+      <div class="space-y-6">
+        <div class="flex items-start gap-4">
+          <div
+            class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
+          >
+            🏨
+          </div>
+          <div>
+            <div class="text-white font-semibold mb-1">Registro gratuito</div>
+            <div class="text-white/70 text-sm">
+              Sin costos de instalación ni cuotas mensuales para empezar.
+            </div>
+          </div>
+        </div>
+        <div class="flex items-start gap-4">
+          <div
+            class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
+          >
+            📊
+          </div>
+          <div>
+            <div class="text-white font-semibold mb-1">Dashboard intuitivo</div>
+            <div class="text-white/70 text-sm">
+              Visualiza reservas, ocupación e ingresos en tiempo real.
+            </div>
+          </div>
+        </div>
+        <div class="flex items-start gap-4">
+          <div
+            class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
+          >
+            ✉️
+          </div>
+          <div>
+            <div class="text-white font-semibold mb-1">Notificaciones por correo</div>
+            <div class="text-white/70 text-sm">
+              Recibe alertas de nuevas reservas directamente en tu bandeja.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
