@@ -35,5 +35,10 @@ export const routes: Routes = [
         (m) => m.ReservationDetailComponent,
       ),
   },
+  {
+    path: 'profile',
+    loadComponent: () =>
+      import('./features/profile/profile.component').then((m) => m.ProfileComponent),
+  },
   { path: '**', redirectTo: 'home' },
 ];

@@ -20,11 +20,13 @@
         Salir
       </button>
       <app-language-selector />
-      <div
-        class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center text-white text-sm font-bold border border-white/30"
+      <a
+        routerLink="/profile"
+        class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center text-white text-sm font-bold border border-white/30 hover:bg-white/30 transition"
+        title="Mi Perfil"
       >
         {{ userInitials() }}
-      </div>
+      </a>
     </div>
   </nav>
 
