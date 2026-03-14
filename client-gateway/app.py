@@ -94,6 +94,15 @@ def sign_out():
         return jsonify({'error': 'Auth service unavailable'}), 503
 
 # Catalog endpoints (públicos por ahora, puedes agregar @verify_token si lo necesitas)
+@app.route('/catalog/cities', methods=['GET'])
+def get_cities():
+    try:
+        response = requests.get(f'{CATALOG_SERVICE_URL}/cities', timeout=5)
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException as e:
+        return jsonify({'error': 'Catalog service unavailable'}), 503
+
+
 @app.route('/catalog/hotels', methods=['GET'])
 def get_hotels():
     try:

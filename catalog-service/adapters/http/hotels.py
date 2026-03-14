@@ -24,6 +24,36 @@ def make_cache_key_hotels():
     ]
     return 'hotels:' + ':'.join(key_parts)
 
+@bp.route('/cities', methods=['GET'])
+def get_cities():
+    """Devuelve la lista de ciudades distintas que tienen hoteles activos."""
+    cache = current_app.cache
+    cache_key = 'cities:all'
+
+    cached = cache.get(cache_key)
+    if cached is not None:
+        response = jsonify(cached)
+        response.headers['X-Cache'] = 'HIT'
+        return response
+
+    session = Session()
+    try:
+        cities = (
+            session.query(Hotel.ciudad)
+            .filter(Hotel.activo.is_(True))
+            .distinct()
+            .order_by(Hotel.ciudad)
+            .all()
+        )
+        result = [c.ciudad for c in cities if c.ciudad]
+        cache.set(cache_key, result)
+        response = jsonify(result)
+        response.headers['X-Cache'] = 'MISS'
+        return response, 200
+    finally:
+        session.close()
+
+
 @bp.route('/hotels', methods=['GET'])
 def get_hotels():
     cache = current_app.cache

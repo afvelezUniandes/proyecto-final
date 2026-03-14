@@ -8,6 +8,9 @@ interface ApiService {
     @POST("/auth/sign-in")
     suspend fun signIn(@Body request: SignInRequest): Response<SignInResponse>
 
+    @GET("/catalog/cities")
+    suspend fun getCities(): Response<List<String>>
+
     @GET("/catalog/hotels")
     suspend fun getHotels(
         @Query("ciudad") ciudad: String? = null,

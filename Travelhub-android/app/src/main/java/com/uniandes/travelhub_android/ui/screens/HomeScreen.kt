@@ -18,8 +18,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.PopupProperties
 import com.uniandes.travelhub_android.data.ApiClient
 import com.uniandes.travelhub_android.data.Hotel
 import com.uniandes.travelhub_android.ui.components.BottomNavBar
@@ -46,6 +51,7 @@ fun HomeScreen(
     val tomorrow = remember { today.plusDays(1) }
 
     var ciudad by remember { mutableStateOf("") }
+    var allCities by remember { mutableStateOf<List<String>>(emptyList()) }
     var checkInDate by remember { mutableStateOf(today) }
     var checkOutDate by remember { mutableStateOf(tomorrow) }
     var adultos by remember { mutableStateOf(2) }
@@ -116,6 +122,14 @@ fun HomeScreen(
             },
             dismissButton = { TextButton(onClick = { showCheckOutPicker = false }) { Text("Cancelar") } }
         ) { DatePicker(state = pickerState) }
+    }
+
+    // Cargar ciudades disponibles al iniciar
+    LaunchedEffect(Unit) {
+        try {
+            val resp = ApiClient.api.getCities()
+            if (resp.isSuccessful) allCities = resp.body() ?: emptyList()
+        } catch (_: Exception) { }
     }
 
     fun search() {
@@ -194,19 +208,10 @@ fun HomeScreen(
                                 // Ciudad
                                 Text("CIUDAD", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
                                 Spacer(modifier = Modifier.height(4.dp))
-                                OutlinedTextField(
+                                CityAutocompleteField(
                                     value = ciudad,
                                     onValueChange = { ciudad = it },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    placeholder = { Text("📍 Bogotá, Colombia", color = TravelGray) },
-                                    singleLine = true,
-                                    shape = RoundedCornerShape(10.dp),
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = TravelBlue,
-                                        unfocusedBorderColor = TravelGrayLight,
-                                        focusedContainerColor = Color(0xFFF9FAFB),
-                                        unfocusedContainerColor = Color(0xFFF9FAFB)
-                                    )
+                                    cities = allCities
                                 )
 
                                 Spacer(modifier = Modifier.height(12.dp))
@@ -394,6 +399,78 @@ fun HomeScreen(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CityAutocompleteField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    cities: List<String>
+) {
+    var isFocused by remember { mutableStateOf(false) }
+    var fieldSize by remember { mutableStateOf(IntSize.Zero) }
+    val suggestions = remember(value, cities) {
+        if (value.isBlank()) cities
+        else cities.filter { it.contains(value, ignoreCase = true) }
+    }
+    val showDropdown = isFocused && suggestions.isNotEmpty() &&
+            !cities.any { it.equals(value, ignoreCase = true) }
+    val density = LocalDensity.current
+
+    Box {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .onFocusChanged { isFocused = it.isFocused }
+                .onGloballyPositioned { fieldSize = it.size },
+            placeholder = { Text("📍 Bogotá, Colombia", color = TravelGray) },
+            singleLine = true,
+            shape = RoundedCornerShape(10.dp),
+            trailingIcon = {
+                if (value.isNotBlank()) {
+                    IconButton(onClick = { onValueChange("") }) {
+                        Icon(Icons.Default.Close, null, tint = TravelGray, modifier = Modifier.size(16.dp))
+                    }
+                } else {
+                    Icon(Icons.Default.Search, null, tint = TravelGray, modifier = Modifier.size(18.dp))
+                }
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = TravelBlue,
+                unfocusedBorderColor = TravelGrayLight,
+                focusedContainerColor = Color(0xFFF9FAFB),
+                unfocusedContainerColor = Color(0xFFF9FAFB)
+            )
+        )
+        DropdownMenu(
+            expanded = showDropdown,
+            onDismissRequest = { isFocused = false },
+            properties = PopupProperties(focusable = false),
+            modifier = Modifier
+                .width(with(density) { fieldSize.width.toDp() })
+                .background(Color.White)
+        ) {
+            suggestions.take(6).forEach { city ->
+                DropdownMenuItem(
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Default.LocationOn,
+                                null,
+                                tint = TravelBlue,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(city, fontSize = 14.sp, color = Color(0xFF111827))
+                        }
+                    },
+                    onClick = { onValueChange(city) }
+                )
             }
         }
     }
