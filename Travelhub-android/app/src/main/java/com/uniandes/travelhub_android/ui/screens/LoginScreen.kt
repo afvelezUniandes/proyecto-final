@@ -53,6 +53,20 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit = {}) {
     var passwordVisible by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showForgotDialog by remember { mutableStateOf(false) }
+
+    if (showForgotDialog) {
+        AlertDialog(
+            onDismissRequest = { showForgotDialog = false },
+            title = { Text(stringResource(R.string.forgot_dialog_title), fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.forgot_dialog_msg)) },
+            confirmButton = {
+                TextButton(onClick = { showForgotDialog = false }) {
+                    Text(stringResource(R.string.forgot_dialog_btn), color = TravelBlue, fontWeight = FontWeight.SemiBold)
+                }
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -189,7 +203,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit = {}) {
 
                 // ¿Olvidaste tu contraseña?
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                    TextButton(onClick = {}) {
+                    TextButton(onClick = { showForgotDialog = true }) {
                         Text(
                             text = stringResource(R.string.login_forgot_password),
                             color = TravelBlue,
