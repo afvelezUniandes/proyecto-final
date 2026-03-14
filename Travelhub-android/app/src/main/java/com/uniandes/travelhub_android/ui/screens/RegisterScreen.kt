@@ -33,6 +33,8 @@ import com.uniandes.travelhub_android.R
 import com.uniandes.travelhub_android.data.ApiClient
 import com.uniandes.travelhub_android.data.LangStore
 import com.uniandes.travelhub_android.data.SignUpRequest
+import com.uniandes.travelhub_android.ui.components.LanguageSelector
+import com.uniandes.travelhub_android.ui.components.LanguageSelectorStyle
 import com.uniandes.travelhub_android.ui.theme.TravelBlue
 import com.uniandes.travelhub_android.ui.theme.TravelGray
 import com.uniandes.travelhub_android.ui.theme.TravelGrayLight
@@ -78,10 +80,15 @@ fun RegisterScreen(
                 modifier = Modifier
                     .size(72.dp)
                     .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.2f)),
+                    .background(TravelOrange),
                 contentAlignment = Alignment.Center
             ) {
-                Text("✈️", fontSize = 32.sp)
+                Text(
+                    text = "T",
+                    color = Color.White,
+                    fontSize = 36.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -296,36 +303,7 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // Chip selector de idioma
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color.White.copy(alpha = 0.15f))
-                    .padding(3.dp),
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                listOf("es" to "🇨🇴 ES", "en" to "🇺🇸 EN").forEach { (code, label) ->
-                    val isSelected = currentLang == code
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(if (isSelected) Color.White else Color.Transparent)
-                            .clickable(enabled = !isSelected) {
-                                LangStore.save(context, code)
-                                activity.recreate()
-                            }
-                            .padding(horizontal = 14.dp, vertical = 6.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = label,
-                            color = if (isSelected) TravelBlue else Color.White,
-                            fontSize = 13.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                        )
-                    }
-                }
-            }
+            LanguageSelector(style = LanguageSelectorStyle.DARK)
 
             Spacer(modifier = Modifier.height(32.dp))
         }

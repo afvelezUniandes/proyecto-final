@@ -1,7 +1,13 @@
-from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP
+import enum
+from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, Enum
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
+
+class RolEnum(enum.Enum):
+    USER = "user"
+    HOTEL = "hotel"
+    ADMIN = "admin"
 
 class Usuario(Base):
     __tablename__ = 'usuarios'
@@ -14,7 +20,7 @@ class Usuario(Base):
     telefono = Column(String(20))
     pais = Column(String(50))
     idioma_preferido = Column(String(5))
-    rol = Column(String(20))
+    rol = Column(Enum(RolEnum), nullable=False, default=RolEnum.USER)
 
 class AdminHotel(Base):
     __tablename__ = 'admin_hotel'

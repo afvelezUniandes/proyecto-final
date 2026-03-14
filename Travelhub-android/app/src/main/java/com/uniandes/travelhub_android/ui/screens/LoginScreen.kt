@@ -33,6 +33,8 @@ import com.uniandes.travelhub_android.data.ApiClient
 import com.uniandes.travelhub_android.data.LangStore
 import com.uniandes.travelhub_android.data.SignInRequest
 import com.uniandes.travelhub_android.data.TokenStore
+import com.uniandes.travelhub_android.ui.components.LanguageSelector
+import com.uniandes.travelhub_android.ui.components.LanguageSelectorStyle
 import com.uniandes.travelhub_android.ui.theme.TravelBlue
 import com.uniandes.travelhub_android.ui.theme.TravelGray
 import com.uniandes.travelhub_android.ui.theme.TravelGrayLight
@@ -295,35 +297,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit = {}) {
                 .padding(bottom = 24.dp),
             contentAlignment = Alignment.Center
         ) {
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(TravelGrayLight)
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                listOf("es" to "Español", "en" to "English").forEach { (code, label) ->
-                    val isSelected = currentLang == code
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(if (isSelected) TravelBlue else Color.Transparent)
-                            .clickable(enabled = !isSelected) {
-                                LangStore.save(context, code)
-                                activity.recreate()
-                            }
-                            .padding(horizontal = 16.dp, vertical = 6.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = label,
-                            color = if (isSelected) Color.White else TravelGray,
-                            fontSize = 13.sp,
-                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
-                        )
-                    }
-                }
-            }
+            LanguageSelector(style = LanguageSelectorStyle.LIGHT)
         }
     }
 }

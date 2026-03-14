@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy.orm import sessionmaker
-from adapters.orm.models import Usuario, AdminHotel, Base
+from adapters.orm.models import Usuario, AdminHotel, Base, RolEnum
 from sqlalchemy import create_engine
 import os
 import jwt
@@ -30,7 +30,7 @@ def sign_up():
         telefono=data.get('telefono', ''),
         pais=data.get('pais', ''),
         idioma_preferido=data.get('idioma_preferido', 'es'),
-        rol=data.get('rol', 'user')
+        rol=RolEnum(data.get('rol', 'user'))
     )
     session.add(user)
     session.commit()
