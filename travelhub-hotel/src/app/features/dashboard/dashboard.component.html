@@ -1,0 +1,92 @@
+<div class="space-y-8">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+    <p class="text-gray-500 text-sm mt-1">Resumen de actividad de tu hotel</p>
+  </div>
+
+  @if (loading) {
+    <div class="flex justify-center py-24">
+      <div class="w-10 h-10 border-4 border-[#1D4ED8] border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  }
+
+  @if (!loading && stats) {
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm font-medium text-gray-500">Reservas Activas</span>
+          <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl">📋</div>
+        </div>
+        <p class="text-3xl font-bold text-gray-900">{{ stats.reservas_activas }}</p>
+        <p class="text-xs text-green-600 mt-1">↑ {{ stats.reservas_activas_delta }}% vs mes anterior</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm font-medium text-gray-500">Ocupación</span>
+          <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl">🏠</div>
+        </div>
+        <p class="text-3xl font-bold text-gray-900">{{ stats.tasa_ocupacion }}%</p>
+        <div class="mt-2 h-2 bg-gray-100 rounded-full">
+          <div class="h-2 bg-[#F97316] rounded-full" [style.width.%]="stats.tasa_ocupacion"></div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm font-medium text-gray-500">Ingresos (mes)</span>
+          <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl">💰</div>
+        </div>
+        <p class="text-3xl font-bold text-gray-900">{{ formatPrice(stats.ingresos_mes) }}</p>
+        <p class="text-xs text-green-600 mt-1">↑ {{ stats.ingresos_mes_delta }}% vs mes anterior</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm font-medium text-gray-500">Calificación</span>
+          <div class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center text-xl">⭐</div>
+        </div>
+        <p class="text-3xl font-bold text-gray-900">{{ stats.calificacion_promedio }}</p>
+        <p class="text-xs text-gray-400 mt-1">de 10 · {{ stats.total_resenas }} reseñas</p>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="grid lg:grid-cols-3 gap-6">
+      <!-- Bar chart occupation -->
+      <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <h2 class="font-semibold text-gray-900 mb-6">Ocupación semanal</h2>
+        <div class="flex items-end gap-3 h-40">
+          @for (day of weeklyOccupancy; track day.dia) {
+            <div class="flex-1 flex flex-col items-center gap-1">
+              <span class="text-xs text-gray-500 font-medium">{{ day.porcentaje }}%</span>
+              <div
+                class="w-full bg-[#1D4ED8] rounded-t-lg"
+                [style.height.%]="(day.porcentaje / maxOccupancy()) * 100"
+                style="min-height: 4px;"
+              ></div>
+              <span class="text-xs text-gray-400">{{ day.dia }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Recent reservations -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-gray-900">Reservas recientes</h2>
+          <a routerLink="/reservations" class="text-[#1D4ED8] text-xs hover:underline">Ver todas →</a>
+        </div>
+        <div class="space-y-3">
+          @for (r of recentReservations; track r.id) {
+            <div class="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+              <div>
+                <p class="text-sm font-medium text-gray-900">{{ r.huesped_nombre }}</p>
+                <p class="text-xs text-gray-400">{{ r.habitacion_nombre }}</p>
+              </div>
+              <span class="text-xs px-2 py-0.5 rounded-full font-medium {{ estadoClass(r.estado) }}">{{ r.estado }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

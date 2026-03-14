@@ -1,0 +1,107 @@
+<div class="flex h-screen bg-travelGray-50 overflow-hidden">
+  <!-- Sidebar -->
+  <aside class="hidden lg:flex lg:flex-col w-56 bg-travelBlue-900 flex-shrink-0">
+    <!-- Logo -->
+    <div class="flex items-center gap-3 px-6 py-5 border-b border-white/10">
+      <div class="w-8 h-8 bg-travelOrange rounded-lg flex items-center justify-center">
+        <span class="text-white font-bold">T</span>
+      </div>
+      <div>
+        <div class="text-white font-bold text-sm">TravelHub</div>
+        <div class="text-white/50 text-xs">Portal de Hoteles</div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 px-3 py-4 space-y-1">
+      @for (item of navItems; track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="bg-white/15 text-white"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors text-sm font-medium"
+          [routerLinkActiveOptions]="{ exact: item.path === '/dashboard' }"
+        >
+          <svg
+            class="w-5 h-5 flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="item.icon" />
+          </svg>
+          {{ item.label }}
+        </a>
+      }
+    </nav>
+
+    <!-- Footer -->
+    <div class="px-4 py-4 border-t border-white/10">
+      <div class="text-white/50 text-xs mb-3 truncate">{{ auth.currentUser()?.nombre }}</div>
+      <button
+        (click)="logout()"
+        class="flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors w-full"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+          />
+        </svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+    <!-- Topbar -->
+    <header
+      class="bg-white border-b border-travelGray-200 px-6 py-4 flex items-center justify-between flex-shrink-0"
+    >
+      <button
+        (click)="sidebarOpen.set(!sidebarOpen())"
+        class="lg:hidden text-travelGray-500 hover:text-travelGray-700"
+      >
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+      </button>
+      <div class="flex-1"></div>
+      <div class="flex items-center gap-4">
+        <app-language-selector />
+        <button class="relative text-travelGray-500 hover:text-travelGray-700">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+            />
+          </svg>
+          <span
+            class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center"
+            >3</span
+          >
+        </button>
+        <div
+          class="w-8 h-8 bg-travelBlue rounded-full flex items-center justify-center text-white text-sm font-semibold"
+        >
+          {{ (auth.currentUser()?.nombre || 'A').charAt(0).toUpperCase() }}
+        </div>
+      </div>
+    </header>
+
+    <!-- Page content -->
+    <main class="flex-1 overflow-y-auto p-6">
+      <router-outlet />
+    </main>
+  </div>
+</div>

@@ -1,0 +1,140 @@
+<div class="min-h-screen flex">
+  <!-- Language selector: fixed top-right -->
+  <div class="fixed top-4 right-4 z-50">
+    <app-language-selector theme="light" />
+  </div>
+
+  <!-- Left: form -->
+  <div class="flex-1 flex items-center justify-center px-8 py-12 bg-white">
+    <div class="w-full max-w-sm">
+      <div class="flex items-center gap-3 mb-10">
+        <div class="w-10 h-10 bg-travelOrange rounded-xl flex items-center justify-center">
+          <span class="text-white font-bold text-lg">T</span>
+        </div>
+        <div>
+          <div class="font-bold text-travelGray-900">TravelHub</div>
+          <div class="text-xs text-travelGray-400">Portal de Hoteles</div>
+        </div>
+      </div>
+
+      <h2 class="text-2xl font-bold text-travelGray-900 mb-1">Iniciar Sesión</h2>
+      <p class="text-travelGray-500 text-sm mb-8">Accede al panel de administración de tu hotel</p>
+
+      <form (ngSubmit)="onLogin()" class="space-y-5">
+        <div>
+          <label class="block text-sm font-medium text-travelGray-700 mb-1.5"
+            >Correo del administrador</label
+          >
+          <input
+            [(ngModel)]="email"
+            name="email"
+            type="email"
+            placeholder="admin@mihotel.com"
+            class="input-field"
+            autocomplete="email"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-travelGray-700 mb-1.5">Contraseña</label>
+          <div class="relative">
+            <input
+              [(ngModel)]="password"
+              name="password"
+              [type]="showPassword ? 'text' : 'password'"
+              placeholder="••••••••"
+              class="input-field pr-10"
+              autocomplete="current-password"
+            />
+            <button
+              type="button"
+              (click)="showPassword = !showPassword"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-travelGray-400 hover:text-travelGray-600"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                @if (showPassword) {
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 4.411m0 0L21 21"
+                  />
+                } @else {
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  />
+                }
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        @if (error()) {
+          <p class="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-lg">{{ error() }}</p>
+        }
+
+        <button type="submit" [disabled]="loading" class="btn-primary w-full justify-center flex">
+          @if (loading) {
+            <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              />
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
+            </svg>
+          } @else {
+            Iniciar Sesión
+          }
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Right: features panel -->
+  <div
+    class="hidden lg:flex lg:w-1/2 bg-travelBlue flex-col justify-center px-16 py-12 relative overflow-hidden"
+  >
+    <div class="absolute inset-0 opacity-10">
+      <div class="absolute top-20 right-20 w-64 h-64 rounded-full bg-white"></div>
+      <div class="absolute bottom-20 left-10 w-80 h-80 rounded-full bg-white"></div>
+    </div>
+    <div class="relative z-10">
+      <h2 class="text-white text-4xl font-bold leading-tight mb-4">Haz crecer<br />tu negocio</h2>
+      <p class="text-white/80 mb-12">
+        Únete a la red de hoteles de TravelHub<br />y llega a miles de viajeros.
+      </p>
+      <div class="space-y-4">
+        @for (f of features; track f.title) {
+          <div class="flex items-start gap-4 bg-white/10 rounded-2xl p-5">
+            <div
+              class="w-10 h-10 bg-travelOrange rounded-xl flex items-center justify-center flex-shrink-0"
+            >
+              <span class="text-white text-lg">{{ f.icon }}</span>
+            </div>
+            <div>
+              <div class="text-white font-semibold">{{ f.title }}</div>
+              <div class="text-white/70 text-sm">{{ f.desc }}</div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
