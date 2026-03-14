@@ -1,5 +1,10 @@
 package com.uniandes.travelhub_android.ui.navigation
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -10,6 +15,7 @@ import com.uniandes.travelhub_android.ui.screens.HomeScreen
 import com.uniandes.travelhub_android.ui.screens.HotelDetailScreen
 import com.uniandes.travelhub_android.ui.screens.LoginScreen
 import com.uniandes.travelhub_android.ui.screens.ProfileScreen
+import com.uniandes.travelhub_android.ui.screens.RegisterScreen
 import com.uniandes.travelhub_android.ui.screens.ReservationDetailScreen
 import com.uniandes.travelhub_android.ui.screens.ReservationsScreen
 import com.uniandes.travelhub_android.ui.screens.SearchScreen
@@ -17,6 +23,13 @@ import com.uniandes.travelhub_android.ui.screens.SearchScreen
 @Composable
 fun NavGraph() {
     val navController = rememberNavController()
+
+    // Estado persistente de la última búsqueda del Home
+    var savedCiudad by rememberSaveable { mutableStateOf("") }
+    var savedCheckIn by rememberSaveable { mutableStateOf("") }
+    var savedCheckOut by rememberSaveable { mutableStateOf("") }
+    var savedAdultos by rememberSaveable { mutableIntStateOf(2) }
+    var savedNinos by rememberSaveable { mutableIntStateOf(0) }
 
     NavHost(
         navController = navController,
@@ -28,7 +41,21 @@ fun NavGraph() {
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
+                },
+                onRegisterClick = {
+                    navController.navigate(Routes.REGISTER)
                 }
+            )
+        }
+
+        composable(Routes.REGISTER) {
+            RegisterScreen(
+                onRegisterSuccess = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.REGISTER) { inclusive = true }
+                    }
+                },
+                onBackToLogin = { navController.popBackStack() }
             )
         }
 
@@ -42,6 +69,18 @@ fun NavGraph() {
                 },
                 onNotificationsClick = {
                     navController.navigate(Routes.PROFILE)
+                },
+                initialCiudad = savedCiudad,
+                initialCheckIn = savedCheckIn,
+                initialCheckOut = savedCheckOut,
+                initialAdultos = savedAdultos,
+                initialNinos = savedNinos,
+                onSearchStateChange = { ciudad, checkIn, checkOut, adultos, ninos ->
+                    savedCiudad = ciudad
+                    savedCheckIn = checkIn
+                    savedCheckOut = checkOut
+                    savedAdultos = adultos
+                    savedNinos = ninos
                 }
             )
         }

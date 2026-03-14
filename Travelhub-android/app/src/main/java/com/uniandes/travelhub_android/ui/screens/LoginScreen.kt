@@ -40,7 +40,7 @@ import com.uniandes.travelhub_android.ui.theme.TravelOrange
 import kotlinx.coroutines.launch
 
 @Composable
-fun LoginScreen(onLoginSuccess: () -> Unit) {
+fun LoginScreen(onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit = {}) {
     val context = LocalContext.current
     val activity = context as android.app.Activity
     val currentLang = remember { LangStore.get(context) }
@@ -274,7 +274,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                         fontSize = 14.sp
                     )
                     TextButton(
-                        onClick = {},
+                        onClick = { onRegisterClick() },
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         Text(

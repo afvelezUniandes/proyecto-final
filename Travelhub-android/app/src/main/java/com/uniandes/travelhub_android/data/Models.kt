@@ -3,6 +3,11 @@ package com.uniandes.travelhub_android.data
 // --- Auth ---
 data class SignInRequest(val email: String, val password: String)
 data class SignInResponse(val token: String)
+data class SignUpRequest(
+    val nombre: String,
+    val email: String,
+    val password: String
+)
 
 // --- Catalog ---
 data class Hotel(

@@ -88,13 +88,13 @@
 
     <!-- Reservations list -->
     <string name="tab_active">Próximas</string>
-    <string name="tab_past">Completadas</string>
+    <string name="tab_past">Finalizadas</string>
     <string name="tab_cancelled">Canceladas</string>
     <string name="tab_all">Todas</string>
     <string name="reservations_title">Mis Reservas</string>
     <string name="reservations_refresh">Actualizar</string>
     <string name="res_section_upcoming">PRÓXIMAS</string>
-    <string name="res_section_completed">COMPLETADAS</string>
+    <string name="res_section_completed">FINALIZADAS</string>
     <string name="res_section_cancelled">CANCELADAS</string>
     <string name="res_no_items">No hay reservas</string>
     <string name="res_no_session">Sesión no encontrada. Por favor inicia sesión</string>
@@ -108,10 +108,10 @@
     <string name="dlg_no">No</string>
     <string name="res_status_confirmed">Reserva Confirmada</string>
     <string name="res_status_cancelled">Reserva Cancelada</string>
-    <string name="res_status_completed">Reserva Completada</string>
+    <string name="res_status_completed">Reserva Finalizada</string>
     <string name="res_status_confirmed_sub">Tu reserva ha sido procesada exitosamente</string>
     <string name="res_status_cancelled_sub">Esta reserva fue cancelada</string>
-    <string name="res_status_completed_sub">Estadía completada</string>
+    <string name="res_status_completed_sub">Estadía finalizada</string>
     <string name="detail_code_label">CÓDIGO DE RESERVA</string>
     <string name="detail_guests_label">HUÉSPEDES</string>
     <string name="detail_nights_label">NOCHES</string>
@@ -147,4 +147,21 @@
     <string name="hotel_cop_per_night_compact">COP/noche</string>
     <string name="hotel_reserve_btn">Reservar</string>
     <string name="hotel_persons_label">personas</string>
+
+    <!-- Home - nuevas secciones -->
+    <string name="home_popular_destinations">Destinos populares</string>
+    <string name="home_stat_hotels">Hoteles</string>
+    <string name="home_stat_cities">Ciudades</string>
+    <string name="home_stat_from">desde COP/noche</string>
+
+    <!-- Registro -->
+    <string name="register_title">Crear cuenta</string>
+    <string name="register_subtitle">Únete a TravelHub</string>
+    <string name="register_name_label">Nombre completo</string>
+    <string name="register_btn">Crear cuenta</string>
+    <string name="register_have_account">¿Ya tienes cuenta?</string>
+    <string name="register_login_link">Iniciar sesión</string>
+    <string name="register_success">Cuenta creada. ¡Ahora inicia sesión!</string>
+    <string name="err_email_exists">Este correo ya está registrado</string>
+    <string name="err_register_failed">Error al registrar (%1$s)</string>
 </resources>

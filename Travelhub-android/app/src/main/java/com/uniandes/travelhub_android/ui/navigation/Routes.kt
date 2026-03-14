@@ -4,6 +4,7 @@ import android.net.Uri
 
 object Routes {
     const val LOGIN = "login"
+    const val REGISTER = "register"
     const val HOME = "home"
     const val HOTEL_DETAIL = "hotel_detail/{hotelId}?checkIn={checkIn}&checkOut={checkOut}&adultos={adultos}&ninos={ninos}"
     const val RESERVATIONS = "reservations"

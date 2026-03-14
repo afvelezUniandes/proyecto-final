@@ -8,6 +8,9 @@ interface ApiService {
     @POST("/auth/sign-in")
     suspend fun signIn(@Body request: SignInRequest): Response<SignInResponse>
 
+    @POST("/auth/sign-up")
+    suspend fun signUp(@Body request: SignUpRequest): Response<Map<String, String>>
+
     @GET("/catalog/cities")
     suspend fun getCities(): Response<List<String>>
 

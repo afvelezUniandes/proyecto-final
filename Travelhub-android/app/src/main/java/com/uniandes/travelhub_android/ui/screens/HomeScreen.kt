@@ -47,7 +47,13 @@ private val DISPLAY = DateTimeFormatter.ofPattern("dd MMM yyyy")  // "14 Mar 202
 fun HomeScreen(
     onSearchClick: (ciudad: String, checkIn: String, checkOut: String, adultos: Int, ninos: Int) -> Unit,
     onReservationsClick: () -> Unit,
-    onNotificationsClick: () -> Unit
+    onNotificationsClick: () -> Unit,
+    initialCiudad: String = "",
+    initialCheckIn: String = "",
+    initialCheckOut: String = "",
+    initialAdultos: Int = 2,
+    initialNinos: Int = 0,
+    onSearchStateChange: (ciudad: String, checkIn: String, checkOut: String, adultos: Int, ninos: Int) -> Unit = { _, _, _, _, _ -> }
 ) {
     val context = LocalContext.current
     val activity = context as android.app.Activity
@@ -56,12 +62,15 @@ fun HomeScreen(
     val today = remember { LocalDate.now() }
     val tomorrow = remember { today.plusDays(1) }
 
-    var ciudad by remember { mutableStateOf("") }
+    fun parseOrDefault(s: String, default: LocalDate) =
+        try { LocalDate.parse(s, ISO) } catch (_: Exception) { default }
+
+    var ciudad by remember { mutableStateOf(initialCiudad) }
     var allCities by remember { mutableStateOf<List<String>>(emptyList()) }
-    var checkInDate by remember { mutableStateOf(today) }
-    var checkOutDate by remember { mutableStateOf(tomorrow) }
-    var adultos by remember { mutableStateOf(2) }
-    var ninos by remember { mutableStateOf(0) }
+    var checkInDate by remember { mutableStateOf(parseOrDefault(initialCheckIn, today)) }
+    var checkOutDate by remember { mutableStateOf(parseOrDefault(initialCheckOut, tomorrow)) }
+    var adultos by remember { mutableStateOf(initialAdultos) }
+    var ninos by remember { mutableStateOf(initialNinos) }
 
     var showCheckInPicker by remember { mutableStateOf(false) }
     var showCheckOutPicker by remember { mutableStateOf(false) }
@@ -135,6 +144,7 @@ fun HomeScreen(
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        containerColor = TravelBlue,
         bottomBar = {
             BottomNavBar(
                 selected = "Inicio",
@@ -148,7 +158,7 @@ fun HomeScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(TravelBackground)
+                .background(TravelBlue)
                 .padding(bottom = padding.calculateBottomPadding())
         ) {
             // Header azul con formulario de búsqueda
@@ -310,7 +320,10 @@ fun HomeScreen(
                                 Spacer(modifier = Modifier.height(12.dp))
 
                                 Button(
-                                    onClick = { onSearchClick(ciudad, checkIn, checkOut, adultos, ninos) },
+                                    onClick = {
+                                onSearchStateChange(ciudad, checkIn, checkOut, adultos, ninos)
+                                onSearchClick(ciudad, checkIn, checkOut, adultos, ninos)
+                            },
                                     modifier = Modifier.fillMaxWidth().height(52.dp),
                                     shape = RoundedCornerShape(10.dp),
                                     colors = ButtonDefaults.buttonColors(containerColor = TravelOrange)
@@ -325,6 +338,57 @@ fun HomeScreen(
                                     )
                                 }
                             }
+                        }
+                    }
+                }
+            }
+
+            // Destinos populares
+            item {
+                Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
+                    Text(
+                        stringResource(R.string.home_popular_destinations),
+                        color = Color.White.copy(alpha = 0.85f),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(bottom = 10.dp)
+                    )
+                    val destinos = listOf("🇨🇴 Bogotá", "🇨🇴 Medellín", "🇨🇴 Cartagena", "🇨🇴 Cali", "🇨🇴 Santa Marta")
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(destinos) { destino ->
+                            val nombre = destino.substringAfter(" ")
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(Color.White.copy(alpha = if (ciudad == nombre) 0.35f else 0.15f))
+                                    .clickable { ciudad = nombre }
+                                    .padding(horizontal = 14.dp, vertical = 8.dp)
+                            ) {
+                                Text(destino, color = Color.White, fontSize = 13.sp)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Stats
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .padding(bottom = 32.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    listOf(
+                        Triple("🏨", "500+", stringResource(R.string.home_stat_hotels)),
+                        Triple("🌆", "50+", stringResource(R.string.home_stat_cities)),
+                        Triple("💰", "$150K", stringResource(R.string.home_stat_from))
+                    ).forEach { (emoji, value, label) ->
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(emoji, fontSize = 20.sp)
+                            Text(value, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text(label, color = Color.White.copy(alpha = 0.7f), fontSize = 11.sp)
                         }
                     }
                 }

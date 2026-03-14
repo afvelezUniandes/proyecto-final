@@ -147,4 +147,21 @@
     <string name="hotel_cop_per_night_compact">COP/night</string>
     <string name="hotel_reserve_btn">Book now</string>
     <string name="hotel_persons_label">guests</string>
+
+    <!-- Home - new sections -->
+    <string name="home_popular_destinations">Popular destinations</string>
+    <string name="home_stat_hotels">Hotels</string>
+    <string name="home_stat_cities">Cities</string>
+    <string name="home_stat_from">from COP/night</string>
+
+    <!-- Register -->
+    <string name="register_title">Create account</string>
+    <string name="register_subtitle">Join TravelHub</string>
+    <string name="register_name_label">Full name</string>
+    <string name="register_btn">Create account</string>
+    <string name="register_have_account">Already have an account?</string>
+    <string name="register_login_link">Sign in</string>
+    <string name="register_success">Account created. Now sign in!</string>
+    <string name="err_email_exists">This email is already registered</string>
+    <string name="err_register_failed">Registration error (%1$s)</string>
 </resources>
