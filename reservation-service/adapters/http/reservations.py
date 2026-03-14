@@ -157,6 +157,43 @@ def create_reservation():
 
 
 # ──────────────────────────────────────────────
+# GET /reservations/occupied-rooms  — habitaciones ocupadas en un rango de fechas
+# Público (sin auth). Overlap estricto: checkout day disponible.
+# ──────────────────────────────────────────────
+@bp.route('/reservations/occupied-rooms', methods=['GET'])
+def get_occupied_rooms():
+    hotel_id = request.args.get('hotel_id')
+    fecha_checkin = request.args.get('fecha_checkin')
+    fecha_checkout = request.args.get('fecha_checkout')
+
+    if not all([hotel_id, fecha_checkin, fecha_checkout]):
+        return jsonify({'error': 'Se requieren hotel_id, fecha_checkin y fecha_checkout'}), 400
+
+    try:
+        checkin = datetime.date.fromisoformat(fecha_checkin)
+        checkout = datetime.date.fromisoformat(fecha_checkout)
+    except ValueError:
+        return jsonify({'error': 'Formato de fecha inválido (YYYY-MM-DD)'}), 400
+
+    if checkout <= checkin:
+        return jsonify({'error': 'checkout debe ser posterior a checkin'}), 400
+
+    session = Session()
+    try:
+        # Overlap estricto con ambos extremos: existing_checkin < new_checkout AND existing_checkout > new_checkin
+        # Si existing_checkout == new_checkin → no hay conflicto (el día de checkout está disponible)
+        reservas = session.query(Reserva).filter(
+            Reserva.hotel_id == int(hotel_id),
+            Reserva.estado == 'confirmada',
+            Reserva.fecha_checkin < checkout,
+            Reserva.fecha_checkout > checkin
+        ).all()
+        return jsonify({'occupied_room_ids': list({r.habitacion_id for r in reservas})}), 200
+    finally:
+        session.close()
+
+
+# ──────────────────────────────────────────────
 # PATCH /reservations/<id>/cancel  — cancelar reserva
 # ──────────────────────────────────────────────
 @bp.route('/reservations/<int:reserva_id>/cancel', methods=['PATCH'])

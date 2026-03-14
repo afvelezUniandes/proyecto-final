@@ -33,8 +33,8 @@ fun NavGraph() {
 
         composable(Routes.HOME) {
             HomeScreen(
-                onHotelClick = { hotelId ->
-                    navController.navigate(Routes.hotelDetail(hotelId))
+                onHotelClick = { hotelId, checkIn, checkOut, adultos, ninos ->
+                    navController.navigate(Routes.hotelDetail(hotelId, checkIn, checkOut, adultos, ninos))
                 },
                 onReservationsClick = {
                     navController.navigate(Routes.RESERVATIONS)
@@ -47,14 +47,29 @@ fun NavGraph() {
 
         composable(
             route = Routes.HOTEL_DETAIL,
-            arguments = listOf(navArgument("hotelId") { type = NavType.IntType })
+            arguments = listOf(
+                navArgument("hotelId") { type = NavType.IntType },
+                navArgument("checkIn") { type = NavType.StringType; defaultValue = "" },
+                navArgument("checkOut") { type = NavType.StringType; defaultValue = "" },
+                navArgument("adultos") { type = NavType.IntType; defaultValue = 2 },
+                navArgument("ninos") { type = NavType.IntType; defaultValue = 0 }
+            )
         ) { backStackEntry ->
             val hotelId = backStackEntry.arguments?.getInt("hotelId") ?: return@composable
+            val checkIn = backStackEntry.arguments?.getString("checkIn") ?: ""
+            val checkOut = backStackEntry.arguments?.getString("checkOut") ?: ""
+            val adultos = backStackEntry.arguments?.getInt("adultos") ?: 2
+            val ninos = backStackEntry.arguments?.getInt("ninos") ?: 0
             HotelDetailScreen(
                 hotelId = hotelId,
+                checkIn = checkIn,
+                checkOut = checkOut,
+                numHuespedes = adultos + ninos,
                 onBack = { navController.popBackStack() },
-                onReserve = {
-                    navController.navigate(Routes.RESERVATIONS)
+                onReserveDone = {
+                    navController.navigate(Routes.RESERVATIONS) {
+                        popUpTo(Routes.HOME)
+                    }
                 }
             )
         }

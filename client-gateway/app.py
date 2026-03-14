@@ -111,6 +111,19 @@ def get_rooms():
         return jsonify({'error': 'Catalog service unavailable'}), 503
 
 # Reservation endpoints (requieren token JWT)
+@app.route('/reservations/occupied-rooms', methods=['GET'])
+def get_occupied_rooms_public():
+    """Endpoint público — sin token. Devuelve IDs de habitaciones ocupadas en fechas dadas."""
+    try:
+        response = requests.get(
+            f'{RESERVATION_SERVICE_URL}/reservations/occupied-rooms',
+            params=request.args, timeout=5
+        )
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Reservation service unavailable'}), 503
+
+
 @app.route('/reservations', methods=['GET'])
 @verify_token
 def get_reservations():

@@ -91,3 +91,8 @@ data class Notification(
 )
 
 enum class NotificationType { CONFIRMED, EMAIL, CREATED, CANCELLED, COMPLETED }
+
+// --- Disponibilidad ---
+data class OccupiedRoomsResponse(
+    val occupied_room_ids: List<Int>
+)

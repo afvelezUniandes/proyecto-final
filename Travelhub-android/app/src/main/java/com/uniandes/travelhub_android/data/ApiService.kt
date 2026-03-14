@@ -46,4 +46,11 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Path("id") id: Int
     ): Response<ReservationApi>
+
+    @GET("/reservations/occupied-rooms")
+    suspend fun getOccupiedRooms(
+        @Query("hotel_id") hotelId: Int,
+        @Query("fecha_checkin") fechaCheckin: String,
+        @Query("fecha_checkout") fechaCheckout: String
+    ): Response<OccupiedRoomsResponse>
 }

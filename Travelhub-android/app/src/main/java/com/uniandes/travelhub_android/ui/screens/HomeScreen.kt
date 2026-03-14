@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.uniandes.travelhub_android.data.ApiClient
@@ -24,24 +25,98 @@ import com.uniandes.travelhub_android.data.Hotel
 import com.uniandes.travelhub_android.ui.components.BottomNavBar
 import com.uniandes.travelhub_android.ui.theme.*
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
+@OptIn(ExperimentalMaterial3Api::class)
+private val ISO = DateTimeFormatter.ISO_LOCAL_DATE        // "yyyy-MM-dd"
+private val DISPLAY = DateTimeFormatter.ofPattern("dd MMM yyyy")  // "14 Mar 2026"
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onHotelClick: (Int) -> Unit,
+    onHotelClick: (hotelId: Int, checkIn: String, checkOut: String, adultos: Int, ninos: Int) -> Unit,
     onReservationsClick: () -> Unit,
     onNotificationsClick: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
 
+    val today = remember { LocalDate.now() }
+    val tomorrow = remember { today.plusDays(1) }
+
     var ciudad by remember { mutableStateOf("") }
-    var checkIn by remember { mutableStateOf("") }
-    var checkOut by remember { mutableStateOf("") }
-    var huespedes by remember { mutableStateOf("2 adultos") }
+    var checkInDate by remember { mutableStateOf(today) }
+    var checkOutDate by remember { mutableStateOf(tomorrow) }
+    var adultos by remember { mutableStateOf(2) }
+    var ninos by remember { mutableStateOf(0) }
     var hotels by remember { mutableStateOf<List<Hotel>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
     var hasSearched by remember { mutableStateOf(false) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
     var selectedFilter by remember { mutableStateOf("Estrellas") }
+
+    var showCheckInPicker by remember { mutableStateOf(false) }
+    var showCheckOutPicker by remember { mutableStateOf(false) }
+
+    val checkIn = checkInDate.format(ISO)
+    val checkOut = checkOutDate.format(ISO)
+
+    // DatePickerDialog para Check-In
+    if (showCheckInPicker) {
+        val pickerState = rememberDatePickerState(
+            initialSelectedDateMillis = checkInDate.toEpochDay() * 86_400_000L,
+            selectableDates = object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                    val day = LocalDate.ofEpochDay(utcTimeMillis / 86_400_000L)
+                    return !day.isBefore(today)
+                }
+            }
+        )
+        DatePickerDialog(
+            onDismissRequest = { showCheckInPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    pickerState.selectedDateMillis?.let { ms ->
+                        val selected = LocalDate.ofEpochDay(ms / 86_400_000L)
+                        checkInDate = selected
+                        // Si checkout es igual o anterior, moverlo al día siguiente
+                        if (!checkOutDate.isAfter(selected)) {
+                            checkOutDate = selected.plusDays(1)
+                        }
+                    }
+                    showCheckInPicker = false
+                }) { Text("Aceptar") }
+            },
+            dismissButton = { TextButton(onClick = { showCheckInPicker = false }) { Text("Cancelar") } }
+        ) { DatePicker(state = pickerState) }
+    }
+
+    // DatePickerDialog para Check-Out
+    if (showCheckOutPicker) {
+        val minCheckOut = checkInDate.plusDays(1)  // siempre al menos un día después del checkin
+        val pickerState = rememberDatePickerState(
+            initialSelectedDateMillis = checkOutDate.toEpochDay() * 86_400_000L,
+            selectableDates = object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                    val day = LocalDate.ofEpochDay(utcTimeMillis / 86_400_000L)
+                    return !day.isBefore(minCheckOut)
+                }
+            }
+        )
+        DatePickerDialog(
+            onDismissRequest = { showCheckOutPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    pickerState.selectedDateMillis?.let { ms ->
+                        checkOutDate = LocalDate.ofEpochDay(ms / 86_400_000L)
+                    }
+                    showCheckOutPicker = false
+                }) { Text("Aceptar") }
+            },
+            dismissButton = { TextButton(onClick = { showCheckOutPicker = false }) { Text("Cancelar") } }
+        ) { DatePicker(state = pickerState) }
+    }
 
     fun search() {
         scope.launch {
@@ -141,67 +216,91 @@ fun HomeScreen(
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text("CHECK-IN", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
                                         Spacer(modifier = Modifier.height(4.dp))
-                                        OutlinedTextField(
-                                            value = checkIn,
-                                            onValueChange = { checkIn = it },
-                                            placeholder = { Text("📅 15 Mar 2026", color = TravelGray, fontSize = 13.sp) },
-                                            singleLine = true,
-                                            shape = RoundedCornerShape(10.dp),
-                                            colors = OutlinedTextFieldDefaults.colors(
-                                                focusedBorderColor = TravelBlue,
-                                                unfocusedBorderColor = TravelGrayLight,
-                                                focusedContainerColor = Color(0xFFF9FAFB),
-                                                unfocusedContainerColor = Color(0xFFF9FAFB)
-                                            )
-                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .background(Color(0xFFF9FAFB))
+                                                .clickable { showCheckInPicker = true }
+                                                .padding(horizontal = 12.dp, vertical = 14.dp)
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(Icons.Default.CalendarMonth, null, tint = TravelBlue, modifier = Modifier.size(16.dp))
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(checkInDate.format(DISPLAY), fontSize = 13.sp, color = Color(0xFF111827))
+                                            }
+                                        }
                                     }
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text("CHECK-OUT", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
                                         Spacer(modifier = Modifier.height(4.dp))
-                                        OutlinedTextField(
-                                            value = checkOut,
-                                            onValueChange = { checkOut = it },
-                                            placeholder = { Text("📅 20 Mar 2026", color = TravelGray, fontSize = 13.sp) },
-                                            singleLine = true,
-                                            shape = RoundedCornerShape(10.dp),
-                                            colors = OutlinedTextFieldDefaults.colors(
-                                                focusedBorderColor = TravelBlue,
-                                                unfocusedBorderColor = TravelGrayLight,
-                                                focusedContainerColor = Color(0xFFF9FAFB),
-                                                unfocusedContainerColor = Color(0xFFF9FAFB)
-                                            )
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .background(Color(0xFFF9FAFB))
+                                                .clickable { showCheckOutPicker = true }
+                                                .padding(horizontal = 12.dp, vertical = 14.dp)
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(Icons.Default.CalendarMonth, null, tint = TravelBlue, modifier = Modifier.size(16.dp))
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(checkOutDate.format(DISPLAY), fontSize = 13.sp, color = Color(0xFF111827))
+                                            }
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                // Huéspedes
+                                Text("HUÉSPEDES", fontSize = 11.sp, color = TravelGray, fontWeight = FontWeight.Medium)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color(0xFFF9FAFB))
+                                ) {
+                                    Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+                                        GuestStepper(
+                                            label = "Adultos",
+                                            subtitle = "+12 años",
+                                            value = adultos,
+                                            min = 1,
+                                            onDecrement = { adultos-- },
+                                            onIncrement = { adultos++ }
+                                        )
+                                        HorizontalDivider(
+                                            modifier = Modifier.padding(vertical = 8.dp),
+                                            color = TravelGrayLight
+                                        )
+                                        GuestStepper(
+                                            label = "Niños",
+                                            subtitle = "0–11 años",
+                                            value = ninos,
+                                            min = 0,
+                                            onDecrement = { ninos-- },
+                                            onIncrement = { ninos++ }
                                         )
                                     }
                                 }
 
                                 Spacer(modifier = Modifier.height(12.dp))
 
-                                // Huéspedes + Botón
-                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    OutlinedTextField(
-                                        value = huespedes,
-                                        onValueChange = { huespedes = it },
-                                        modifier = Modifier.weight(1f),
-                                        placeholder = { Text("👥 2 adultos", color = TravelGray) },
-                                        singleLine = true,
-                                        shape = RoundedCornerShape(10.dp),
-                                        colors = OutlinedTextFieldDefaults.colors(
-                                            focusedBorderColor = TravelBlue,
-                                            unfocusedBorderColor = TravelGrayLight,
-                                            focusedContainerColor = Color(0xFFF9FAFB),
-                                            unfocusedContainerColor = Color(0xFFF9FAFB)
-                                        )
+                                Button(
+                                    onClick = { search() },
+                                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                                    shape = RoundedCornerShape(10.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = TravelOrange)
+                                ) {
+                                    Icon(Icons.Default.Search, contentDescription = null)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    val nights = ChronoUnit.DAYS.between(checkInDate, checkOutDate)
+                                    Text(
+                                        "Buscar · $nights ${if (nights == 1L) "noche" else "noches"}",
+                                        fontWeight = FontWeight.SemiBold, fontSize = 16.sp
                                     )
-                                    Button(
-                                        onClick = { search() },
-                                        modifier = Modifier.height(56.dp),
-                                        shape = RoundedCornerShape(10.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = TravelOrange)
-                                    ) {
-                                        Icon(Icons.Default.Search, contentDescription = null)
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Buscar", fontWeight = FontWeight.SemiBold)
-                                    }
                                 }
                             }
                         }
@@ -259,7 +358,7 @@ fun HomeScreen(
                 }
 
                 items(hotels) { hotel ->
-                    HotelCard(hotel = hotel, onClick = { onHotelClick(hotel.id) })
+                    HotelCard(hotel = hotel, onClick = { onHotelClick(hotel.id, checkIn, checkOut, adultos, ninos) })
                 }
 
                 if (!isLoading && hotels.isEmpty() && errorMsg == null) {
@@ -295,6 +394,60 @@ fun HomeScreen(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GuestStepper(
+    label: String,
+    subtitle: String,
+    value: Int,
+    min: Int,
+    onDecrement: () -> Unit,
+    onIncrement: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(label, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFF111827))
+            Text(subtitle, fontSize = 11.sp, color = TravelGray)
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(
+                onClick = onDecrement,
+                enabled = value > min,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(if (value > min) TravelBlue.copy(alpha = 0.12f) else TravelGrayLight)
+            ) {
+                Icon(
+                    Icons.Default.Remove, null,
+                    tint = if (value > min) TravelBlue else TravelGray,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+            Text(
+                value.toString(),
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = Color(0xFF111827),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.width(36.dp)
+            )
+            IconButton(
+                onClick = onIncrement,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(TravelBlue.copy(alpha = 0.12f))
+            ) {
+                Icon(Icons.Default.Add, null, tint = TravelBlue, modifier = Modifier.size(16.dp))
             }
         }
     }

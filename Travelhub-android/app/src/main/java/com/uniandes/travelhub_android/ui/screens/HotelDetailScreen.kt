@@ -19,11 +19,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.uniandes.travelhub_android.data.ApiClient
+import com.uniandes.travelhub_android.data.CreateReservationRequest
 import com.uniandes.travelhub_android.data.Room
+import com.uniandes.travelhub_android.data.TokenStore
 import com.uniandes.travelhub_android.ui.theme.*
 import kotlinx.coroutines.launch
 
@@ -38,13 +41,20 @@ private val reviews = listOf(
 @Composable
 fun HotelDetailScreen(
     hotelId: Int,
+    checkIn: String,
+    checkOut: String,
+    numHuespedes: Int,
     onBack: () -> Unit,
-    onReserve: () -> Unit
+    onReserveDone: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     var rooms by remember { mutableStateOf<List<Room>>(emptyList()) }
+    var occupiedIds by remember { mutableStateOf<Set<Int>>(emptySet()) }
     var isLoading by remember { mutableStateOf(true) }
     var selectedRoom by remember { mutableStateOf<Room?>(null) }
+    var isReserving by remember { mutableStateOf(false) }
+    var reserveError by remember { mutableStateOf<String?>(null) }
 
     // Datos mock del hotel (en una app real vendría del API)
     val hotelColors = listOf(
@@ -56,10 +66,20 @@ fun HotelDetailScreen(
     LaunchedEffect(hotelId) {
         scope.launch {
             try {
-                val response = ApiClient.api.getRooms(hotelId)
-                if (response.isSuccessful) {
-                    rooms = response.body() ?: emptyList()
-                    selectedRoom = rooms.firstOrNull()
+                // Cargar habitaciones
+                val roomsResp = ApiClient.api.getRooms(hotelId)
+                if (roomsResp.isSuccessful) {
+                    rooms = roomsResp.body() ?: emptyList()
+                    selectedRoom = rooms.firstOrNull { it.disponible }
+                }
+                // Cargar habitaciones ocupadas si hay fechas
+                if (checkIn.isNotBlank() && checkOut.isNotBlank()) {
+                    try {
+                        val occResp = ApiClient.api.getOccupiedRooms(hotelId, checkIn, checkOut)
+                        if (occResp.isSuccessful) {
+                            occupiedIds = occResp.body()?.occupied_room_ids?.toSet() ?: emptySet()
+                        }
+                    } catch (_: Exception) { /* no bloquear si falla disponibilidad */ }
                 }
             } catch (_: Exception) {
             } finally {
@@ -68,9 +88,10 @@ fun HotelDetailScreen(
         }
     }
 
+    val availableRooms = rooms.filter { it.disponible && it.id !in occupiedIds }
+    val nights = nightsBetween(checkIn, checkOut).takeIf { it > 0 } ?: 1
     val precioNoche = selectedRoom?.precio_noche?.toInt() ?: 0
-    val noches = 5
-    val total = precioNoche * noches
+    val total = precioNoche * nights
 
     Scaffold(
         bottomBar = {
@@ -91,14 +112,13 @@ fun HotelDetailScreen(
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF111827)
                         )
-                        Text(
-                            text = "por noche · $noches noches = $${"%,.0f".format(total.toDouble()).replace(",", ".")}M",
-                            fontSize = 12.sp,
-                            color = TravelGray
-                        )
+                        val nightsLabel = if (checkIn.isNotBlank() && checkOut.isNotBlank())
+                            "por noche · $nights ${if (nights == 1) "noche" else "noches"} = $${"% ,.0f".format(total.toDouble())}"
+                        else "por noche"
+                        Text(text = nightsLabel, fontSize = 12.sp, color = TravelGray)
                     }
                     Button(
-                        onClick = onReserve,
+                        onClick = onReserveDone,
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = TravelOrange),
                         modifier = Modifier.height(48.dp)
@@ -317,10 +337,21 @@ fun HotelDetailScreen(
 
                         if (isLoading) {
                             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally), color = TravelBlue)
-                        } else if (rooms.isEmpty()) {
-                            Text("No hay habitaciones disponibles", color = TravelGray)
+                        } else if (availableRooms.isEmpty()) {
+                            if (checkIn.isNotBlank() && checkOut.isNotBlank()) {
+                                Text("⛔ No hay habitaciones disponibles para las fechas seleccionadas", color = TravelRed, fontSize = 13.sp)
+                            } else {
+                                Text("No hay habitaciones disponibles", color = TravelGray)
+                            }
                         } else {
-                            rooms.filter { it.disponible }.forEach { room ->
+                            if (checkIn.isNotBlank() && checkOut.isNotBlank()) {
+                                Text(
+                                    "$nights ${if (nights == 1) "noche" else "noches"} · $checkIn → $checkOut",
+                                    fontSize = 12.sp, color = TravelBlue,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
+                            }
+                            availableRooms.forEach { room ->
                                 val isSelected = selectedRoom?.id == room.id
                                 OutlinedCard(
                                     modifier = Modifier
