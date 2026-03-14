@@ -95,35 +95,92 @@ fun HotelDetailScreen(
 
     Scaffold(
         bottomBar = {
-            // Barra inferior con precio y botón reservar
             Surface(shadowElevation = 8.dp) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Color.White)
-                        .padding(horizontal = 20.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(horizontal = 20.dp, vertical = 12.dp)
                 ) {
-                    Column {
+                    if (reserveError != null) {
                         Text(
-                            text = if (precioNoche > 0) "$${"%,.0f".format(precioNoche.toDouble())} COP" else "—",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF111827)
+                            reserveError!!,
+                            color = TravelRed,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(bottom = 6.dp)
                         )
-                        val nightsLabel = if (checkIn.isNotBlank() && checkOut.isNotBlank())
-                            "por noche · $nights ${if (nights == 1) "noche" else "noches"} = $${"% ,.0f".format(total.toDouble())}"
-                        else "por noche"
-                        Text(text = nightsLabel, fontSize = 12.sp, color = TravelGray)
                     }
-                    Button(
-                        onClick = onReserveDone,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = TravelOrange),
-                        modifier = Modifier.height(48.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("Reservar", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Column {
+                            Text(
+                                text = if (precioNoche > 0) "$${"%,.0f".format(precioNoche.toDouble())} COP" else "—",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF111827)
+                            )
+                            Text(
+                                text = "por noche · $nights ${if (nights == 1) "noche" else "noches"} = ${"$%,.0f".format(total.toDouble())}",
+                                fontSize = 12.sp,
+                                color = TravelGray
+                            )
+                        }
+                        Button(
+                            onClick = {
+                                val room = selectedRoom ?: run {
+                                    reserveError = "Selecciona una habitación"
+                                    return@Button
+                                }
+                                isReserving = true
+                                reserveError = null
+                                scope.launch {
+                                    val token = TokenStore.get(context)
+                                    if (token == null) {
+                                        reserveError = "Sesión expirada"
+                                        isReserving = false
+                                        return@launch
+                                    }
+                                    try {
+                                        val resp = ApiClient.api.createReservation(
+                                            "Bearer $token",
+                                            CreateReservationRequest(
+                                                habitacion_id = room.id,
+                                                hotel_id = hotelId,
+                                                fecha_checkin = checkIn,
+                                                fecha_checkout = checkOut,
+                                                num_huespedes = numHuespedes,
+                                                monto_total = room.precio_noche * nights
+                                            )
+                                        )
+                                        if (resp.isSuccessful) {
+                                            onReserveDone()
+                                        } else {
+                                            reserveError = "Error al reservar (${resp.code()})"
+                                        }
+                                    } catch (e: Exception) {
+                                        reserveError = "Sin conexión al servidor"
+                                    }
+                                    isReserving = false
+                                }
+                            },
+                            enabled = !isReserving && selectedRoom != null,
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = TravelOrange),
+                            modifier = Modifier.height(48.dp)
+                        ) {
+                            if (isReserving) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text("Reservar", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            }
+                        }
                     }
                 }
             }

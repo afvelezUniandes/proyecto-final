@@ -25,6 +25,7 @@ import com.uniandes.travelhub_android.ui.components.BottomNavBar
 import com.uniandes.travelhub_android.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 internal fun nightsBetween(fechaCheckin: String, fechaCheckout: String): Int {
     return try {
@@ -42,6 +43,7 @@ fun ReservationsScreen(
     onNotificationsClick: () -> Unit
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     var reservations by remember { mutableStateOf<List<ReservationApi>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
@@ -49,16 +51,18 @@ fun ReservationsScreen(
 
     val tabs = listOf("Activas", "Pasadas", "Canceladas", "Todas")
 
-    LaunchedEffect(Unit) {
+    suspend fun loadReservations() {
+        isLoading = true
         val token = TokenStore.get(context) ?: run {
             errorMsg = "No hay sesión activa"
             isLoading = false
-            return@LaunchedEffect
+            return
         }
         try {
             val resp = ApiClient.api.getReservations("Bearer $token")
             if (resp.isSuccessful) {
                 reservations = resp.body() ?: emptyList()
+                errorMsg = null
             } else {
                 errorMsg = "Error al cargar reservas (${resp.code()})"
             }
@@ -67,6 +71,8 @@ fun ReservationsScreen(
         }
         isLoading = false
     }
+
+    LaunchedEffect(Unit) { loadReservations() }
 
     val filtered = when (selectedTab) {
         "Activas"    -> reservations.filter { it.estado == "confirmada" }
@@ -100,13 +106,23 @@ fun ReservationsScreen(
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     item {
-                        Text(
-                            text = "Mis Reservas",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF111827),
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)
-                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 20.dp, end = 8.dp, top = 20.dp, bottom = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Mis Reservas",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF111827)
+                            )
+                            IconButton(onClick = { scope.launch { loadReservations() } }) {
+                                Icon(Icons.Default.Refresh, contentDescription = "Actualizar", tint = TravelBlue)
+                            }
+                        }
                         if (errorMsg != null) {
                             Text(
                                 errorMsg!!,
