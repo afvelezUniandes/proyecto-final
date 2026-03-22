@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { LanguageSelectorComponent } from '../../../shared/language-selector/language-selector.component';
 
@@ -10,7 +10,7 @@ type Tab = 'login' | 'register';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, LanguageSelectorComponent],
+  imports: [CommonModule, FormsModule, LanguageSelectorComponent, RouterLink],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {

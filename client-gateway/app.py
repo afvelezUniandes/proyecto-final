@@ -1,10 +1,12 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import requests
 import os
 import jwt
 from functools import wraps
 
 app = Flask(__name__)
+CORS(app)
 
 AUTH_SERVICE_URL = os.getenv('AUTH_SERVICE_URL', 'http://localhost:5000')
 CATALOG_SERVICE_URL = os.getenv('CATALOG_SERVICE_URL', 'http://localhost:5001')
@@ -193,6 +195,91 @@ def update_profile():
         return jsonify(response.json()), response.status_code
     except requests.exceptions.RequestException:
         return jsonify({'error': 'Auth service unavailable'}), 503
+
+# Hotel admin endpoints
+@app.route('/catalog/hotels/mine', methods=['GET'])
+@verify_token
+def get_my_hotel():
+    try:
+        response = requests.get(f'{CATALOG_SERVICE_URL}/hotels/admin/{request.user_id}', timeout=5)
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Catalog service unavailable'}), 503
+
+
+@app.route('/catalog/hotels/<int:hotel_id>', methods=['GET'])
+def get_hotel_detail(hotel_id):
+    try:
+        response = requests.get(f'{CATALOG_SERVICE_URL}/hotels/{hotel_id}', timeout=5)
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Catalog service unavailable'}), 503
+
+
+@app.route('/catalog/hotels', methods=['POST'])
+@verify_token
+def create_hotel():
+    try:
+        body = request.json or {}
+        body['admin_id'] = request.user_id
+        response = requests.post(f'{CATALOG_SERVICE_URL}/hotels', json=body, timeout=5)
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Catalog service unavailable'}), 503
+
+
+@app.route('/catalog/hotels/<int:hotel_id>', methods=['PUT'])
+@verify_token
+def update_hotel(hotel_id):
+    try:
+        response = requests.put(f'{CATALOG_SERVICE_URL}/hotels/{hotel_id}', json=request.json, timeout=5)
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Catalog service unavailable'}), 503
+
+
+@app.route('/catalog/rooms', methods=['POST'])
+@verify_token
+def create_room():
+    try:
+        response = requests.post(f'{CATALOG_SERVICE_URL}/rooms', json=request.json, timeout=5)
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Catalog service unavailable'}), 503
+
+
+@app.route('/catalog/rooms/<int:room_id>', methods=['PUT'])
+@verify_token
+def update_room(room_id):
+    try:
+        response = requests.put(f'{CATALOG_SERVICE_URL}/rooms/{room_id}', json=request.json, timeout=5)
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Catalog service unavailable'}), 503
+
+
+@app.route('/catalog/rooms/<int:room_id>', methods=['DELETE'])
+@verify_token
+def delete_room(room_id):
+    try:
+        response = requests.delete(f'{CATALOG_SERVICE_URL}/rooms/{room_id}', timeout=5)
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Catalog service unavailable'}), 503
+
+
+@app.route('/reservations/hotel/<int:hotel_id>', methods=['GET'])
+@verify_token
+def get_hotel_reservations(hotel_id):
+    try:
+        response = requests.get(
+            f'{RESERVATION_SERVICE_URL}/reservations/hotel/{hotel_id}',
+            params=request.args, timeout=5
+        )
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Reservation service unavailable'}), 503
+
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 8000))

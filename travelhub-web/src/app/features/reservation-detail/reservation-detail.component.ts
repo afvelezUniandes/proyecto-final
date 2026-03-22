@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { LanguageSelectorComponent } from '../../shared/language-selector/language-selector.component';
 import { ReservationService } from '../../core/services/reservation.service';
 import { CatalogService } from '../../core/services/catalog.service';
@@ -57,8 +56,8 @@ export class ReservationDetailComponent implements OnInit {
 
   nights(): number {
     if (!this.reservation) return 0;
-    const start = this.reservation.fecha_inicio || this.reservation.fecha_checkin;
-    const end = this.reservation.fecha_fin || this.reservation.fecha_checkout;
+    const start = this.reservation.fecha_checkin;
+    const end = this.reservation.fecha_checkout;
     if (!start || !end) return 0;
     return Math.max(
       0,
@@ -68,6 +67,7 @@ export class ReservationDetailComponent implements OnInit {
 
   cancel() {
     if (!this.reservation) return;
+    if (!confirm('¿Estás seguro de que deseas cancelar esta reserva?')) return;
     this.canceling = true;
     this.reservationService.cancelReservation(this.reservation.id).subscribe({
       next: () => {

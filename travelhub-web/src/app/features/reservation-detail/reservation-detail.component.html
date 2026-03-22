@@ -93,13 +93,13 @@
           <div class="bg-gray-50 rounded-xl p-4">
             <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Check-in</p>
             <p class="text-gray-900 font-medium">
-              {{ formatDate(reservation.fecha_inicio || reservation.fecha_checkin || '') }}
+              {{ formatDate(reservation.fecha_checkin || '') }}
             </p>
           </div>
           <div class="bg-gray-50 rounded-xl p-4">
             <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Check-out</p>
             <p class="text-gray-900 font-medium">
-              {{ formatDate(reservation.fecha_fin || reservation.fecha_checkout || '') }}
+              {{ formatDate(reservation.fecha_checkout || '') }}
             </p>
           </div>
           <div class="bg-gray-50 rounded-xl p-4">
@@ -109,10 +109,7 @@
           <div class="bg-gray-50 rounded-xl p-4">
             <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Huéspedes</p>
             <p class="text-gray-900 font-medium">
-              {{ reservation.adultos || reservation.num_huespedes || 1 }} adulto(s)
-              @if (reservation.ninos) {
-                + {{ reservation.ninos }} niño(s)
-              }
+              {{ reservation.num_huespedes || 1 }} huesped(es)
             </p>
           </div>
         </div>
@@ -128,7 +125,7 @@
         <div class="flex justify-between items-center pt-3">
           <span class="font-bold text-gray-900">Total</span>
           <span class="text-[#1D4ED8] font-bold text-xl">
-            {{ formatPrice(reservation.total || reservation.monto_total || 0) }}
+            {{ formatPrice(reservation.monto_total || 0) }}
             <span class="text-gray-400 text-sm font-normal">{{ reservation.moneda || 'COP' }}</span>
           </span>
         </div>

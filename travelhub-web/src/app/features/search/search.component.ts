@@ -53,7 +53,7 @@ export class SearchComponent implements OnInit {
     this.error = '';
     this.catalog.getHotels({ ciudad: this.ciudad, page: this.page }).subscribe({
       next: (res) => {
-        this.hotels = res.hoteles || [];
+        this.hotels = res.hotels || [];
         this.total = res.total || this.hotels.length;
         this.loading = false;
         this.applySort();

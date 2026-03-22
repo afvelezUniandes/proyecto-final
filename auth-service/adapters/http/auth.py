@@ -47,10 +47,11 @@ def sign_in():
         return jsonify({'error': 'Invalid credentials'}), 401
     token = jwt.encode({
         'user_id': user.id,
+        'rol': user.rol.value if user.rol else 'user',
         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=2)
     }, SECRET_KEY, algorithm='HS256')
     session.close()
-    return jsonify({'token': token})
+    return jsonify({'token': token, 'rol': user.rol.value if user.rol else 'user'})
 
 @bp.route('/sign-out', methods=['POST'])
 def sign_out():
@@ -83,6 +84,7 @@ def get_profile():
             'telefono': user.telefono or '',
             'pais': user.pais or '',
             'idioma_preferido': user.idioma_preferido or 'es',
+            'rol': user.rol.value if user.rol else 'user',
         }), 200
     finally:
         session.close()
@@ -127,6 +129,7 @@ def update_profile():
             'telefono': user.telefono or '',
             'pais': user.pais or '',
             'idioma_preferido': user.idioma_preferido or 'es',
+            'rol': user.rol.value if user.rol else 'user',
         }), 200
     finally:
         session.close()

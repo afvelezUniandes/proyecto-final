@@ -178,6 +178,34 @@ def create_reservation():
 
 
 # ──────────────────────────────────────────────
+# GET /reservations/hotel/<hotel_id>  — reservas de un hotel (vista admin)
+# ──────────────────────────────────────────────
+@bp.route('/reservations/hotel/<int:hotel_id>', methods=['GET'])
+def get_hotel_reservations(hotel_id):
+    session = Session()
+    try:
+        estado = request.args.get('estado')
+        codigo = request.args.get('codigo')
+        fecha_desde = request.args.get('fecha_desde')
+        fecha_hasta = request.args.get('fecha_hasta')
+
+        query = session.query(Reserva).filter(Reserva.hotel_id == hotel_id)
+        if estado:
+            query = query.filter(Reserva.estado == estado)
+        if codigo:
+            query = query.filter(Reserva.codigo.ilike(f'%{codigo}%'))
+        if fecha_desde:
+            query = query.filter(Reserva.fecha_checkin >= datetime.date.fromisoformat(fecha_desde))
+        if fecha_hasta:
+            query = query.filter(Reserva.fecha_checkout <= datetime.date.fromisoformat(fecha_hasta))
+
+        reservas = query.order_by(Reserva.fecha_creacion.desc()).all()
+        return jsonify([reserva_to_dict(r) for r in reservas]), 200
+    finally:
+        session.close()
+
+
+# ──────────────────────────────────────────────
 # GET /reservations/occupied-rooms  — habitaciones ocupadas en un rango de fechas
 # Público (sin auth). Overlap estricto: checkout day disponible.
 # ──────────────────────────────────────────────
