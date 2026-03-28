@@ -18,6 +18,7 @@ import { Hotel, Room } from '../../core/models';
 export class HotelDetailComponent implements OnInit {
   hotel: Hotel | null = null;
   rooms: Room[] = [];
+  occupiedRoomIds: number[] = [];
   loading = true;
   error = '';
   selectedRoomId: number | null = null;
@@ -50,16 +51,39 @@ export class HotelDetailComponent implements OnInit {
       next: ({ hotel, rooms }) => {
         this.hotel = hotel;
         this.rooms = rooms;
-        // Auto-select first available room
-        const firstAvailable = rooms.find((r) => r.disponible);
-        if (firstAvailable) this.selectedRoomId = firstAvailable.id;
         this.loading = false;
+        this.loadOccupiedRooms(+id);
       },
       error: () => {
         this.error = 'Hotel no encontrado.';
         this.loading = false;
       },
     });
+  }
+
+  loadOccupiedRooms(hotelId: number) {
+    if (!this.checkIn || !this.checkOut) {
+      this.autoSelectRoom();
+      return;
+    }
+    this.catalog.getOccupiedRooms(hotelId, this.checkIn, this.checkOut).subscribe({
+      next: (res) => {
+        this.occupiedRoomIds = res.occupied_room_ids || [];
+        this.rooms = this.rooms.map((r) => ({
+          ...r,
+          disponible: !this.occupiedRoomIds.includes(r.id),
+        }));
+        this.autoSelectRoom();
+      },
+      error: () => {
+        this.autoSelectRoom();
+      },
+    });
+  }
+
+  autoSelectRoom() {
+    const firstAvailable = this.rooms.find((r) => r.disponible);
+    if (firstAvailable) this.selectedRoomId = firstAvailable.id;
   }
 
   selectedRoom(): Room | null {
@@ -87,18 +111,22 @@ export class HotelDetailComponent implements OnInit {
 
   reserve() {
     if (!this.selectedRoomId || !this.checkIn || !this.checkOut) {
-      this.reserveError = 'Selecciona habitación y fechas.';
+      this.reserveError = 'Selecciona habitacion y fechas.';
       return;
     }
+    if (!this.hotel) return;
+
     this.reserving = true;
     this.reserveError = '';
     this.reservationService
       .createReservation({
         habitacion_id: this.selectedRoomId,
-        fecha_inicio: this.checkIn,
-        fecha_fin: this.checkOut,
-        adultos: this.adultos,
-        ninos: 0,
+        hotel_id: this.hotel.id,
+        fecha_checkin: this.checkIn,
+        fecha_checkout: this.checkOut,
+        num_huespedes: this.adultos,
+        monto_total: this.total(),
+        moneda: 'COP',
       })
       .subscribe({
         next: () => {
@@ -106,7 +134,7 @@ export class HotelDetailComponent implements OnInit {
           this.reserving = false;
         },
         error: (e) => {
-          this.reserveError = e?.error?.mensaje || 'Error al crear la reserva.';
+          this.reserveError = e?.error?.error || 'Error al crear la reserva.';
           this.reserving = false;
         },
       });

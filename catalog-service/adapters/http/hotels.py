@@ -119,6 +119,229 @@ def get_hotels():
     response.headers['X-Cache'] = 'MISS'
     return response
 
+@bp.route('/hotels/<int:hotel_id>', methods=['GET'])
+def get_hotel(hotel_id):
+    session = Session()
+    try:
+        hotel = session.query(Hotel).filter(Hotel.id == hotel_id).first()
+        if not hotel:
+            return jsonify({'error': 'Hotel not found'}), 404
+        return jsonify({
+            'id': hotel.id,
+            'admin_id': hotel.admin_id,
+            'nombre': hotel.nombre,
+            'descripcion': hotel.descripcion,
+            'direccion': hotel.direccion,
+            'ciudad': hotel.ciudad,
+            'pais': hotel.pais,
+            'estrellas': hotel.estrellas,
+            'activo': hotel.activo,
+            'image_url': hotel.image_url,
+        }), 200
+    finally:
+        session.close()
+
+
+@bp.route('/hotels/admin/<int:admin_id>', methods=['GET'])
+def get_hotel_by_admin(admin_id):
+    session = Session()
+    try:
+        hotel = session.query(Hotel).filter(Hotel.admin_id == admin_id).first()
+        if not hotel:
+            return jsonify({'error': 'No hotel found for this admin'}), 404
+        return jsonify({
+            'id': hotel.id,
+            'admin_id': hotel.admin_id,
+            'nombre': hotel.nombre,
+            'descripcion': hotel.descripcion,
+            'direccion': hotel.direccion,
+            'ciudad': hotel.ciudad,
+            'pais': hotel.pais,
+            'estrellas': hotel.estrellas,
+            'activo': hotel.activo,
+            'image_url': hotel.image_url,
+        }), 200
+    finally:
+        session.close()
+
+
+@bp.route('/hotels', methods=['POST'])
+def create_hotel():
+    data = request.json
+    session = Session()
+    try:
+        import datetime
+        hotel = Hotel(
+            admin_id=data.get('admin_id'),
+            nombre=data['nombre'],
+            descripcion=data.get('descripcion', ''),
+            direccion=data.get('direccion', ''),
+            ciudad=data['ciudad'],
+            pais=data['pais'],
+            estrellas=data.get('estrellas', 3),
+            activo=True,
+            fecha_creacion=datetime.datetime.utcnow(),
+            image_url=data.get('image_url', ''),
+        )
+        session.add(hotel)
+        session.commit()
+        cache = current_app.cache
+        cache.clear()
+        return jsonify({
+            'id': hotel.id,
+            'admin_id': hotel.admin_id,
+            'nombre': hotel.nombre,
+            'ciudad': hotel.ciudad,
+            'pais': hotel.pais,
+            'estrellas': hotel.estrellas,
+            'activo': hotel.activo,
+        }), 201
+    except Exception as e:
+        session.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        session.close()
+
+
+@bp.route('/hotels/<int:hotel_id>', methods=['PUT'])
+def update_hotel(hotel_id):
+    data = request.json
+    session = Session()
+    try:
+        hotel = session.query(Hotel).filter(Hotel.id == hotel_id).first()
+        if not hotel:
+            return jsonify({'error': 'Hotel not found'}), 404
+        if 'nombre' in data:
+            hotel.nombre = data['nombre']
+        if 'descripcion' in data:
+            hotel.descripcion = data['descripcion']
+        if 'direccion' in data:
+            hotel.direccion = data['direccion']
+        if 'ciudad' in data:
+            hotel.ciudad = data['ciudad']
+        if 'pais' in data:
+            hotel.pais = data['pais']
+        if 'estrellas' in data:
+            hotel.estrellas = data['estrellas']
+        if 'image_url' in data:
+            hotel.image_url = data['image_url']
+        session.commit()
+        cache = current_app.cache
+        cache.clear()
+        return jsonify({
+            'id': hotel.id,
+            'admin_id': hotel.admin_id,
+            'nombre': hotel.nombre,
+            'descripcion': hotel.descripcion,
+            'direccion': hotel.direccion,
+            'ciudad': hotel.ciudad,
+            'pais': hotel.pais,
+            'estrellas': hotel.estrellas,
+            'activo': hotel.activo,
+            'image_url': hotel.image_url,
+        }), 200
+    except Exception as e:
+        session.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        session.close()
+
+
+@bp.route('/rooms', methods=['POST'])
+def create_room():
+    data = request.json
+    session = Session()
+    try:
+        room = Habitacion(
+            hotel_id=data['hotel_id'],
+            nombre=data['nombre'],
+            tipo=data.get('tipo', 'estandar'),
+            capacidad=data.get('capacidad', 2),
+            precio_noche=data['precio_noche'],
+            moneda=data.get('moneda', 'COP'),
+            disponible=True,
+            imagen_url=data.get('imagen_url', ''),
+        )
+        session.add(room)
+        session.commit()
+        cache = current_app.cache
+        cache.clear()
+        return jsonify({
+            'id': room.id,
+            'hotel_id': room.hotel_id,
+            'nombre': room.nombre,
+            'tipo': room.tipo,
+            'capacidad': room.capacidad,
+            'precio_noche': float(room.precio_noche),
+            'moneda': room.moneda,
+            'disponible': room.disponible,
+        }), 201
+    except Exception as e:
+        session.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        session.close()
+
+
+@bp.route('/rooms/<int:room_id>', methods=['PUT'])
+def update_room(room_id):
+    data = request.json
+    session = Session()
+    try:
+        room = session.query(Habitacion).filter(Habitacion.id == room_id).first()
+        if not room:
+            return jsonify({'error': 'Room not found'}), 404
+        if 'nombre' in data:
+            room.nombre = data['nombre']
+        if 'tipo' in data:
+            room.tipo = data['tipo']
+        if 'capacidad' in data:
+            room.capacidad = data['capacidad']
+        if 'precio_noche' in data:
+            room.precio_noche = data['precio_noche']
+        if 'moneda' in data:
+            room.moneda = data['moneda']
+        if 'disponible' in data:
+            room.disponible = data['disponible']
+        session.commit()
+        cache = current_app.cache
+        cache.clear()
+        return jsonify({
+            'id': room.id,
+            'hotel_id': room.hotel_id,
+            'nombre': room.nombre,
+            'tipo': room.tipo,
+            'capacidad': room.capacidad,
+            'precio_noche': float(room.precio_noche),
+            'moneda': room.moneda,
+            'disponible': room.disponible,
+        }), 200
+    except Exception as e:
+        session.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        session.close()
+
+
+@bp.route('/rooms/<int:room_id>', methods=['DELETE'])
+def delete_room(room_id):
+    session = Session()
+    try:
+        room = session.query(Habitacion).filter(Habitacion.id == room_id).first()
+        if not room:
+            return jsonify({'error': 'Room not found'}), 404
+        session.delete(room)
+        session.commit()
+        cache = current_app.cache
+        cache.clear()
+        return jsonify({'message': 'Room deleted'}), 200
+    except Exception as e:
+        session.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        session.close()
+
+
 @bp.route('/rooms', methods=['GET'])
 def get_rooms():
     cache = current_app.cache

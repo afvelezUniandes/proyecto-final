@@ -1,19 +1,11 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { LanguageSelectorComponent } from '../../shared/language-selector/language-selector.component';
 import { AuthService } from '../../core/services/auth.service';
-
-const MOCK_USER = {
-  id: 1,
-  nombre: 'Andrés Vélez',
-  email: 'andres.velez@email.com',
-  telefono: '+57 310 456 7890',
-  pais: 'Colombia',
-  idioma_preferido: 'es',
-  rol: 'viajero',
-};
+import { ApiService } from '../../core/services/api.service';
+import { User } from '../../core/models';
 
 @Component({
   selector: 'app-profile',
@@ -22,32 +14,62 @@ const MOCK_USER = {
   templateUrl: './profile.component.html',
 })
 export class ProfileComponent {
-  user = signal(MOCK_USER);
+  user = signal<User | null>(null);
   editing = signal(false);
   saveSuccess = false;
+  saving = false;
 
-  draft = { ...MOCK_USER };
+  draft: Partial<User> = {};
 
-  constructor(public auth: AuthService) {
+  constructor(
+    public auth: AuthService,
+    private api: ApiService,
+  ) {
     const current = auth.currentUser();
     if (current) {
-      const merged = { ...MOCK_USER, ...current };
-      this.user.set(merged as typeof MOCK_USER);
-      this.draft = { ...merged } as typeof MOCK_USER;
+      this.user.set(current);
+      this.draft = { ...current };
     }
+    auth.fetchProfile();
+    effect(() => {
+      const u = auth.currentUser();
+      if (u) {
+        this.user.set(u);
+        if (!this.editing()) {
+          this.draft = { ...u };
+        }
+      }
+    });
   }
 
   startEdit() {
-    this.draft = { ...this.user() };
+    this.draft = { ...this.user()! };
     this.editing.set(true);
     this.saveSuccess = false;
   }
 
   save() {
-    this.user.set({ ...this.draft });
-    this.editing.set(false);
-    this.saveSuccess = true;
-    setTimeout(() => (this.saveSuccess = false), 3000);
+    this.saving = true;
+    this.api
+      .put<User>('/auth/profile', {
+        nombre: this.draft.nombre,
+        telefono: this.draft.telefono,
+        pais: this.draft.pais,
+        idioma_preferido: this.draft.idioma_preferido,
+      })
+      .subscribe({
+        next: (updated) => {
+          this.user.set(updated);
+          this.editing.set(false);
+          this.saveSuccess = true;
+          this.saving = false;
+          this.auth.fetchProfile();
+          setTimeout(() => (this.saveSuccess = false), 3000);
+        },
+        error: () => {
+          this.saving = false;
+        },
+      });
   }
 
   cancel() {
@@ -55,8 +77,10 @@ export class ProfileComponent {
   }
 
   initials(): string {
-    return this.user()
-      .nombre.split(' ')
+    const u = this.user();
+    if (!u || !u.nombre) return 'U';
+    return u.nombre
+      .split(' ')
       .slice(0, 2)
       .map((w) => w[0])
       .join('')

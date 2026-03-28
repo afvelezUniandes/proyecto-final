@@ -20,7 +20,6 @@ export interface HotelsResponse {
   page: number;
   per_page: number;
   hotels: Hotel[];
-  hoteles?: Hotel[];
 }
 
 export interface Room {
@@ -40,16 +39,11 @@ export interface Reservation {
   usuario_id?: number;
   habitacion_id: number;
   hotel_id?: number;
-  fecha_inicio?: string;
-  fecha_fin?: string;
   fecha_checkin?: string;
   fecha_checkout?: string;
   num_huespedes?: number;
-  adultos?: number;
-  ninos?: number;
   fecha_creacion?: string;
   codigo?: string;
-  total?: number;
   monto_total?: number;
   moneda?: string;
   estado: string;
@@ -57,16 +51,16 @@ export interface Reservation {
 
 export interface CreateReservationRequest {
   habitacion_id: number;
-  hotel_id?: number;
-  fecha_inicio?: string;
-  fecha_fin?: string;
-  fecha_checkin?: string;
-  fecha_checkout?: string;
-  adultos?: number;
-  ninos?: number;
-  num_huespedes?: number;
-  monto_total?: number;
+  hotel_id: number;
+  fecha_checkin: string;
+  fecha_checkout: string;
+  num_huespedes: number;
+  monto_total: number;
   moneda?: string;
+}
+
+export interface OccupiedRoomsResponse {
+  occupied_room_ids: number[];
 }
 
 export interface User {
@@ -81,6 +75,7 @@ export interface User {
 
 export interface AuthResponse {
   token: string;
+  rol?: string;
 }
 
 export interface SignInRequest {
@@ -92,4 +87,36 @@ export interface SignUpRequest {
   nombre: string;
   email: string;
   password: string;
+  rol?: string;
+}
+
+export interface HotelDetail {
+  id: number;
+  admin_id: number;
+  nombre: string;
+  descripcion: string;
+  direccion: string;
+  ciudad: string;
+  pais: string;
+  estrellas: number;
+  activo: boolean;
+  image_url?: string;
+}
+
+export interface CreateHotelRequest {
+  nombre: string;
+  descripcion?: string;
+  direccion?: string;
+  ciudad: string;
+  pais: string;
+  estrellas?: number;
+}
+
+export interface CreateRoomRequest {
+  hotel_id: number;
+  nombre: string;
+  tipo?: string;
+  capacidad?: number;
+  precio_noche: number;
+  moneda?: string;
 }

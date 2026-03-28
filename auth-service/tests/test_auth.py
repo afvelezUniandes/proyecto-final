@@ -88,10 +88,14 @@ class TestAuthEndpoints:
 
     def test_sign_in_success(self, client, monkeypatch):
         """Test de login exitoso"""
+        class MockRol:
+            value = 'user'
+
         class MockUser:
             id = 1
             email = 'test@example.com'
             password_hash = generate_password_hash('password123')
+            rol = MockRol()
         
         class MockSession:
             def query(self, model):

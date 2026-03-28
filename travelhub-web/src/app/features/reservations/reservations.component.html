@@ -65,15 +65,15 @@
                   </span>
                 </div>
                 <p class="text-gray-500 text-sm">
-                  📅 {{ formatDate(r.fecha_inicio || r.fecha_checkin || '') }} →
-                  {{ formatDate(r.fecha_fin || r.fecha_checkout || '') }}
+                  {{ formatDate(r.fecha_checkin || '') }} →
+                  {{ formatDate(r.fecha_checkout || '') }}
                 </p>
-                @if (r.habitacion_id) {
-                  <p class="text-gray-400 text-xs mt-1">Habitación #{{ r.habitacion_id }}</p>
+                @if (r.codigo) {
+                  <p class="text-gray-400 text-xs mt-1">{{ r.codigo }}</p>
                 }
-                @if (r.total || r.monto_total) {
+                @if (r.monto_total) {
                   <p class="text-[#1D4ED8] font-semibold text-sm mt-2">
-                    {{ formatPrice(r.total || r.monto_total || 0) }}
+                    {{ formatPrice(r.monto_total) }}
                   </p>
                 }
               </div>
