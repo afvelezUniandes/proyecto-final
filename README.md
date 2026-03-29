@@ -2,7 +2,7 @@
 
 Sistema de microservicios para gestión de hoteles y reservas, desarrollado con Flask, PostgreSQL y Docker. Desplegado en AWS ECS con balanceador de carga (ALB) y base de datos RDS PostgreSQL.
 
-🌐 **Endpoint en Producción**: http://proyecto-final-alb-274129795.us-east-1.elb.amazonaws.com
+🌐 **Endpoint en Producción**: http://proyecto-final-alb-1238672503.us-east-1.elb.amazonaws.com
 
 ## 🏗️ Arquitectura
 
@@ -42,7 +42,7 @@ El sistema está desplegado y accesible públicamente:
 
 ```bash
 # Endpoint de producción
-BASE_URL="http://proyecto-final-alb-274129795.us-east-1.elb.amazonaws.com"
+BASE_URL="http://proyecto-final-alb-1238672503.us-east-1.elb.amazonaws.com"
 
 # Health check
 curl "$BASE_URL/health"
@@ -309,7 +309,7 @@ curl "http://localhost:8000/catalog/hotels?page=2&per_page=10"
   - Health checks: `/health` cada 30s
   - Logs: CloudWatch `/ecs/travelhub-microservices`
 - **ALB**: `proyecto-final-alb`
-  - DNS: http://proyecto-final-alb-274129795.us-east-1.elb.amazonaws.com
+  - DNS: http://proyecto-final-alb-1238672503.us-east-1.elb.amazonaws.com
   - Target Group: `proyecto-final-tg` (IP targets, puerto 5002)
   - Health check: `GET /health` cada 30s
   - Estado: ✅ Healthy
