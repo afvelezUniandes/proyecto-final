@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - develop
   workflow_dispatch:
 
 env:
@@ -133,10 +132,46 @@ jobs:
           echo "Tag: gateway-latest"
           echo "Full URI: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:gateway-latest"
 
+  # Deploy a ECS (solo en main)
+  deploy-ecs:
+    name: Deploy to ECS
+    needs: [build-auth, build-catalog, build-gateway]
+    runs-on: ubuntu-latest
+    if: |
+      always() &&
+      !contains(needs.*.result, 'failure') &&
+      (needs.build-auth.result == 'success' || needs.build-catalog.result == 'success' || needs.build-gateway.result == 'success')
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Force new ECS deployment
+        run: |
+          aws ecs update-service \
+            --cluster proyecto-final-cluster \
+            --service travelhub-service \
+            --force-new-deployment \
+            --region us-east-1
+
+      - name: Wait for service stability
+        run: |
+          echo "Waiting for ECS service to stabilize..."
+          aws ecs wait services-stable \
+            --cluster proyecto-final-cluster \
+            --services travelhub-service \
+            --region us-east-1
+          echo "✅ ECS service is stable!"
+
   # Notificación de deployment
   deploy-notification:
     name: Deployment Summary
-    needs: [detect-changes, build-auth, build-catalog, build-gateway]
+    needs:
+      [detect-changes, build-auth, build-catalog, build-gateway, deploy-ecs]
     runs-on: ubuntu-latest
     if: always()
 
@@ -167,3 +202,11 @@ jobs:
 
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "✅ Deployment workflow completed!" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.deploy-ecs.result }}" == "success" ]; then
+            echo "🚀 ECS service redeployed successfully!" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.deploy-ecs.result }}" == "skipped" ]; then
+            echo "⏭️ ECS deploy skipped (no builds succeeded)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ ECS deploy failed" >> $GITHUB_STEP_SUMMARY
+          fi
