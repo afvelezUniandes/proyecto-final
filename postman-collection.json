@@ -7,7 +7,7 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "http://proyecto-final-alb-274129795.us-east-1.elb.amazonaws.com",
+      "value": "http://proyecto-final-alb-1238672503.us-east-1.elb.amazonaws.com",
       "type": "string"
     },
     {

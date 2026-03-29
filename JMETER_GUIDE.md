@@ -6,7 +6,7 @@ Archivo: `jmeter-load-test.jmx`
 
 ### Configuración del Experimento
 
-**Endpoint bajo prueba**: `GET http://proyecto-final-alb-274129795.us-east-1.elb.amazonaws.com/catalog/hotels`
+**Endpoint bajo prueba**: `GET http://proyecto-final-alb-1238672503.us-east-1.elb.amazonaws.com/catalog/hotels`
 
 **Niveles de carga** (secuenciales):
 
@@ -221,7 +221,7 @@ awk -F',' 'NR>1 {print $2}' results.jtl | sort -n | awk '{all[NR]=$1} END{print 
 
 ```bash
 # En otra terminal, monitorear requests por segundo
-watch -n 5 'curl -s http://proyecto-final-alb-274129795.us-east-1.elb.amazonaws.com/health'
+watch -n 5 'curl -s http://proyecto-final-alb-1238672503.us-east-1.elb.amazonaws.com/health'
 ```
 
 ### Verificar que el ALB está recibiendo tráfico:
