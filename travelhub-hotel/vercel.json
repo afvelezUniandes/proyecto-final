@@ -1,0 +1,5 @@
+{
+  "buildCommand": "ng build --configuration production",
+  "outputDirectory": "dist/travelhub-hotel/browser",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
