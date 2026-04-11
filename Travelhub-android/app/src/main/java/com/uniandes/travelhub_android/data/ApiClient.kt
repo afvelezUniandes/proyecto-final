@@ -6,8 +6,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiClient {
-    // 10.0.2.2 es localhost del host desde el emulador Android
-    private const val BASE_URL = "http://10.0.2.2:8000"
+    private const val BASE_URL = "http://proyecto-final-alb-1238672503.us-east-1.elb.amazonaws.com/"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
