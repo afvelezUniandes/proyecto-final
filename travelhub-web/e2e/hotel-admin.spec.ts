@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 const HOTEL_USER = {
   nombre: 'Admin Hotel PW',
-  email: `hotel_pw_${Date.now()}@example.com`,
+  email: `hotel_pw_${crypto.randomUUID()}@example.com`,
   password: 'HotelPass123',
   hotelNombre: 'Hotel Playwright Test',
   ciudad: 'Bogota',
@@ -71,7 +71,10 @@ test.describe.serial('Hotel Admin Portal E2E', () => {
     await page.waitForTimeout(500);
 
     await page.locator('input[placeholder="Ej: Suite Premium"]').fill('Suite Deluxe');
-    const precioInput = page.locator('label', { hasText: 'Precio por noche' }).locator('..').locator('input[type="number"]');
+    const precioInput = page
+      .locator('label', { hasText: 'Precio por noche' })
+      .locator('..')
+      .locator('input[type="number"]');
     await precioInput.fill('250000');
 
     await page.locator('button', { hasText: 'Guardar cambios' }).click();
@@ -92,14 +95,19 @@ test.describe.serial('Hotel Admin Portal E2E', () => {
       await editBtn.first().click();
       await page.waitForTimeout(500);
 
-      const precioInput = page.locator('label', { hasText: 'Precio por noche' }).locator('..').locator('input[type="number"]');
+      const precioInput = page
+        .locator('label', { hasText: 'Precio por noche' })
+        .locator('..')
+        .locator('input[type="number"]');
       await precioInput.fill('300000');
       await page.locator('button', { hasText: 'Guardar cambios' }).click();
       await page.waitForTimeout(3000);
     }
 
     const content = await page.content();
-    expect(content.includes('300,000') || content.includes('300000') || content.includes('Suite')).toBeTruthy();
+    expect(
+      content.includes('300,000') || content.includes('300000') || content.includes('Suite'),
+    ).toBeTruthy();
   });
 
   test('6 - Lista de reservas del hotel (HU-11)', async ({ page }) => {
@@ -110,7 +118,9 @@ test.describe.serial('Hotel Admin Portal E2E', () => {
     const content = await page.content();
     expect(
       content.includes('Reservas') &&
-      (content.includes('Estado') || content.includes('Código') || content.includes('No se encontraron'))
+        (content.includes('Estado') ||
+          content.includes('Código') ||
+          content.includes('No se encontraron')),
     ).toBeTruthy();
   });
 
@@ -122,7 +132,9 @@ test.describe.serial('Hotel Admin Portal E2E', () => {
     const content = await page.content();
     expect(
       content.includes('Tarifas') &&
-      (content.includes('Precio Actual') || content.includes('Actualizar precio') || content.includes('No hay habitaciones'))
+        (content.includes('Precio Actual') ||
+          content.includes('Actualizar precio') ||
+          content.includes('No hay habitaciones')),
     ).toBeTruthy();
   });
 });

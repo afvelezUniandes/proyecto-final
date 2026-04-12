@@ -7,17 +7,14 @@ export default defineConfig({
   tsconfig: './tsconfig.playwright.json',
   timeout: 30000,
   use: {
-    baseURL: process.env['PLAYWRIGHT_BASE_URL'] || 'http://localhost:4200',
+    baseURL: process.env['PLAYWRIGHT_BASE_URL'] || 'http://localhost:4201',
     headless: true,
   },
   projects: [
     {
       name: 'chromium',
       use: { browserName: 'chromium' },
-      // En CI solo corre los specs de auth; localmente corren todos con: npx playwright test
-      testMatch: process.env['CI']
-        ? ['**/auth.spec.ts', '**/hotel-auth.spec.ts']
-        : ['**/*.spec.ts'],
+      testMatch: process.env['CI'] ? ['**/hotel-auth.spec.ts'] : ['**/*.spec.ts'],
     },
   ],
 });
