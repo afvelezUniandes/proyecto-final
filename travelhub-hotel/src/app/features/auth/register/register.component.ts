@@ -16,7 +16,7 @@ export class RegisterComponent {
   step = signal<1 | 2>(1);
   loading = false;
   error = signal<string | null>(null);
-  success = false;
+  success = signal(false);
 
   // Step 1 — Account
   nombre = '';
@@ -113,7 +113,7 @@ export class RegisterComponent {
       .subscribe({
         next: () => {
           this.loading = false;
-          this.success = true;
+          this.success.set(true);
         },
         error: (err) => {
           this.loading = false;
