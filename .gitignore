@@ -65,3 +65,7 @@ coverage.xml
 results.jtl
 jmeter.log
 # report/  ← NO ignorar, queremos commitear el reporte HTML
+
+# Playwright
+test-results/
+playwright-report/
