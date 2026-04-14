@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "TravelHub Microservices",
-    "description": "Colección de pruebas para los microservicios de TravelHub en AWS ECS",
+    "description": "Colección completa de pruebas para los microservicios de TravelHub en AWS ECS",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -14,11 +14,43 @@
       "key": "auth_token",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "hotel_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "room_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "reservation_id",
+      "value": "1",
+      "type": "string"
     }
   ],
   "item": [
     {
       "name": "Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code es 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Gateway reporta healthy\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('status');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [],
@@ -40,11 +72,9 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    pm.test(\"Usuario creado exitosamente\", function () {",
-                  "        pm.response.to.have.status(201);",
-                  "    });",
-                  "}"
+                  "pm.test(\"Usuario creado exitosamente\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
                 ],
                 "type": "text/javascript"
               }
@@ -52,12 +82,7 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"nombre\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"Test123!\",\n  \"telefono\": \"+123456789\",\n  \"pais\": \"Colombia\",\n  \"idioma_preferido\": \"es\",\n  \"rol\": \"user\"\n}"
@@ -71,12 +96,45 @@
           }
         },
         {
+          "name": "Sign Up (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Admin creado exitosamente\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Admin Hotel\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"Admin123!\",\n  \"telefono\": \"+573001234567\",\n  \"pais\": \"Colombia\",\n  \"idioma_preferido\": \"es\",\n  \"rol\": \"admin\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/sign-up",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "sign-up"]
+            },
+            "description": "Registra un usuario con rol admin"
+          }
+        },
+        {
           "name": "Sign In",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
                   "if (pm.response.code === 200) {",
                   "    var jsonData = pm.response.json();",
                   "    if (jsonData.token) {",
@@ -93,12 +151,7 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"Test123!\"\n}"
@@ -108,11 +161,24 @@
               "host": ["{{base_url}}"],
               "path": ["auth", "sign-in"]
             },
-            "description": "Inicia sesión y obtiene un token JWT"
+            "description": "Inicia sesión y guarda el token JWT en auth_token"
           }
         },
         {
           "name": "Sign Out",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -129,12 +195,120 @@
             },
             "description": "Cierra la sesión del usuario autenticado"
           }
+        },
+        {
+          "name": "Get Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Perfil tiene campos esperados\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('nombre');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "    pm.expect(jsonData).to.have.property('rol');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "profile"]
+            },
+            "description": "Obtiene el perfil del usuario autenticado"
+          }
+        },
+        {
+          "name": "Update Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Test User Updated\",\n  \"telefono\": \"+573009876543\",\n  \"pais\": \"Colombia\",\n  \"idioma_preferido\": \"es\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "profile"]
+            },
+            "description": "Actualiza nombre, teléfono, país e idioma del usuario"
+          }
         }
       ]
     },
     {
       "name": "Catalog",
       "item": [
+        {
+          "name": "Get Cities",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Response es un array\", function () {",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});",
+                  "pm.test(\"Response time es menor a 900ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(900);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalog/cities",
+              "host": ["{{base_url}}"],
+              "path": ["catalog", "cities"]
+            },
+            "description": "Obtiene lista de ciudades con hoteles activos"
+          }
+        },
         {
           "name": "Get Hotels",
           "event": [
@@ -145,7 +319,6 @@
                   "pm.test(\"Status code es 200\", function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "",
                   "pm.test(\"Response tiene estructura correcta\", function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData).to.have.property('hotels');",
@@ -153,10 +326,15 @@
                   "    pm.expect(jsonData).to.have.property('per_page');",
                   "    pm.expect(jsonData).to.have.property('total');",
                   "});",
-                  "",
                   "pm.test(\"Response time es menor a 900ms\", function () {",
                   "    pm.expect(pm.response.responseTime).to.be.below(900);",
-                  "});"
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    var hotels = pm.response.json().hotels;",
+                  "    if (hotels && hotels.length > 0) {",
+                  "        pm.collectionVariables.set('hotel_id', hotels[0].id);",
+                  "    }",
+                  "}"
                 ],
                 "type": "text/javascript"
               }
@@ -170,27 +348,156 @@
               "host": ["{{base_url}}"],
               "path": ["catalog", "hotels"],
               "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "per_page",
-                  "value": "20"
-                },
-                {
-                  "key": "ciudad",
-                  "value": "Bogota",
-                  "disabled": true
-                },
-                {
-                  "key": "search",
-                  "value": "",
-                  "disabled": true
-                }
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "20" },
+                { "key": "ciudad", "value": "Bogota", "disabled": true },
+                { "key": "nombre", "value": "", "disabled": true },
+                { "key": "pais", "value": "", "disabled": true },
+                { "key": "estrellas", "value": "4", "disabled": true }
               ]
             },
-            "description": "Obtiene la lista de hoteles con paginación"
+            "description": "Obtiene la lista de hoteles con paginación y guarda hotel_id del primero"
+          }
+        },
+        {
+          "name": "Get Hotel Detail",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Hotel tiene campos esperados\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('nombre');",
+                  "    pm.expect(jsonData).to.have.property('ciudad');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalog/hotels/{{hotel_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["catalog", "hotels", "{{hotel_id}}"]
+            },
+            "description": "Obtiene detalle completo de un hotel por ID"
+          }
+        },
+        {
+          "name": "Get My Hotel (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalog/hotels/mine",
+              "host": ["{{base_url}}"],
+              "path": ["catalog", "hotels", "mine"]
+            },
+            "description": "Obtiene el hotel administrado por el usuario autenticado"
+          }
+        },
+        {
+          "name": "Create Hotel (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('hotel_id', pm.response.json().id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Hotel Test\",\n  \"descripcion\": \"Hotel de prueba creado via Postman\",\n  \"direccion\": \"Calle 123 #45-67\",\n  \"ciudad\": \"Bogotá\",\n  \"pais\": \"Colombia\",\n  \"estrellas\": 4,\n  \"image_url\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/catalog/hotels",
+              "host": ["{{base_url}}"],
+              "path": ["catalog", "hotels"]
+            },
+            "description": "Crea un hotel. El admin_id se inyecta del token en el gateway."
+          }
+        },
+        {
+          "name": "Update Hotel (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Hotel Test Actualizado\",\n  \"descripcion\": \"Descripción actualizada\",\n  \"estrellas\": 5\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/catalog/hotels/{{hotel_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["catalog", "hotels", "{{hotel_id}}"]
+            },
+            "description": "Actualiza campos del hotel identificado por hotel_id"
           }
         },
         {
@@ -203,10 +510,16 @@
                   "pm.test(\"Status code es 200\", function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "",
                   "pm.test(\"Response time es menor a 900ms\", function () {",
                   "    pm.expect(pm.response.responseTime).to.be.below(900);",
-                  "});"
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    var rooms = pm.response.json().rooms || pm.response.json();",
+                  "    var arr = Array.isArray(rooms) ? rooms : (rooms.rooms || []);",
+                  "    if (arr.length > 0) {",
+                  "        pm.collectionVariables.set('room_id', arr[0].id);",
+                  "    }",
+                  "}"
                 ],
                 "type": "text/javascript"
               }
@@ -220,22 +533,357 @@
               "host": ["{{base_url}}"],
               "path": ["catalog", "rooms"],
               "query": [
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "20" },
+                { "key": "hotel_id", "value": "{{hotel_id}}", "disabled": true }
+              ]
+            },
+            "description": "Obtiene la lista de habitaciones con paginación"
+          }
+        },
+        {
+          "name": "Create Room (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('room_id', pm.response.json().id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hotel_id\": {{hotel_id}},\n  \"nombre\": \"Habitación Deluxe 101\",\n  \"tipo\": \"deluxe\",\n  \"capacidad\": 2,\n  \"precio_noche\": 250000,\n  \"moneda\": \"COP\",\n  \"imagen_url\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/catalog/rooms",
+              "host": ["{{base_url}}"],
+              "path": ["catalog", "rooms"]
+            },
+            "description": "Crea una habitación para el hotel indicado"
+          }
+        },
+        {
+          "name": "Update Room (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"precio_noche\": 280000,\n  \"disponible\": true,\n  \"capacidad\": 3\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/catalog/rooms/{{room_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["catalog", "rooms", "{{room_id}}"]
+            },
+            "description": "Actualiza precio, disponibilidad o capacidad de una habitación"
+          }
+        },
+        {
+          "name": "Delete Room (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalog/rooms/{{room_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["catalog", "rooms", "{{room_id}}"]
+            },
+            "description": "Elimina una habitación por ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reservations",
+      "item": [
+        {
+          "name": "Get Occupied Rooms (Público)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reservations/occupied-rooms?hotel_id={{hotel_id}}&fecha_checkin=2026-05-01&fecha_checkout=2026-05-05",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "occupied-rooms"],
+              "query": [
+                { "key": "hotel_id", "value": "{{hotel_id}}" },
+                { "key": "fecha_checkin", "value": "2026-05-01" },
+                { "key": "fecha_checkout", "value": "2026-05-05" }
+              ]
+            },
+            "description": "Devuelve IDs de habitaciones ocupadas en el rango de fechas. No requiere token."
+          }
+        },
+        {
+          "name": "Create Reservation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('reservation_id', pm.response.json().id);",
+                  "    pm.test(\"Reserva tiene código\", function () {",
+                  "        pm.expect(pm.response.json().codigo).to.be.a('string');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"habitacion_id\": {{room_id}},\n  \"hotel_id\": {{hotel_id}},\n  \"fecha_checkin\": \"2026-05-10\",\n  \"fecha_checkout\": \"2026-05-15\",\n  \"num_huespedes\": 2,\n  \"monto_total\": 1250000,\n  \"moneda\": \"COP\",\n  \"metodo_pago\": \"tarjeta\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/reservations",
+              "host": ["{{base_url}}"],
+              "path": ["reservations"]
+            },
+            "description": "Crea una reserva. Guarda reservation_id del resultado."
+          }
+        },
+        {
+          "name": "Get My Reservations",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Response es un array\", function () {",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations",
+              "host": ["{{base_url}}"],
+              "path": ["reservations"],
+              "query": [
+                { "key": "estado", "value": "confirmada", "disabled": true }
+              ]
+            },
+            "description": "Lista las reservas del usuario autenticado. Filtrar por estado: confirmada | cancelada"
+          }
+        },
+        {
+          "name": "Get Reservation Detail",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Reserva tiene campos esperados\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('codigo');",
+                  "    pm.expect(jsonData).to.have.property('estado');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations/{{reservation_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "{{reservation_id}}"]
+            },
+            "description": "Obtiene detalle de una reserva por ID"
+          }
+        },
+        {
+          "name": "Cancel Reservation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations/{{reservation_id}}/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "{{reservation_id}}", "cancel"]
+            },
+            "description": "Cancela la reserva indicada por reservation_id"
+          }
+        },
+        {
+          "name": "Get Hotel Reservations (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code es 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Response es un array\", function () {",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservations/hotel/{{hotel_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["reservations", "hotel", "{{hotel_id}}"],
+              "query": [
+                { "key": "estado", "value": "confirmada", "disabled": true },
+                { "key": "codigo", "value": "", "disabled": true },
                 {
-                  "key": "page",
-                  "value": "1"
+                  "key": "fecha_desde",
+                  "value": "2026-01-01",
+                  "disabled": true
                 },
                 {
-                  "key": "per_page",
-                  "value": "20"
-                },
-                {
-                  "key": "hotel_id",
-                  "value": "1",
+                  "key": "fecha_hasta",
+                  "value": "2026-12-31",
                   "disabled": true
                 }
               ]
             },
-            "description": "Obtiene la lista de habitaciones con paginación"
+            "description": "Lista todas las reservas de un hotel (vista admin). Soporta filtros por estado, código y fechas."
           }
         }
       ]
