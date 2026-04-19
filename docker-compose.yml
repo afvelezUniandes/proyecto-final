@@ -25,9 +25,12 @@ services:
     environment:
       AUTH_DATABASE_URL: postgresql://travelhub_user:travelhub_pass@postgres:5432/travelhub
       JWT_SECRET: mi_secreto_super_seguro_jwt_2024
+      CATALOG_SERVICE_URL: http://catalog-service:5001
     depends_on:
       postgres:
         condition: service_healthy
+      catalog-service:
+        condition: service_started
     networks:
       - travelhub-net
 
