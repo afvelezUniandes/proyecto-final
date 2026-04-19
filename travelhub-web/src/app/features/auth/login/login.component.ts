@@ -83,8 +83,11 @@ export class LoginComponent {
       this.registerError.set('Ingresa un correo electrónico válido.');
       return;
     }
-    if (this.registerPassword.length < 6) {
-      this.registerError.set('La contraseña debe tener al menos 6 caracteres.');
+    const passwordRe = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+    if (!passwordRe.test(this.registerPassword)) {
+      this.registerError.set(
+        'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial.',
+      );
       return;
     }
     if (this.registerPassword !== this.registerConfirm) {
