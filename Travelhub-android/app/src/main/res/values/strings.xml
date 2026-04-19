@@ -39,6 +39,7 @@
     <string name="err_no_connection">Sin conexión al servidor</string>
     <string name="err_no_session">Sesión no encontrada. Por favor inicia sesión</string>
     <string name="err_passwords_mismatch">Las contraseñas no coinciden</string>
+    <string name="err_weak_password">La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial</string>
     <string name="err_save">Error al guardar (%1$s)</string>
     <string name="err_invalid_id">ID de reserva inválido</string>
     <string name="err_no_reservation">Reserva no encontrada</string>

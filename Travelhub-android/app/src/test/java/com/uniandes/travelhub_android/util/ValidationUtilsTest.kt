@@ -104,18 +104,43 @@ class ValidationUtilsTest {
     // --- isValidPassword ---
 
     @Test
-    fun `password of exactly 6 chars is valid`() {
-        assertTrue(ValidationUtils.isValidPassword("abcdef"))
+    fun `valid password with all requirements passes`() {
+        assertTrue(ValidationUtils.isValidPassword("Secure@123"))
     }
 
     @Test
-    fun `password longer than 6 chars is valid`() {
-        assertTrue(ValidationUtils.isValidPassword("strongPassword1!"))
+    fun `valid password exactly 8 chars passes`() {
+        assertTrue(ValidationUtils.isValidPassword("Secret1!"))
     }
 
     @Test
-    fun `password of 5 chars is invalid`() {
-        assertFalse(ValidationUtils.isValidPassword("abcde"))
+    fun `password with multiple special chars passes`() {
+        assertTrue(ValidationUtils.isValidPassword("P@ssw0rd!!"))
+    }
+
+    @Test
+    fun `password shorter than 8 chars fails`() {
+        assertFalse(ValidationUtils.isValidPassword("Sec@1"))
+    }
+
+    @Test
+    fun `password of exactly 7 chars fails`() {
+        assertFalse(ValidationUtils.isValidPassword("Secur1!"))
+    }
+
+    @Test
+    fun `password without uppercase fails`() {
+        assertFalse(ValidationUtils.isValidPassword("secure@123"))
+    }
+
+    @Test
+    fun `password without digit fails`() {
+        assertFalse(ValidationUtils.isValidPassword("Secure@abc"))
+    }
+
+    @Test
+    fun `password without special character fails`() {
+        assertFalse(ValidationUtils.isValidPassword("Secure1234"))
     }
 
     @Test

@@ -16,6 +16,7 @@ sealed class LoginFormError {
 sealed class RegisterFormError {
     object EmptyFields : RegisterFormError()
     object InvalidEmail : RegisterFormError()
+    object WeakPassword : RegisterFormError()
     object PasswordMismatch : RegisterFormError()
 }
 
@@ -52,6 +53,7 @@ object FormValidator {
     ): RegisterFormError? = when {
         ValidationUtils.isEmptyFields(nombre, email, password) -> RegisterFormError.EmptyFields
         !ValidationUtils.isValidEmail(email)                   -> RegisterFormError.InvalidEmail
+        !ValidationUtils.isValidPassword(password)             -> RegisterFormError.WeakPassword
         !ValidationUtils.passwordsMatch(password, confirmPassword) -> RegisterFormError.PasswordMismatch
         else                                                   -> null
     }

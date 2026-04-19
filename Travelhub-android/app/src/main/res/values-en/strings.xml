@@ -39,6 +39,7 @@
     <string name="err_no_connection">No server connection</string>
     <string name="err_no_session">Session not found. Please sign in</string>
     <string name="err_passwords_mismatch">Passwords do not match</string>
+    <string name="err_weak_password">Password must have at least 8 characters, one uppercase letter, one number, and one special character</string>
     <string name="err_save">Error saving (%1$s)</string>
     <string name="err_invalid_id">Invalid reservation ID</string>
     <string name="err_no_reservation">Reservation not found</string>
