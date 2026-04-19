@@ -4,13 +4,13 @@ import { test, expect, Page } from '@playwright/test';
 const REGISTER_USER = {
   nombre: 'Test Playwright Registro',
   email: `test_reg_${crypto.randomUUID()}@example.com`,
-  password: 'TestPass123',
+  password: 'TestPass123!',
 };
 
 const LOGIN_USER = {
   nombre: 'Test Playwright Login',
   email: `test_login_${crypto.randomUUID()}@example.com`,
-  password: 'TestPass123',
+  password: 'TestPass123!',
 };
 
 // =========================================================
