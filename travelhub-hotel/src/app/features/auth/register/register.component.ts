@@ -33,6 +33,7 @@ export class RegisterComponent {
   hotelEstrellas = 3;
   hotelTelefono = '';
   hotelEmail = '';
+  hotelDescripcion = '';
 
   paises = [
     'Colombia',
@@ -61,8 +62,11 @@ export class RegisterComponent {
       this.error.set('El correo es requerido.');
       return;
     }
-    if (this.password.length < 6) {
-      this.error.set('La contraseña debe tener al menos 6 caracteres.');
+    const passwordRe = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+    if (!passwordRe.test(this.password)) {
+      this.error.set(
+        'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial.',
+      );
       return;
     }
     if (this.password !== this.confirmPassword) {
@@ -105,6 +109,7 @@ export class RegisterComponent {
           pais: this.hotelPais,
           ciudad: this.hotelCiudad.trim(),
           direccion: this.hotelDireccion.trim(),
+          descripcion: this.hotelDescripcion.trim(),
           estrellas: this.hotelEstrellas,
           telefono: this.hotelTelefono.trim(),
           email: this.hotelEmail.trim() || this.email.trim(),
