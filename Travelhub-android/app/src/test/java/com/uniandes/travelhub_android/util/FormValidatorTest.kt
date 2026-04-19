@@ -110,13 +110,13 @@ class FormValidatorTest {
 
     @Test
     fun `register - nombre empty returns EmptyFields`() {
-        val result = FormValidator.validateRegister("", "user@example.com", "password123", "password123")
+        val result = FormValidator.validateRegister("", "user@example.com", "Secure@123", "Secure@123")
         assertEquals(RegisterFormError.EmptyFields, result)
     }
 
     @Test
     fun `register - email empty returns EmptyFields`() {
-        val result = FormValidator.validateRegister("Juan", "", "password123", "password123")
+        val result = FormValidator.validateRegister("Juan", "", "Secure@123", "Secure@123")
         assertEquals(RegisterFormError.EmptyFields, result)
     }
 
@@ -128,14 +128,14 @@ class FormValidatorTest {
 
     @Test
     fun `register - nombre whitespace only returns EmptyFields`() {
-        val result = FormValidator.validateRegister("   ", "user@example.com", "password123", "password123")
+        val result = FormValidator.validateRegister("   ", "user@example.com", "Secure@123", "Secure@123")
         assertEquals(RegisterFormError.EmptyFields, result)
     }
 
     // Nota: confirmPassword NO se incluye en isEmptyFields (igual que la pantalla)
     @Test
     fun `register - only confirmPassword empty does NOT return EmptyFields when others are valid`() {
-        val result = FormValidator.validateRegister("Juan", "user@example.com", "password123", "")
+        val result = FormValidator.validateRegister("Juan", "user@example.com", "Secure@123", "")
         // confirmPassword vacío → no es EmptyFields, sino PasswordMismatch
         assertNotEquals(RegisterFormError.EmptyFields, result)
     }
@@ -144,39 +144,71 @@ class FormValidatorTest {
 
     @Test
     fun `register - invalid email returns InvalidEmail`() {
-        val result = FormValidator.validateRegister("Juan", "not-an-email", "password123", "password123")
+        val result = FormValidator.validateRegister("Juan", "not-an-email", "Secure@123", "Secure@123")
         assertEquals(RegisterFormError.InvalidEmail, result)
     }
 
     @Test
     fun `register - email missing at sign returns InvalidEmail`() {
-        val result = FormValidator.validateRegister("Juan", "juanexample.com", "password123", "password123")
+        val result = FormValidator.validateRegister("Juan", "juanexample.com", "Secure@123", "Secure@123")
         assertEquals(RegisterFormError.InvalidEmail, result)
     }
 
     @Test
     fun `register - email missing local part returns InvalidEmail`() {
-        val result = FormValidator.validateRegister("Juan", "@example.com", "password123", "password123")
+        val result = FormValidator.validateRegister("Juan", "@example.com", "Secure@123", "Secure@123")
         assertEquals(RegisterFormError.InvalidEmail, result)
+    }
+
+    // --- Contraseña débil ---
+
+    @Test
+    fun `register - password too short returns WeakPassword`() {
+        val result = FormValidator.validateRegister("Juan", "user@example.com", "Sec@1", "Sec@1")
+        assertEquals(RegisterFormError.WeakPassword, result)
+    }
+
+    @Test
+    fun `register - password without uppercase returns WeakPassword`() {
+        val result = FormValidator.validateRegister("Juan", "user@example.com", "secure@123", "secure@123")
+        assertEquals(RegisterFormError.WeakPassword, result)
+    }
+
+    @Test
+    fun `register - password without digit returns WeakPassword`() {
+        val result = FormValidator.validateRegister("Juan", "user@example.com", "Secure@abc", "Secure@abc")
+        assertEquals(RegisterFormError.WeakPassword, result)
+    }
+
+    @Test
+    fun `register - password without special character returns WeakPassword`() {
+        val result = FormValidator.validateRegister("Juan", "user@example.com", "Secure1234", "Secure1234")
+        assertEquals(RegisterFormError.WeakPassword, result)
+    }
+
+    @Test
+    fun `register - WeakPassword has priority over PasswordMismatch`() {
+        val result = FormValidator.validateRegister("Juan", "user@example.com", "weakpass", "different")
+        assertEquals(RegisterFormError.WeakPassword, result)
     }
 
     // --- Contraseñas no coinciden ---
 
     @Test
     fun `register - passwords do not match returns PasswordMismatch`() {
-        val result = FormValidator.validateRegister("Juan", "user@example.com", "password123", "different")
+        val result = FormValidator.validateRegister("Juan", "user@example.com", "Secure@123", "Secure@456")
         assertEquals(RegisterFormError.PasswordMismatch, result)
     }
 
     @Test
     fun `register - confirmPassword empty while password filled returns PasswordMismatch`() {
-        val result = FormValidator.validateRegister("Juan", "user@example.com", "password123", "")
+        val result = FormValidator.validateRegister("Juan", "user@example.com", "Secure@123", "")
         assertEquals(RegisterFormError.PasswordMismatch, result)
     }
 
     @Test
     fun `register - passwords differ only in case returns PasswordMismatch`() {
-        val result = FormValidator.validateRegister("Juan", "user@example.com", "Password123", "password123")
+        val result = FormValidator.validateRegister("Juan", "user@example.com", "Secure@123", "secure@123")
         assertEquals(RegisterFormError.PasswordMismatch, result)
     }
 
@@ -184,13 +216,13 @@ class FormValidatorTest {
 
     @Test
     fun `register - all fields valid returns null`() {
-        val result = FormValidator.validateRegister("Juan Pérez", "juan@example.com", "secure123", "secure123")
+        val result = FormValidator.validateRegister("Juan Pérez", "juan@example.com", "Secure@123", "Secure@123")
         assertNull(result)
     }
 
     @Test
     fun `register - valid with plus sign email returns null`() {
-        val result = FormValidator.validateRegister("Ana", "ana+test@domain.org", "mypassword", "mypassword")
+        val result = FormValidator.validateRegister("Ana", "ana+test@domain.org", "Secure@123", "Secure@123")
         assertNull(result)
     }
 
