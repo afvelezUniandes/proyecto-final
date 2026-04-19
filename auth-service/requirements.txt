@@ -4,6 +4,7 @@ psycopg2-binary
 python-dotenv
 pyjwt
 werkzeug
+requests
 pytest
 pytest-cov
 pytest-flask
