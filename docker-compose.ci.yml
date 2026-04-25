@@ -1,0 +1,50 @@
+version: "3.8"
+
+# Override para CI: reemplaza RDS con postgres local
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: travelhub_user
+      POSTGRES_PASSWORD: travelhub_pass
+      POSTGRES_DB: travelhub
+    ports:
+      - "5432:5432"
+    networks:
+      - travelhub-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U travelhub_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    environment:
+      AUTH_DATABASE_URL: postgresql://travelhub_user:travelhub_pass@postgres:5432/travelhub
+      JWT_SECRET: mi_secreto_super_seguro_jwt_2024
+      CATALOG_SERVICE_URL: http://catalog-service:5001
+    depends_on:
+      postgres:
+        condition: service_healthy
+      catalog-service:
+        condition: service_started
+
+  catalog-service:
+    environment:
+      CATALOG_DATABASE_URL: postgresql://travelhub_user:travelhub_pass@postgres:5432/travelhub
+      CACHE_TTL: 300
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  reservation-service:
+    environment:
+      RESERVATION_DATABASE_URL: postgresql://travelhub_user:travelhub_pass@postgres:5432/travelhub
+      JWT_SECRET: mi_secreto_super_seguro_jwt_2024
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  client-gateway:
+    environment:
+      JWT_SECRET: mi_secreto_super_seguro_jwt_2024

@@ -115,7 +115,7 @@ test.describe.serial('Registro de hotel', () => {
     await expect(page).not.toHaveURL(/dashboard/);
   });
 
-  test('registro completo exitoso muestra confirmación', async ({ page }) => {
+  test('registro completo exitoso redirige al dashboard', async ({ page }) => {
     await goToRegister(page);
     await fillStep1(page, REGISTER_USER);
     await page.getByRole('button', { name: /Continuar/i }).click();
@@ -128,7 +128,8 @@ test.describe.serial('Registro de hotel', () => {
     ]);
 
     expect(response.status()).toBe(201);
-    await expect(page.getByText('¡Cuenta creada!')).toBeVisible({ timeout: 5000 });
+    await page.waitForURL('**/dashboard', { timeout: 15000 });
+    await expect(page).toHaveURL(/dashboard/);
   });
 });
 
