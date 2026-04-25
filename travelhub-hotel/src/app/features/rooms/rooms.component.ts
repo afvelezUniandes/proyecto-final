@@ -40,6 +40,8 @@ export class RoomsComponent implements OnInit {
 
   form: RoomForm = this.emptyForm();
 
+  hotelLoadError = '';
+
   constructor(
     private mockService: MockHotelAdminService,
     public hotelService: HotelService,
@@ -47,7 +49,13 @@ export class RoomsComponent implements OnInit {
 
   ngOnInit() {
     this.loadRooms();
-    this.hotelService.loadMyHotel().subscribe();
+    this.hotelService.loadMyHotel().subscribe({
+      error: (err) => {
+        console.error('[HotelService] loadMyHotel failed:', err);
+        this.hotelLoadError =
+          err?.error?.error || 'No se pudo cargar el hotel. Verifica la conexión.';
+      },
+    });
   }
 
   loadRooms() {

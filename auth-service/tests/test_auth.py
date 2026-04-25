@@ -9,9 +9,13 @@ class TestAuthEndpoints:
         """Test de registro exitoso"""
         # Mock de la sesión de BD
         class MockUser:
+            id = 99
+            rol = None
             def __init__(self, **kwargs):
                 for key, value in kwargs.items():
                     setattr(self, key, value)
+                if not hasattr(self, 'id'):
+                    self.id = 99
         
         class MockSession:
             def query(self, model):
@@ -21,7 +25,7 @@ class TestAuthEndpoints:
             def first(self):
                 return None
             def add(self, obj):
-                pass
+                obj.id = 99
             def commit(self):
                 pass
             def close(self):
@@ -49,8 +53,7 @@ class TestAuthEndpoints:
         assert response.status_code == 201
         data = json.loads(response.data)
         assert data['message'] == 'User created'
-
-    def test_sign_up_hotel_role_returns_hotel_id(self, client, monkeypatch):
+        assert 'token' in data
         """Test que sign-up con rol hotel retorna hotel_id en la respuesta"""
         call_count = [0]
 
@@ -119,6 +122,7 @@ class TestAuthEndpoints:
         assert data['message'] == 'User created'
         assert 'hotel_id' in data
         assert data['hotel_id'] == 7
+        assert 'token' in data
 
     def test_sign_up_duplicate_email(self, client, monkeypatch):
         """Test de registro con email duplicado"""

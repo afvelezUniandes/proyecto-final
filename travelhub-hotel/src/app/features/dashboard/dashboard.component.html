@@ -4,9 +4,52 @@
     <p class="text-gray-500 text-sm mt-1">Resumen de actividad de tu hotel</p>
   </div>
 
+  @if (hotelService.hotel(); as hotel) {
+    @if (!hotel.image_url) {
+      <div
+        class="flex items-center gap-6 bg-amber-50 border border-amber-200 rounded-2xl px-6 py-4"
+      >
+        <span class="text-2xl">🖼️</span>
+        <div class="flex-1">
+          <p class="text-sm font-semibold text-amber-800">Tu hotel no tiene imagen principal</p>
+          <p class="text-xs text-amber-600 mt-0.5">
+            Agrega una foto para que los viajeros puedan ver tu hotel en el portal.
+          </p>
+          @if (uploadSuccess) {
+            <p class="text-green-600 text-xs mt-1">✓ Imagen subida correctamente</p>
+          }
+          @if (uploadError) {
+            <p class="text-red-500 text-xs mt-1">{{ uploadError }}</p>
+          }
+        </div>
+        <label
+          class="shrink-0 cursor-pointer inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition"
+        >
+          @if (uploadingImage) {
+            <span
+              class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+            ></span>
+            Subiendo...
+          } @else {
+            📷 Agregar imagen
+          }
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            class="hidden"
+            (change)="onImageSelected($event)"
+            [disabled]="uploadingImage"
+          />
+        </label>
+      </div>
+    }
+  }
+
   @if (loading) {
     <div class="flex justify-center py-24">
-      <div class="w-10 h-10 border-4 border-[#1D4ED8] border-t-transparent rounded-full animate-spin"></div>
+      <div
+        class="w-10 h-10 border-4 border-[#1D4ED8] border-t-transparent rounded-full animate-spin"
+      ></div>
     </div>
   }
 
@@ -16,15 +59,21 @@
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div class="flex items-center justify-between mb-4">
           <span class="text-sm font-medium text-gray-500">Reservas Activas</span>
-          <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl">📋</div>
+          <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl">
+            📋
+          </div>
         </div>
         <p class="text-3xl font-bold text-gray-900">{{ stats.reservas_activas }}</p>
-        <p class="text-xs text-green-600 mt-1">↑ {{ stats.reservas_activas_delta }}% vs mes anterior</p>
+        <p class="text-xs text-green-600 mt-1">
+          ↑ {{ stats.reservas_activas_delta }}% vs mes anterior
+        </p>
       </div>
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div class="flex items-center justify-between mb-4">
           <span class="text-sm font-medium text-gray-500">Ocupación</span>
-          <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl">🏠</div>
+          <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl">
+            🏠
+          </div>
         </div>
         <p class="text-3xl font-bold text-gray-900">{{ stats.tasa_ocupacion }}%</p>
         <div class="mt-2 h-2 bg-gray-100 rounded-full">
@@ -34,7 +83,9 @@
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div class="flex items-center justify-between mb-4">
           <span class="text-sm font-medium text-gray-500">Ingresos (mes)</span>
-          <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl">💰</div>
+          <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl">
+            💰
+          </div>
         </div>
         <p class="text-3xl font-bold text-gray-900">{{ formatPrice(stats.ingresos_mes) }}</p>
         <p class="text-xs text-green-600 mt-1">↑ {{ stats.ingresos_mes_delta }}% vs mes anterior</p>
@@ -42,7 +93,9 @@
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div class="flex items-center justify-between mb-4">
           <span class="text-sm font-medium text-gray-500">Calificación</span>
-          <div class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center text-xl">⭐</div>
+          <div class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center text-xl">
+            ⭐
+          </div>
         </div>
         <p class="text-3xl font-bold text-gray-900">{{ stats.calificacion_promedio }}</p>
         <p class="text-xs text-gray-400 mt-1">de 10 · {{ stats.total_resenas }} reseñas</p>
@@ -61,7 +114,7 @@
               <div
                 class="w-full bg-[#1D4ED8] rounded-t-lg"
                 [style.height.%]="(day.porcentaje / maxOccupancy()) * 100"
-                style="min-height: 4px;"
+                style="min-height: 4px"
               ></div>
               <span class="text-xs text-gray-400">{{ day.dia }}</span>
             </div>
@@ -73,16 +126,23 @@
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div class="flex items-center justify-between mb-4">
           <h2 class="font-semibold text-gray-900">Reservas recientes</h2>
-          <a routerLink="/reservations" class="text-[#1D4ED8] text-xs hover:underline">Ver todas →</a>
+          <a routerLink="/reservations" class="text-[#1D4ED8] text-xs hover:underline"
+            >Ver todas →</a
+          >
         </div>
         <div class="space-y-3">
           @for (r of recentReservations; track r.id) {
-            <div class="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+            <div
+              class="flex items-center justify-between py-2 border-b border-gray-50 last:border-0"
+            >
               <div>
                 <p class="text-sm font-medium text-gray-900">{{ r.huesped_nombre }}</p>
                 <p class="text-xs text-gray-400">{{ r.habitacion_nombre }}</p>
               </div>
-              <span class="text-xs px-2 py-0.5 rounded-full font-medium {{ estadoClass(r.estado) }}">{{ r.estado }}</span>
+              <span
+                class="text-xs px-2 py-0.5 rounded-full font-medium {{ estadoClass(r.estado) }}"
+                >{{ r.estado }}</span
+              >
             </div>
           }
         </div>

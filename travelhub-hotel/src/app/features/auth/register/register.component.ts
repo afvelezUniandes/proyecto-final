@@ -117,31 +117,47 @@ export class RegisterComponent {
     this.loading = true;
 
     this.api
-      .post<{ message: string; hotel_id: number | null }>('/auth/sign-up', {
-        nombre: this.nombre.trim(),
-        email: this.email.trim(),
-        password: this.password,
-        rol: 'hotel',
-        hotel: {
-          nombre: this.hotelNombre.trim(),
-          pais: this.hotelPais,
-          ciudad: this.hotelCiudad.trim(),
-          direccion: this.hotelDireccion.trim(),
-          descripcion: this.hotelDescripcion.trim(),
-          estrellas: this.hotelEstrellas,
-          telefono: this.hotelTelefono.trim(),
-          email: this.hotelEmail.trim() || this.email.trim(),
+      .post<{ message: string; hotel_id: number | null; token?: string; rol?: string }>(
+        '/auth/sign-up',
+        {
+          nombre: this.nombre.trim(),
+          email: this.email.trim(),
+          password: this.password,
+          rol: 'hotel',
+          hotel: {
+            nombre: this.hotelNombre.trim(),
+            pais: this.hotelPais,
+            ciudad: this.hotelCiudad.trim(),
+            direccion: this.hotelDireccion.trim(),
+            descripcion: this.hotelDescripcion.trim(),
+            estrellas: this.hotelEstrellas,
+            telefono: this.hotelTelefono.trim(),
+            email: this.hotelEmail.trim() || this.email.trim(),
+          },
         },
-      })
+      )
       .subscribe({
         next: (res) => {
+          if (res.token) {
+            this.auth.setToken(res.token);
+          }
           if (this.hotelImageFile && res.hotel_id) {
             this.api
               .uploadFile(`/catalog/hotels/${res.hotel_id}/image`, this.hotelImageFile)
-              .subscribe();
+              .subscribe({
+                error: () => {
+                  /* image upload failed silently */
+                },
+              });
           }
           this.loading = false;
-          this.success.set(true);
+          if (res.token) {
+            // Auto-login: ya tenemos token, ir directo al dashboard
+            this.auth.fetchProfile();
+          } else {
+            // Fallback: mostrar pantalla de éxito para ir a login
+            this.success.set(true);
+          }
         },
         error: (err) => {
           this.loading = false;

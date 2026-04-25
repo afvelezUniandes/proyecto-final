@@ -1,36 +1,19 @@
 version: "3.8"
-services:
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_USER: travelhub_user
-      POSTGRES_PASSWORD: travelhub_pass
-      POSTGRES_DB: travelhub
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - travelhub-net
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U travelhub_user"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
+x-rds-url: &rds-host "travelhub-db.cipyouuaqkqn.us-east-1.rds.amazonaws.com"
+x-rds-user: &rds-user "postgres"
+x-rds-pass: &rds-pass "ogvynJXnQk7zLG4K"
+x-jwt-secret: &jwt-secret "tu-clave-jwt-secreta-debe-ser-mas-larga-y-compleja-en-produccion-2026"
+
+services:
   auth-service:
     build: ./auth-service
     ports:
       - "5010:5000"
     environment:
-      AUTH_DATABASE_URL: postgresql://travelhub_user:travelhub_pass@postgres:5432/travelhub
-      JWT_SECRET: mi_secreto_super_seguro_jwt_2024
+      AUTH_DATABASE_URL: postgresql://postgres:ogvynJXnQk7zLG4K@travelhub-db.cipyouuaqkqn.us-east-1.rds.amazonaws.com:5432/postgres
+      JWT_SECRET: tu-clave-jwt-secreta-debe-ser-mas-larga-y-compleja-en-produccion-2026
       CATALOG_SERVICE_URL: http://catalog-service:5001
-    depends_on:
-      postgres:
-        condition: service_healthy
-      catalog-service:
-        condition: service_started
     networks:
       - travelhub-net
 
@@ -39,11 +22,10 @@ services:
     ports:
       - "5001:5001"
     environment:
-      CATALOG_DATABASE_URL: postgresql://travelhub_user:travelhub_pass@postgres:5432/travelhub
+      CATALOG_DATABASE_URL: postgresql://postgres:ogvynJXnQk7zLG4K@travelhub-db.cipyouuaqkqn.us-east-1.rds.amazonaws.com:5432/postgres
       CACHE_TTL: 300
-    depends_on:
-      postgres:
-        condition: service_healthy
+      S3_BUCKET: travelhub-images-proyecto
+      S3_REGION: us-east-1
     networks:
       - travelhub-net
 
@@ -55,7 +37,7 @@ services:
       AUTH_SERVICE_URL: http://auth-service:5000
       CATALOG_SERVICE_URL: http://catalog-service:5001
       RESERVATION_SERVICE_URL: http://reservation-service:5002
-      JWT_SECRET: mi_secreto_super_seguro_jwt_2024
+      JWT_SECRET: tu-clave-jwt-secreta-debe-ser-mas-larga-y-compleja-en-produccion-2026
     depends_on:
       - auth-service
       - catalog-service
@@ -68,16 +50,10 @@ services:
     ports:
       - "5002:5002"
     environment:
-      RESERVATION_DATABASE_URL: postgresql://travelhub_user:travelhub_pass@postgres:5432/travelhub
-      JWT_SECRET: mi_secreto_super_seguro_jwt_2024
-    depends_on:
-      postgres:
-        condition: service_healthy
+      RESERVATION_DATABASE_URL: postgresql://postgres:ogvynJXnQk7zLG4K@travelhub-db.cipyouuaqkqn.us-east-1.rds.amazonaws.com:5432/postgres
+      JWT_SECRET: tu-clave-jwt-secreta-debe-ser-mas-larga-y-compleja-en-produccion-2026
     networks:
       - travelhub-net
-
-volumes:
-  postgres_data:
 
 networks:
   travelhub-net:
