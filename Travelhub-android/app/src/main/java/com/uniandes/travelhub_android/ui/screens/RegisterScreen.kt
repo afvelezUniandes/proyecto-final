@@ -239,6 +239,10 @@ fun RegisterScreen(
                                 errorMsg = context.getString(R.string.err_invalid_email)
                                 return@Button
                             }
+                            if (!ValidationUtils.isValidPassword(password)) {
+                                errorMsg = context.getString(R.string.err_weak_password)
+                                return@Button
+                            }
                             if (!ValidationUtils.passwordsMatch(password, confirmPassword)) {
                                 errorMsg = context.getString(R.string.err_passwords_mismatch)
                                 return@Button

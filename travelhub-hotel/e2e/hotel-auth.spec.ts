@@ -4,7 +4,7 @@ import { test, expect, Page } from '@playwright/test';
 const REGISTER_USER = {
   nombre: 'Hotel Playwright Registro',
   email: `hotel_reg_${crypto.randomUUID()}@example.com`,
-  password: 'HotelPass123',
+  password: 'HotelPass123!',
   hotelNombre: 'Hotel PW Test Registro',
   ciudad: 'Bogota',
   direccion: 'Calle 123 # 45-67',
@@ -13,7 +13,7 @@ const REGISTER_USER = {
 const LOGIN_USER = {
   nombre: 'Hotel Playwright Login',
   email: `hotel_login_${crypto.randomUUID()}@example.com`,
-  password: 'HotelPass123',
+  password: 'HotelPass123!',
   hotelNombre: 'Hotel PW Test Login',
   ciudad: 'Medellin',
   direccion: 'Carrera 80 # 10-20',
@@ -91,7 +91,7 @@ test.describe.serial('Registro de hotel', () => {
     await page.locator('input[name="nombre"]').fill('Admin');
     await page.locator('input[name="email"]').fill(REGISTER_USER.email);
     await page.locator('input[name="password"]').fill('HotelPass123');
-    await page.locator('input[name="confirmPassword"]').fill('OtraPass456');
+    await page.locator('input[name="confirmPassword"]').fill('OtraPass456!');
     await page.getByRole('button', { name: /Continuar/i }).click();
     await page.waitForTimeout(500);
     await expect(page).not.toHaveURL(/dashboard/);

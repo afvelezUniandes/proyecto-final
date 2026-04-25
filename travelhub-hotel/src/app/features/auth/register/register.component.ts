@@ -33,6 +33,9 @@ export class RegisterComponent {
   hotelEstrellas = 3;
   hotelTelefono = '';
   hotelEmail = '';
+  hotelDescripcion = '';
+  hotelImageFile: File | null = null;
+  hotelImagePreview: string | null = null;
 
   paises = [
     'Colombia',
@@ -61,8 +64,11 @@ export class RegisterComponent {
       this.error.set('El correo es requerido.');
       return;
     }
-    if (this.password.length < 6) {
-      this.error.set('La contraseña debe tener al menos 6 caracteres.');
+    const passwordRe = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+    if (!passwordRe.test(this.password)) {
+      this.error.set(
+        'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial.',
+      );
       return;
     }
     if (this.password !== this.confirmPassword) {
@@ -75,6 +81,22 @@ export class RegisterComponent {
   prevStep() {
     this.error.set(null);
     this.step.set(1);
+  }
+
+  onImageFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.error.set(null);
+    if (file.size > 5 * 1024 * 1024) {
+      this.error.set('La imagen no puede superar 5 MB.');
+      input.value = '';
+      return;
+    }
+    this.hotelImageFile = file;
+    const reader = new FileReader();
+    reader.onload = (e) => (this.hotelImagePreview = e.target?.result as string);
+    reader.readAsDataURL(file);
   }
 
   onRegister() {
@@ -95,7 +117,7 @@ export class RegisterComponent {
     this.loading = true;
 
     this.api
-      .post('/auth/sign-up', {
+      .post<{ message: string; hotel_id: number | null }>('/auth/sign-up', {
         nombre: this.nombre.trim(),
         email: this.email.trim(),
         password: this.password,
@@ -105,13 +127,19 @@ export class RegisterComponent {
           pais: this.hotelPais,
           ciudad: this.hotelCiudad.trim(),
           direccion: this.hotelDireccion.trim(),
+          descripcion: this.hotelDescripcion.trim(),
           estrellas: this.hotelEstrellas,
           telefono: this.hotelTelefono.trim(),
           email: this.hotelEmail.trim() || this.email.trim(),
         },
       })
       .subscribe({
-        next: () => {
+        next: (res) => {
+          if (this.hotelImageFile && res.hotel_id) {
+            this.api
+              .uploadFile(`/catalog/hotels/${res.hotel_id}/image`, this.hotelImageFile)
+              .subscribe();
+          }
           this.loading = false;
           this.success.set(true);
         },

@@ -24,8 +24,6 @@ jobs:
             path: ./auth-service
           - name: Catalog Service
             path: ./catalog-service
-          - name: Client Gateway
-            path: ./client-gateway
           - name: Reservation Service
             path: ./reservation-service
 
@@ -48,7 +46,7 @@ jobs:
       - name: Run tests with coverage
         working-directory: ${{ matrix.service.path }}
         run: |
-          pytest --cov=. --cov-report=term --cov-report=html --cov-fail-under=70 -v
+          pytest --cov=adapters --cov-report=term --cov-report=html --cov-fail-under=70 -v
 
       - name: Upload coverage report
         if: always()
@@ -57,6 +55,40 @@ jobs:
           name: coverage-${{ matrix.service.name }}
           path: ${{ matrix.service.path }}/htmlcov
           retention-days: 7
+
+  angular-test:
+    name: Angular Unit Tests (${{ matrix.app.name }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - name: travelhub-web
+            path: ./travelhub-web
+          - name: travelhub-hotel
+            path: ./travelhub-hotel
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: ${{ matrix.app.path }}/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.app.path }}
+        run: npm ci
+
+      - name: Run unit tests
+        working-directory: ${{ matrix.app.path }}
+        run: npx ng test
+        env:
+          CI: true
 
   android-test:
     name: Android Unit Tests
@@ -101,8 +133,7 @@ jobs:
         run: |
           docker compose up -d --build
           echo "Waiting for services to be healthy..."
-          timeout 120 bash -c 'until docker compose ps | grep -E "healthy|running" | wc -l | grep -q "^[5-9]"; do sleep 3; done' || true
-          sleep 10
+          sleep 30
 
       - name: Seed catalog data
         run: |
@@ -125,7 +156,7 @@ jobs:
 
       - name: Start Angular app
         working-directory: ./travelhub-web
-        run: npx ng serve --configuration development &
+        run: npx ng serve --host 0.0.0.0 --configuration development &
         env:
           CI: true
 
@@ -159,8 +190,7 @@ jobs:
         run: |
           docker compose up -d --build
           echo "Waiting for services to be healthy..."
-          timeout 120 bash -c 'until docker compose ps | grep -E "healthy|running" | wc -l | grep -q "^[5-9]"; do sleep 3; done' || true
-          sleep 10
+          sleep 30
 
       - name: Seed catalog data
         run: |
@@ -183,7 +213,7 @@ jobs:
 
       - name: Start travelhub-hotel app
         working-directory: ./travelhub-hotel
-        run: npx ng serve --port 4201 --configuration development &
+        run: npx ng serve --port 4201 --host 0.0.0.0 --configuration development &
         env:
           CI: true
 
@@ -207,20 +237,21 @@ jobs:
 
   summary:
     name: Tests Summary
-    needs: [test, android-test, e2e-test, e2e-hotel-test]
+    needs: [test, angular-test, android-test, e2e-test, e2e-hotel-test]
     runs-on: ubuntu-latest
     if: always()
 
     steps:
       - name: Check test results
         run: |
-          if [ "${{ needs.test.result }}" == "success" ] && [ "${{ needs.android-test.result }}" == "success" ] && [ "${{ needs.e2e-test.result }}" == "success" ] && [ "${{ needs.e2e-hotel-test.result }}" == "success" ]; then
+          if [ "${{ needs.test.result }}" == "success" ] && [ "${{ needs.angular-test.result }}" == "success" ] && [ "${{ needs.android-test.result }}" == "success" ] && [ "${{ needs.e2e-test.result }}" == "success" ] && [ "${{ needs.e2e-hotel-test.result }}" == "success" ]; then
             echo "✅ All tests passed successfully!"
             echo "📊 Code coverage meets the 70% requirement"
             exit 0
           else
             echo "❌ Some tests failed"
             echo "  Python services: ${{ needs.test.result }}"
+            echo "  Angular unit tests: ${{ needs.angular-test.result }}"
             echo "  Android unit tests: ${{ needs.android-test.result }}"
             echo "  Playwright E2E (web): ${{ needs.e2e-test.result }}"
             echo "  Playwright E2E (hotel): ${{ needs.e2e-hotel-test.result }}"

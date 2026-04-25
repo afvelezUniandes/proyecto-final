@@ -10,5 +10,9 @@ object ValidationUtils {
 
     fun passwordsMatch(password: String, confirm: String): Boolean = password == confirm
 
-    fun isValidPassword(password: String): Boolean = password.length >= 6
+    fun isValidPassword(password: String): Boolean =
+        password.length >= 8 &&
+        password.any { it.isUpperCase() } &&
+        password.any { it.isDigit() } &&
+        password.any { !it.isLetterOrDigit() }
 }

@@ -28,6 +28,17 @@ export class HotelDetailComponent implements OnInit {
   reserving = false;
   reserveError = '';
   reserveSuccess = false;
+  searchParams: Record<string, string | number> = {};
+
+  readonly amenities = [
+    { icon: '🏊', label: 'Piscina' },
+    { icon: '💪', label: 'Gimnasio' },
+    { icon: '🧖', label: 'Spa' },
+    { icon: '🐾', label: 'Mascotas' },
+    { icon: '🍳', label: 'Desayuno' },
+    { icon: '🚗', label: 'Parqueadero' },
+    { icon: '📶', label: 'Wi-Fi' },
+  ];
 
   constructor(
     private route: ActivatedRoute,
@@ -43,6 +54,13 @@ export class HotelDetailComponent implements OnInit {
     this.checkIn = qp['checkIn'] || '';
     this.checkOut = qp['checkOut'] || '';
     this.adultos = +qp['huespedes'] || 1;
+
+    this.searchParams = {
+      ...(qp['ciudad'] ? { ciudad: qp['ciudad'] } : {}),
+      ...(this.checkIn ? { checkIn: this.checkIn } : {}),
+      ...(this.checkOut ? { checkOut: this.checkOut } : {}),
+      ...(this.adultos ? { huespedes: this.adultos } : {}),
+    };
 
     forkJoin({
       hotel: this.catalog.getHotel(+id),

@@ -5,12 +5,14 @@ from sqlalchemy import create_engine
 import os
 import jwt
 import datetime
+import requests as http_requests
 from werkzeug.security import generate_password_hash, check_password_hash
 
 bp = Blueprint('auth', __name__)
 
 DATABASE_URL = os.getenv('AUTH_DATABASE_URL', 'postgresql://user:password@localhost:5432/travelhub')
 SECRET_KEY = os.getenv('JWT_SECRET', 'supersecretkey')
+CATALOG_SERVICE_URL = os.getenv('CATALOG_SERVICE_URL', 'http://localhost:5001')
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 
@@ -34,8 +36,39 @@ def sign_up():
     )
     session.add(user)
     session.commit()
+
+    hotel_data = data.get('hotel')
+    if data.get('rol', 'user').lower() == 'hotel' and hotel_data:
+        try:
+            hotel_payload = {
+                'admin_id': user.id,
+                'nombre': hotel_data.get('nombre', ''),
+                'descripcion': hotel_data.get('descripcion', ''),
+                'direccion': hotel_data.get('direccion', ''),
+                'ciudad': hotel_data.get('ciudad', ''),
+                'pais': hotel_data.get('pais', ''),
+                'estrellas': hotel_data.get('estrellas', 3),
+                'activo': True,
+            }
+            catalog_resp = http_requests.post(
+                f'{CATALOG_SERVICE_URL}/hotels',
+                json=hotel_payload,
+                timeout=10,
+            )
+            if catalog_resp.status_code not in (200, 201):
+                session.delete(user)
+                session.commit()
+                session.close()
+                return jsonify({'error': 'Error al crear el hotel. Intenta de nuevo.'}), 500
+            hotel_id = catalog_resp.json().get('id')
+        except Exception:
+            session.delete(user)
+            session.commit()
+            session.close()
+            return jsonify({'error': 'No se pudo conectar con el servicio de hoteles.'}), 503
+
     session.close()
-    return jsonify({'message': 'User created'}), 201
+    return jsonify({'message': 'User created', 'hotel_id': hotel_id if 'hotel_id' in dir() else None}), 201
 
 @bp.route('/sign-in', methods=['POST'])
 def sign_in():

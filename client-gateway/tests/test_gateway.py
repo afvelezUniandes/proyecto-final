@@ -257,3 +257,229 @@ class TestJWTValidation:
             assert data['service'] == 'client-gateway'
             assert 'backends' in data
 
+
+def _valid_token():
+    """Genera un JWT válido para tests"""
+    return jwt.encode(
+        {'user_id': 1, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)},
+        'test_secret',
+        algorithm='HS256',
+    )
+
+
+class TestCatalogProtectedRoutes:
+    """Endpoints de catálogo que requieren token"""
+
+    @patch('requests.get')
+    def test_get_cities(self, mock_get, client):
+        mock_get.return_value = Mock(json=lambda: ['Bogotá', 'Medellín'], status_code=200)
+        response = client.get('/catalog/cities')
+        assert response.status_code == 200
+        assert mock_get.called
+
+    @patch('requests.get')
+    def test_get_hotel_detail(self, mock_get, client):
+        mock_get.return_value = Mock(json=lambda: {'id': 1, 'nombre': 'Hotel'}, status_code=200)
+        response = client.get('/catalog/hotels/1')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data['id'] == 1
+
+    @patch('requests.get')
+    def test_get_hotel_detail_service_unavailable(self, mock_get, client):
+        mock_get.side_effect = requests.exceptions.RequestException('refused')
+        response = client.get('/catalog/hotels/1')
+        assert response.status_code == 503
+
+    @patch('requests.get')
+    def test_get_my_hotel(self, mock_get, client):
+        mock_get.return_value = Mock(json=lambda: {'id': 5, 'admin_id': 1}, status_code=200)
+        response = client.get('/catalog/hotels/mine',
+            headers={'Authorization': f'Bearer {_valid_token()}'},
+        )
+        assert response.status_code == 200
+
+    def test_get_my_hotel_no_token(self, client):
+        response = client.get('/catalog/hotels/mine')
+        assert response.status_code == 401
+
+    @patch('requests.post')
+    def test_create_hotel(self, mock_post, client):
+        mock_post.return_value = Mock(json=lambda: {'id': 10}, status_code=201)
+        response = client.post('/catalog/hotels',
+            data=json.dumps({'nombre': 'H', 'ciudad': 'Bogotá', 'pais': 'Colombia'}),
+            content_type='application/json',
+            headers={'Authorization': f'Bearer {_valid_token()}'},
+        )
+        assert response.status_code == 201
+
+    @patch('requests.put')
+    def test_update_hotel(self, mock_put, client):
+        mock_put.return_value = Mock(json=lambda: {'id': 1, 'nombre': 'Nuevo'}, status_code=200)
+        response = client.put('/catalog/hotels/1',
+            data=json.dumps({'nombre': 'Nuevo'}),
+            content_type='application/json',
+            headers={'Authorization': f'Bearer {_valid_token()}'},
+        )
+        assert response.status_code == 200
+
+    @patch('requests.post')
+    def test_create_room(self, mock_post, client):
+        mock_post.return_value = Mock(json=lambda: {'id': 3}, status_code=201)
+        response = client.post('/catalog/rooms',
+            data=json.dumps({'hotel_id': 1, 'nombre': 'Suite', 'precio_noche': 200000}),
+            content_type='application/json',
+            headers={'Authorization': f'Bearer {_valid_token()}'},
+        )
+        assert response.status_code == 201
+
+    @patch('requests.put')
+    def test_update_room(self, mock_put, client):
+        mock_put.return_value = Mock(json=lambda: {'id': 1}, status_code=200)
+        response = client.put('/catalog/rooms/1',
+            data=json.dumps({'precio_noche': 300000}),
+            content_type='application/json',
+            headers={'Authorization': f'Bearer {_valid_token()}'},
+        )
+        assert response.status_code == 200
+
+    @patch('requests.delete')
+    def test_delete_room(self, mock_delete, client):
+        mock_delete.return_value = Mock(json=lambda: {'message': 'deleted'}, status_code=200)
+        response = client.delete('/catalog/rooms/1',
+            headers={'Authorization': f'Bearer {_valid_token()}'},
+        )
+        assert response.status_code == 200
+
+    @patch('requests.post')
+    def test_create_room_service_unavailable(self, mock_post, client):
+        mock_post.side_effect = requests.exceptions.RequestException('refused')
+        response = client.post('/catalog/rooms',
+            data=json.dumps({'hotel_id': 1, 'nombre': 'Suite', 'precio_noche': 200000}),
+            content_type='application/json',
+            headers={'Authorization': f'Bearer {_valid_token()}'},
+        )
+        assert response.status_code == 503
+
+
+class TestReservationRoutes:
+    """Endpoints de reservas"""
+
+    @patch('requests.get')
+    def test_get_occupied_rooms_public(self, mock_get, client):
+        mock_get.return_value = Mock(json=lambda: {'occupied_room_ids': [1, 2]}, status_code=200)
+        response = client.get('/reservations/occupied-rooms?hotel_id=1&fecha_checkin=2026-05-01&fecha_checkout=2026-05-05')
+        assert response.status_code == 200
+
+    @patch('requests.get')
+    def test_get_occupied_rooms_unavailable(self, mock_get, client):
+        mock_get.side_effect = requests.exceptions.RequestException('refused')
+        response = client.get('/reservations/occupied-rooms')
+        assert response.status_code == 503
+
+    @patch('requests.get')
+    def test_get_reservations(self, mock_get, client):
+        mock_get.return_value = Mock(json=lambda: [], status_code=200)
+        response = client.get('/reservations',
+            headers={'Authorization': f'Bearer {_valid_token()}'},
+        )
+        assert response.status_code == 200
+
+    def test_get_reservations_no_token(self, client):
+        response = client.get('/reservations')
+        assert response.status_code == 401
+
+    @patch('requests.get')
+    def test_get_reservation_by_id(self, mock_get, client):
+        mock_get.return_value = Mock(json=lambda: {'id': 1}, status_code=200)
+        response = client.get('/reservations/1',
+            headers={'Authorization': f'Bearer {_valid_token()}'},
+        )
+        assert response.status_code == 200
+
+    @patch('requests.post')
+    def test_create_reservation(self, mock_post, client):
+        mock_post.return_value = Mock(json=lambda: {'id': 99}, status_code=201)
+        response = client.post('/reservations',
+            data=json.dumps({'habitacion_id': 1, 'fecha_checkin': '2026-06-01', 'fecha_checkout': '2026-06-03'}),
+            content_type='application/json',
+            headers={'Authorization': f'Bearer {_valid_token()}'},
+        )
+        assert response.status_code == 201
+
+    @patch('requests.patch')
+    def test_cancel_reservation(self, mock_patch, client):
+        mock_patch.return_value = Mock(json=lambda: {'message': 'cancelled'}, status_code=200)
+        response = client.patch('/reservations/1/cancel',
+            headers={'Authorization': f'Bearer {_valid_token()}'},
+        )
+        assert response.status_code == 200
+
+    @patch('requests.get')
+    def test_get_hotel_reservations(self, mock_get, client):
+        mock_get.return_value = Mock(json=lambda: [], status_code=200)
+        response = client.get('/reservations/hotel/1',
+            headers={'Authorization': f'Bearer {_valid_token()}'},
+        )
+        assert response.status_code == 200
+
+    @patch('requests.get')
+    def test_get_reservations_service_unavailable(self, mock_get, client):
+        mock_get.side_effect = requests.exceptions.RequestException('refused')
+        response = client.get('/reservations',
+            headers={'Authorization': f'Bearer {_valid_token()}'},
+        )
+        assert response.status_code == 503
+
+
+class TestProfileRoutes:
+    """Endpoints de perfil via gateway"""
+
+    @patch('requests.get')
+    def test_get_profile(self, mock_get, client):
+        mock_get.return_value = Mock(
+            json=lambda: {'id': 1, 'nombre': 'Test', 'email': 'test@example.com'},
+            status_code=200,
+        )
+        response = client.get('/auth/profile',
+            headers={'Authorization': f'Bearer {_valid_token()}'},
+        )
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data['nombre'] == 'Test'
+
+    def test_get_profile_no_token(self, client):
+        response = client.get('/auth/profile')
+        assert response.status_code == 401
+
+    @patch('requests.put')
+    def test_update_profile(self, mock_put, client):
+        mock_put.return_value = Mock(
+            json=lambda: {'id': 1, 'nombre': 'Nuevo'},
+            status_code=200,
+        )
+        response = client.put('/auth/profile',
+            data=json.dumps({'nombre': 'Nuevo'}),
+            content_type='application/json',
+            headers={'Authorization': f'Bearer {_valid_token()}'},
+        )
+        assert response.status_code == 200
+
+    @patch('requests.get')
+    def test_get_profile_service_unavailable(self, mock_get, client):
+        mock_get.side_effect = requests.exceptions.RequestException('refused')
+        response = client.get('/auth/profile',
+            headers={'Authorization': f'Bearer {_valid_token()}'},
+        )
+        assert response.status_code == 503
+
+    @patch('requests.put')
+    def test_update_profile_service_unavailable(self, mock_put, client):
+        mock_put.side_effect = requests.exceptions.RequestException('refused')
+        response = client.put('/auth/profile',
+            data=json.dumps({'nombre': 'X'}),
+            content_type='application/json',
+            headers={'Authorization': f'Bearer {_valid_token()}'},
+        )
+        assert response.status_code == 503
+

@@ -238,6 +238,20 @@ def update_hotel(hotel_id):
         return jsonify({'error': 'Catalog service unavailable'}), 503
 
 
+@app.route('/catalog/hotels/<int:hotel_id>/image', methods=['POST'])
+@verify_token
+def upload_hotel_image(hotel_id):
+    try:
+        response = requests.post(
+            f'{CATALOG_SERVICE_URL}/hotels/{hotel_id}/image',
+            files={'file': (request.files['file'].filename, request.files['file'].stream, request.files['file'].content_type)},
+            timeout=30,
+        )
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Catalog service unavailable'}), 503
+
+
 @app.route('/catalog/rooms', methods=['POST'])
 @verify_token
 def create_room():
