@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import { Hotel, HotelsResponse, Room, OccupiedRoomsResponse } from '../models';
 
@@ -30,19 +30,11 @@ export class CatalogService {
   }
 
   getHotel(id: number): Observable<Hotel> {
-    return this.api.get<HotelsResponse>('/catalog/hotels', { per_page: 200 }).pipe(
-      map((res) => {
-        const hotel = res.hotels.find((h) => h.id === id);
-        if (!hotel) throw new Error('Hotel no encontrado');
-        return hotel;
-      }),
-    );
+    return this.api.get<Hotel>(`/catalog/hotels/${id}`);
   }
 
   getRooms(hotelId: number): Observable<Room[]> {
-    return this.api.get<Room[]>('/catalog/rooms').pipe(
-      map((rooms) => rooms.filter((r) => r.hotel_id === hotelId)),
-    );
+    return this.api.get<Room[]>('/catalog/rooms', { hotel_id: hotelId });
   }
 
   getOccupiedRooms(

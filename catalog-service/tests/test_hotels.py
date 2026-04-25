@@ -50,6 +50,9 @@ class TestHotelsEndpoints:
             pais = 'Colombia'
             estrellas = 5
             activo = True
+            image_url = None
+            descripcion = 'Hotel de prueba'
+            direccion = 'Calle 1 # 1-1'
         
         class MockQuery:
             def filter(self, *args):
@@ -95,6 +98,9 @@ class TestHotelsEndpoints:
             pais = 'Colombia'
             estrellas = 4
             activo = True
+            image_url = None
+            descripcion = None
+            direccion = None
         
         class MockQuery:
             def filter(self, *args):
@@ -138,6 +144,9 @@ class TestHotelsEndpoints:
             pais = 'Colombia'
             estrellas = 5
             activo = True
+            image_url = None
+            descripcion = None
+            direccion = None
         
         class MockQuery:
             def filter(self, *args):
@@ -179,7 +188,10 @@ class TestHotelsEndpoints:
             'ciudad': 'Bogotá',
             'pais': 'Colombia',
             'estrellas': 4,
-            'activo': True
+            'activo': True,
+            'image_url': None,
+            'descripcion': None,
+            'direccion': None,
         }) for i in range(1, 6)]
         
         class MockQuery:
@@ -227,26 +239,28 @@ class TestHotelsEndpoints:
             precio_noche = Decimal('350.00')
             moneda = 'COP'
             disponible = True
-        
+
         class MockQuery:
+            def filter(self, *args):
+                return self
             def all(self):
                 return [MockRoom()]
-        
+
         class MockSession:
             def query(self, model):
                 return MockQuery()
             def close(self):
                 pass
-        
+
         def mock_session():
             return MockSession()
-        
+
         import adapters.http.hotels as hotels_module
         original_session = hotels_module.Session
         hotels_module.Session = mock_session
-        
+
         response = client.get('/rooms')
-        
+
         hotels_module.Session = original_session
         assert response.status_code == 200
         data = json.loads(response.data)
@@ -254,6 +268,167 @@ class TestHotelsEndpoints:
         assert len(data) == 1
         assert data[0]['nombre'] == 'Suite 101'
         assert data[0]['tipo'] == 'Suite'
+
+    def test_get_rooms_filter_by_hotel_id(self, client, monkeypatch):
+        """Test de obtener habitaciones filtradas por hotel_id"""
+        class MockRoom:
+            id = 2
+            hotel_id = 5
+            nombre = 'Doble 202'
+            tipo = 'Doble'
+            capacidad = 2
+            precio_noche = Decimal('200.00')
+            moneda = 'COP'
+            disponible = True
+
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def all(self):
+                return [MockRoom()]
+
+        class MockSession:
+            def query(self, model):
+                return MockQuery()
+            def close(self):
+                pass
+
+        def mock_session():
+            return MockSession()
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = mock_session
+
+        response = client.get('/rooms?hotel_id=5')
+
+        hotels_module.Session = original_session
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert isinstance(data, list)
+        assert len(data) == 1
+        assert data[0]['hotel_id'] == 5
+
+    def test_get_hotel_by_id(self, client, monkeypatch):
+        """Test de obtener un hotel por ID"""
+        class MockHotel:
+            id = 1
+            admin_id = 10
+            nombre = 'Hotel Test'
+            descripcion = 'Un hotel de prueba'
+            direccion = 'Calle 1 # 1-1'
+            ciudad = 'Bogotá'
+            pais = 'Colombia'
+            estrellas = 4
+            activo = True
+            image_url = 'https://example.com/foto.jpg'
+
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def first(self):
+                return MockHotel()
+
+        class MockSession:
+            def query(self, model):
+                return MockQuery()
+            def close(self):
+                pass
+
+        def mock_session():
+            return MockSession()
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = mock_session
+
+        response = client.get('/hotels/1')
+
+        hotels_module.Session = original_session
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data['id'] == 1
+        assert data['nombre'] == 'Hotel Test'
+        assert data['descripcion'] == 'Un hotel de prueba'
+        assert data['direccion'] == 'Calle 1 # 1-1'
+        assert data['image_url'] == 'https://example.com/foto.jpg'
+
+    def test_get_hotel_by_id_not_found(self, client, monkeypatch):
+        """Test de obtener un hotel por ID que no existe"""
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def first(self):
+                return None
+
+        class MockSession:
+            def query(self, model):
+                return MockQuery()
+            def close(self):
+                pass
+
+        def mock_session():
+            return MockSession()
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = mock_session
+
+        response = client.get('/hotels/9999')
+
+        hotels_module.Session = original_session
+        assert response.status_code == 404
+        data = json.loads(response.data)
+        assert 'error' in data
+
+    def test_get_hotels_returns_image_url(self, client, monkeypatch):
+        """Test que GET /hotels incluye image_url, descripcion y direccion"""
+        class MockHotel:
+            id = 1
+            nombre = 'Hotel Imagen'
+            ciudad = 'Bogotá'
+            pais = 'Colombia'
+            estrellas = 3
+            activo = True
+            image_url = 'https://s3.amazonaws.com/hotels/foto.jpg'
+            descripcion = 'Hotel con imagen'
+            direccion = 'Cra 7 # 32-15'
+
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def count(self):
+                return 1
+            def offset(self, n):
+                return self
+            def limit(self, n):
+                return self
+            def all(self):
+                return [MockHotel()]
+
+        class MockSession:
+            def query(self, model):
+                return MockQuery()
+            def close(self):
+                pass
+
+        def mock_session():
+            return MockSession()
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = mock_session
+
+        response = client.get('/hotels')
+
+        hotels_module.Session = original_session
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        hotel = data['hotels'][0]
+        assert 'image_url' in hotel
+        assert 'descripcion' in hotel
+        assert 'direccion' in hotel
+        assert hotel['image_url'] == 'https://s3.amazonaws.com/hotels/foto.jpg'
 
     def test_health_check(self, client):
         """Test de health check"""
@@ -272,3 +447,485 @@ class TestHotelsEndpoints:
         # En tests, la BD puede no estar disponible 
         assert 'database' in data
 
+
+class TestAdditionalEndpoints:
+    """Pruebas para endpoints de ciudades, CRUD y upload de imagen"""
+
+    # ── helpers ──────────────────────────────────────────────────────────────
+
+    def _mock_hotel(self, **overrides):
+        class MockHotel:
+            id = 1
+            admin_id = 10
+            nombre = 'Hotel Test'
+            descripcion = 'Desc'
+            direccion = 'Calle 1'
+            ciudad = 'Bogotá'
+            pais = 'Colombia'
+            estrellas = 4
+            activo = True
+            image_url = None
+        for k, v in overrides.items():
+            setattr(MockHotel, k, v)
+        return MockHotel
+
+    def _mock_room(self):
+        class MockRoom:
+            id = 1
+            hotel_id = 1
+            nombre = 'Suite'
+            tipo = 'suite'
+            capacidad = 2
+            precio_noche = Decimal('200.00')
+            moneda = 'COP'
+            disponible = True
+        return MockRoom
+
+    # ── GET /cities ───────────────────────────────────────────────────────────
+
+    def test_get_cities(self, client, monkeypatch):
+        """Test del endpoint /cities"""
+        class CityRow:
+            ciudad = 'Bogotá'
+
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def distinct(self):
+                return self
+            def order_by(self, *args):
+                return self
+            def all(self):
+                return [CityRow()]
+
+        class MockSession:
+            def query(self, *args):
+                return MockQuery()
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSession()
+
+        response = client.get('/cities')
+
+        hotels_module.Session = original_session
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert 'Bogotá' in data
+
+    # ── GET /hotels/admin/<id> ────────────────────────────────────────────────
+
+    def test_get_hotel_by_admin_found(self, client, monkeypatch):
+        MockHotel = self._mock_hotel()
+
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def first(self):
+                return MockHotel()
+
+        class MockSession:
+            def query(self, model):
+                return MockQuery()
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSession()
+
+        response = client.get('/hotels/admin/10')
+
+        hotels_module.Session = original_session
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data['admin_id'] == 10
+
+    def test_get_hotel_by_admin_not_found(self, client, monkeypatch):
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def first(self):
+                return None
+
+        class MockSession:
+            def query(self, model):
+                return MockQuery()
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSession()
+
+        response = client.get('/hotels/admin/999')
+
+        hotels_module.Session = original_session
+        assert response.status_code == 404
+
+    # ── POST /hotels ──────────────────────────────────────────────────────────
+
+    def test_create_hotel(self, client, monkeypatch):
+        class MockHotel:
+            id = 99
+            admin_id = 5
+            nombre = 'Nuevo Hotel'
+            ciudad = 'Medellín'
+            pais = 'Colombia'
+            estrellas = 3
+            activo = True
+
+        class MockSession:
+            def add(self, obj):
+                pass
+            def commit(self):
+                pass
+            def rollback(self):
+                pass
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+
+        added_hotel = None
+
+        def mock_session_factory():
+            ms = MockSession()
+            return ms
+
+        import unittest.mock as mock_mod
+        with mock_mod.patch('adapters.http.hotels.Hotel') as MockHotelClass, \
+             mock_mod.patch('adapters.http.hotels.Session', mock_session_factory):
+            instance = MockHotelClass.return_value
+            instance.id = 99
+            instance.admin_id = 5
+            instance.nombre = 'Nuevo Hotel'
+            instance.ciudad = 'Medellín'
+            instance.pais = 'Colombia'
+            instance.estrellas = 3
+            instance.activo = True
+
+            response = client.post('/hotels',
+                data=json.dumps({
+                    'nombre': 'Nuevo Hotel',
+                    'ciudad': 'Medellín',
+                    'pais': 'Colombia',
+                    'admin_id': 5,
+                }),
+                content_type='application/json'
+            )
+
+        assert response.status_code == 201
+        data = json.loads(response.data)
+        assert data['nombre'] == 'Nuevo Hotel'
+
+    # ── PUT /hotels/<id> ──────────────────────────────────────────────────────
+
+    def test_update_hotel(self, client, monkeypatch):
+        MockHotel = self._mock_hotel()
+        hotel_obj = MockHotel()
+
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def first(self):
+                return hotel_obj
+
+        class MockSession:
+            def query(self, model):
+                return MockQuery()
+            def commit(self):
+                pass
+            def rollback(self):
+                pass
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSession()
+
+        response = client.put('/hotels/1',
+            data=json.dumps({'nombre': 'Hotel Actualizado', 'image_url': 'https://s3.example.com/foto.jpg'}),
+            content_type='application/json'
+        )
+
+        hotels_module.Session = original_session
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data['nombre'] == 'Hotel Actualizado'
+
+    def test_update_hotel_not_found(self, client, monkeypatch):
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def first(self):
+                return None
+
+        class MockSession:
+            def query(self, model):
+                return MockQuery()
+            def rollback(self):
+                pass
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSession()
+
+        response = client.put('/hotels/9999',
+            data=json.dumps({'nombre': 'X'}),
+            content_type='application/json'
+        )
+
+        hotels_module.Session = original_session
+        assert response.status_code == 404
+
+    # ── POST /rooms ───────────────────────────────────────────────────────────
+
+    def test_create_room(self, client, monkeypatch):
+        import unittest.mock as mock_mod
+
+        with mock_mod.patch('adapters.http.hotels.Habitacion') as MockRoomClass, \
+             mock_mod.patch('adapters.http.hotels.Session') as MockSessionFactory:
+            instance = MockRoomClass.return_value
+            instance.id = 10
+            instance.hotel_id = 1
+            instance.nombre = 'Doble'
+            instance.tipo = 'doble'
+            instance.capacidad = 2
+            instance.precio_noche = Decimal('150.00')
+            instance.moneda = 'COP'
+            instance.disponible = True
+
+            ms = mock_mod.MagicMock()
+            MockSessionFactory.return_value = ms
+
+            response = client.post('/rooms',
+                data=json.dumps({
+                    'hotel_id': 1,
+                    'nombre': 'Doble',
+                    'precio_noche': 150000,
+                }),
+                content_type='application/json'
+            )
+
+        assert response.status_code == 201
+
+    # ── PUT /rooms/<id> ───────────────────────────────────────────────────────
+
+    def test_update_room(self, client, monkeypatch):
+        MockRoom = self._mock_room()
+        room_obj = MockRoom()
+
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def first(self):
+                return room_obj
+
+        class MockSession:
+            def query(self, model):
+                return MockQuery()
+            def commit(self):
+                pass
+            def rollback(self):
+                pass
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSession()
+
+        response = client.put('/rooms/1',
+            data=json.dumps({'precio_noche': 300000, 'disponible': False}),
+            content_type='application/json'
+        )
+
+        hotels_module.Session = original_session
+        assert response.status_code == 200
+
+    def test_update_room_not_found(self, client, monkeypatch):
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def first(self):
+                return None
+
+        class MockSession:
+            def query(self, model):
+                return MockQuery()
+            def rollback(self):
+                pass
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSession()
+
+        response = client.put('/rooms/9999',
+            data=json.dumps({'precio_noche': 100}),
+            content_type='application/json'
+        )
+
+        hotels_module.Session = original_session
+        assert response.status_code == 404
+
+    # ── DELETE /rooms/<id> ────────────────────────────────────────────────────
+
+    def test_delete_room(self, client, monkeypatch):
+        MockRoom = self._mock_room()
+        room_obj = MockRoom()
+
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def first(self):
+                return room_obj
+
+        class MockSession:
+            def query(self, model):
+                return MockQuery()
+            def delete(self, obj):
+                pass
+            def commit(self):
+                pass
+            def rollback(self):
+                pass
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSession()
+
+        response = client.delete('/rooms/1')
+
+        hotels_module.Session = original_session
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert 'deleted' in data['message'].lower()
+
+    def test_delete_room_not_found(self, client, monkeypatch):
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def first(self):
+                return None
+
+        class MockSession:
+            def query(self, model):
+                return MockQuery()
+            def rollback(self):
+                pass
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSession()
+
+        response = client.delete('/rooms/9999')
+
+        hotels_module.Session = original_session
+        assert response.status_code == 404
+
+    # ── Cache endpoints ───────────────────────────────────────────────────────
+
+    def test_clear_cache(self, client):
+        response = client.post('/cache/clear')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert 'cleared' in data['message'].lower()
+
+    def test_cache_stats(self, client):
+        response = client.get('/cache/stats')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert 'cache_type' in data
+
+    # ── POST /hotels/<id>/image ───────────────────────────────────────────────
+
+    def test_upload_hotel_image_no_file(self, client):
+        response = client.post('/hotels/1/image')
+        assert response.status_code == 400
+        data = json.loads(response.data)
+        assert 'error' in data
+
+    def test_upload_hotel_image_invalid_type(self, client, monkeypatch):
+        import io
+        data = {'file': (io.BytesIO(b'data'), 'doc.pdf')}
+        response = client.post('/hotels/1/image', data=data, content_type='multipart/form-data')
+        assert response.status_code == 400
+        resp_data = json.loads(response.data)
+        assert 'not allowed' in resp_data['error']
+
+    def test_upload_hotel_image_success(self, client, monkeypatch):
+        import io, unittest.mock as mock_mod
+
+        MockHotel = self._mock_hotel()
+        hotel_obj = MockHotel()
+
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def first(self):
+                return hotel_obj
+
+        class MockSession:
+            def query(self, model):
+                return MockQuery()
+            def commit(self):
+                pass
+            def rollback(self):
+                pass
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSession()
+
+        mock_s3 = mock_mod.MagicMock()
+        with mock_mod.patch('adapters.http.hotels.boto3.client', return_value=mock_s3):
+            data = {'file': (io.BytesIO(b'fake image data'), 'hotel.jpg')}
+            response = client.post('/hotels/1/image', data=data, content_type='multipart/form-data')
+
+        hotels_module.Session = original_session
+        assert response.status_code == 200
+        resp_data = json.loads(response.data)
+        assert 'image_url' in resp_data
+        assert 'travelhub-images-proyecto' in resp_data['image_url']
+
+    def test_upload_hotel_image_hotel_not_found(self, client, monkeypatch):
+        import io, unittest.mock as mock_mod
+
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def first(self):
+                return None
+
+        class MockSession:
+            def query(self, model):
+                return MockQuery()
+            def rollback(self):
+                pass
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSession()
+
+        data = {'file': (io.BytesIO(b'fake image data'), 'hotel.jpg')}
+        response = client.post('/hotels/9999/image', data=data, content_type='multipart/form-data')
+
+        hotels_module.Session = original_session
+        assert response.status_code == 404

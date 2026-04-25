@@ -95,12 +95,15 @@
           <div
             class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col sm:flex-row hover:shadow-md transition-shadow"
           >
-            <!-- Image placeholder -->
-            <div
-              class="sm:w-48 h-40 sm:h-auto bg-gradient-to-br from-blue-200 to-blue-400 flex items-center justify-center flex-shrink-0"
-            >
-              <span class="text-4xl">🏨</span>
-            </div>
+            <!-- Image -->
+            <img
+              [src]="
+                hotel.image_url ||
+                'https://travelhub-images-proyecto.s3.us-east-1.amazonaws.com/hotels/hotel-foto-1.jpg'
+              "
+              [alt]="hotel.nombre"
+              class="sm:w-48 h-40 sm:h-auto object-cover flex-shrink-0"
+            />
             <!-- Info -->
             <div class="p-5 flex-1 flex flex-col justify-between">
               <div>
