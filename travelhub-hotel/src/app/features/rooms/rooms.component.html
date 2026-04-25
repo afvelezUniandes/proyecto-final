@@ -1,4 +1,60 @@
 <div class="space-y-6">
+  <!-- Hotel image upload -->
+  @if (hotelService.hotel(); as hotel) {
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      <h2 class="text-sm font-semibold text-gray-700 uppercase mb-4">Imagen principal del hotel</h2>
+      <div class="flex items-center gap-6">
+        @if (hotel.image_url) {
+          <img
+            [src]="hotel.image_url"
+            [alt]="hotel.nombre"
+            class="w-32 h-24 object-cover rounded-xl border border-gray-200"
+          />
+        } @else {
+          <div
+            class="w-32 h-24 bg-gradient-to-br from-blue-100 to-blue-300 rounded-xl flex items-center justify-center"
+          >
+            <span class="text-4xl">🏨</span>
+          </div>
+        }
+        <div class="flex-1">
+          <p class="text-sm text-gray-600 mb-2">
+            {{
+              hotel.image_url
+                ? 'Imagen actual. Sube una nueva para reemplazarla.'
+                : 'Sin imagen. Sube una para mostrarla en el portal.'
+            }}
+          </p>
+          <label
+            class="cursor-pointer inline-flex items-center gap-2 bg-[#1D4ED8] text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-blue-700 transition"
+          >
+            @if (uploadingImage) {
+              <span
+                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+              ></span>
+              Subiendo...
+            } @else {
+              📷 Subir imagen
+            }
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              class="hidden"
+              (change)="onImageSelected($event)"
+              [disabled]="uploadingImage"
+            />
+          </label>
+          @if (uploadSuccess) {
+            <p class="text-green-600 text-xs mt-2">✓ Imagen actualizada correctamente</p>
+          }
+          @if (uploadError) {
+            <p class="text-red-500 text-xs mt-2">{{ uploadError }}</p>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>

@@ -50,6 +50,76 @@ class TestAuthEndpoints:
         data = json.loads(response.data)
         assert data['message'] == 'User created'
 
+    def test_sign_up_hotel_role_returns_hotel_id(self, client, monkeypatch):
+        """Test que sign-up con rol hotel retorna hotel_id en la respuesta"""
+        call_count = [0]
+
+        class MockUser:
+            id = 42
+            def __init__(self, **kwargs):
+                for key, value in kwargs.items():
+                    setattr(self, key, value)
+
+        created_user = MockUser()
+
+        class MockSession:
+            def query(self, model):
+                return self
+            def filter_by(self, **kwargs):
+                return self
+            def first(self):
+                return None
+            def add(self, obj):
+                pass
+            def commit(self):
+                pass
+            def delete(self, obj):
+                pass
+            def close(self):
+                pass
+
+        def mock_session():
+            return MockSession()
+
+        import requests as real_requests
+        import adapters.http.auth as auth_module
+
+        class MockCatalogResponse:
+            status_code = 201
+            def json(self):
+                return {'id': 7, 'nombre': 'Hotel Test'}
+
+        original_session = auth_module.Session
+        original_post = auth_module.http_requests.post
+        auth_module.Session = mock_session
+        auth_module.http_requests.post = lambda *a, **kw: MockCatalogResponse()
+
+        response = client.post('/sign-up',
+            data=json.dumps({
+                'nombre': 'Admin Hotel',
+                'email': 'admin@hotel.com',
+                'password': 'pass123',
+                'rol': 'hotel',
+                'hotel': {
+                    'nombre': 'Hotel Test',
+                    'ciudad': 'Bogotá',
+                    'pais': 'Colombia',
+                    'direccion': 'Calle 1',
+                    'estrellas': 3,
+                }
+            }),
+            content_type='application/json'
+        )
+
+        auth_module.Session = original_session
+        auth_module.http_requests.post = original_post
+
+        assert response.status_code == 201
+        data = json.loads(response.data)
+        assert data['message'] == 'User created'
+        assert 'hotel_id' in data
+        assert data['hotel_id'] == 7
+
     def test_sign_up_duplicate_email(self, client, monkeypatch):
         """Test de registro con email duplicado"""
         class MockUser:

@@ -34,6 +34,8 @@ export class RegisterComponent {
   hotelTelefono = '';
   hotelEmail = '';
   hotelDescripcion = '';
+  hotelImageFile: File | null = null;
+  hotelImagePreview: string | null = null;
 
   paises = [
     'Colombia',
@@ -81,6 +83,22 @@ export class RegisterComponent {
     this.step.set(1);
   }
 
+  onImageFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.error.set(null);
+    if (file.size > 5 * 1024 * 1024) {
+      this.error.set('La imagen no puede superar 5 MB.');
+      input.value = '';
+      return;
+    }
+    this.hotelImageFile = file;
+    const reader = new FileReader();
+    reader.onload = (e) => (this.hotelImagePreview = e.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
   onRegister() {
     this.error.set(null);
     if (!this.hotelNombre.trim()) {
@@ -99,7 +117,7 @@ export class RegisterComponent {
     this.loading = true;
 
     this.api
-      .post('/auth/sign-up', {
+      .post<{ message: string; hotel_id: number | null }>('/auth/sign-up', {
         nombre: this.nombre.trim(),
         email: this.email.trim(),
         password: this.password,
@@ -116,7 +134,12 @@ export class RegisterComponent {
         },
       })
       .subscribe({
-        next: () => {
+        next: (res) => {
+          if (this.hotelImageFile && res.hotel_id) {
+            this.api
+              .uploadFile(`/catalog/hotels/${res.hotel_id}/image`, this.hotelImageFile)
+              .subscribe();
+          }
           this.loading = false;
           this.success.set(true);
         },

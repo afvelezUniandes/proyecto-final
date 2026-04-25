@@ -60,6 +60,7 @@ def sign_up():
                 session.commit()
                 session.close()
                 return jsonify({'error': 'Error al crear el hotel. Intenta de nuevo.'}), 500
+            hotel_id = catalog_resp.json().get('id')
         except Exception:
             session.delete(user)
             session.commit()
@@ -67,7 +68,7 @@ def sign_up():
             return jsonify({'error': 'No se pudo conectar con el servicio de hoteles.'}), 503
 
     session.close()
-    return jsonify({'message': 'User created'}), 201
+    return jsonify({'message': 'User created', 'hotel_id': hotel_id if 'hotel_id' in dir() else None}), 201
 
 @bp.route('/sign-in', methods=['POST'])
 def sign_in():

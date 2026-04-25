@@ -163,15 +163,18 @@ describe('RegisterComponent', () => {
       const { component } = await createComponent();
       fillHotelFields(component);
       component.onRegister();
-      expect(postSpy).toHaveBeenCalledWith('/auth/sign-up', expect.objectContaining({
-        nombre: 'Admin Hotel',
-        email: 'admin@hotel.com',
-        rol: 'hotel',
-        hotel: expect.objectContaining({
-          nombre: 'Hotel Test',
-          ciudad: 'Bogotá',
+      expect(postSpy).toHaveBeenCalledWith(
+        '/auth/sign-up',
+        expect.objectContaining({
+          nombre: 'Admin Hotel',
+          email: 'admin@hotel.com',
+          rol: 'hotel',
+          hotel: expect.objectContaining({
+            nombre: 'Hotel Test',
+            ciudad: 'Bogotá',
+          }),
         }),
-      }));
+      );
     });
 
     it('muestra éxito al registrarse correctamente', async () => {
@@ -197,6 +200,53 @@ describe('RegisterComponent', () => {
       fillHotelFields(component);
       component.onRegister();
       expect(component.error()).toBe('Error al crear la cuenta. Intenta de nuevo.');
+    });
+  });
+
+  describe('onImageFileSelected', () => {
+    it('guarda el archivo y genera preview si es válido', async () => {
+      const { component } = await createComponent();
+      const file = new File(['contenido'], 'hotel.jpg', { type: 'image/jpeg' });
+      const fakeEvent = { target: { files: [file], value: '' } } as unknown as Event;
+
+      component.onImageFileSelected(fakeEvent);
+
+      expect(component.hotelImageFile).toBe(file);
+    });
+
+    it('muestra error si el archivo supera 5 MB', async () => {
+      const { component } = await createComponent();
+      const bigFile = new File([new ArrayBuffer(6 * 1024 * 1024)], 'grande.jpg', {
+        type: 'image/jpeg',
+      });
+      Object.defineProperty(bigFile, 'size', { value: 6 * 1024 * 1024 });
+      const inputEl = { files: [bigFile], value: '' };
+      const fakeEvent = { target: inputEl } as unknown as Event;
+
+      component.onImageFileSelected(fakeEvent);
+
+      expect(component.error()).toBe('La imagen no puede superar 5 MB.');
+      expect(component.hotelImageFile).toBeNull();
+    });
+
+    it('limpia el error previo al seleccionar un archivo válido', async () => {
+      const { component } = await createComponent();
+      component.error.set('Error anterior');
+      const file = new File(['data'], 'foto.png', { type: 'image/png' });
+      const fakeEvent = { target: { files: [file], value: '' } } as unknown as Event;
+
+      component.onImageFileSelected(fakeEvent);
+
+      expect(component.error()).toBeNull();
+    });
+
+    it('no hace nada si no se seleccionó ningún archivo', async () => {
+      const { component } = await createComponent();
+      const fakeEvent = { target: { files: [] } } as unknown as Event;
+
+      component.onImageFileSelected(fakeEvent);
+
+      expect(component.hotelImageFile).toBeNull();
     });
   });
 });

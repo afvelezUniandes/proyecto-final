@@ -37,7 +37,9 @@
       <div class="text-sm text-gray-400 mb-6">
         <a routerLink="/home" class="hover:text-[#1D4ED8]">Inicio</a>
         <span class="mx-2">›</span>
-        <a routerLink="/search" class="hover:text-[#1D4ED8]">Búsqueda</a>
+        <a [routerLink]="['/search']" [queryParams]="searchParams" class="hover:text-[#1D4ED8]"
+          >Búsqueda</a
+        >
         <span class="mx-2">›</span>
         <span class="text-gray-700">{{ hotel.nombre }}</span>
       </div>
@@ -45,12 +47,15 @@
       <div class="grid lg:grid-cols-3 gap-8">
         <!-- Left: Hotel info -->
         <div class="lg:col-span-2 space-y-6">
-          <!-- Hero image placeholder -->
-          <div
-            class="bg-gradient-to-br from-blue-300 to-blue-500 rounded-2xl h-64 flex items-center justify-center"
-          >
-            <span class="text-8xl">🏨</span>
-          </div>
+          <!-- Hero image -->
+          <img
+            [src]="
+              hotel.image_url ||
+              'https://travelhub-images-proyecto.s3.us-east-1.amazonaws.com/hotels/hotel-foto-1.jpg'
+            "
+            [alt]="hotel.nombre"
+            class="w-full h-64 object-cover rounded-2xl"
+          />
 
           <!-- Name + stars -->
           <div>
@@ -63,6 +68,9 @@
               </div>
             </div>
             <p class="text-gray-500 mt-1">📍 {{ hotel.ciudad }}</p>
+            @if (hotel.direccion) {
+              <p class="text-gray-400 text-xs mt-1">{{ hotel.direccion }}</p>
+            }
             @if (hotel.descripcion) {
               <p class="text-gray-700 text-sm mt-4 leading-relaxed">{{ hotel.descripcion }}</p>
             }
@@ -72,17 +80,8 @@
           <div>
             <h3 class="text-sm font-semibold text-gray-700 uppercase mb-3">Amenidades</h3>
             <div class="flex flex-wrap gap-3">
-              @if (hotel.tiene_piscina) {
-                <span class="chip-blue">🏊 Piscina</span>
-              }
-              @if (hotel.tiene_gimnasio) {
-                <span class="chip-blue">💪 Gimnasio</span>
-              }
-              @if (hotel.tiene_spa) {
-                <span class="chip-blue">🧖 Spa</span>
-              }
-              @if (hotel.permite_mascotas) {
-                <span class="chip-blue">🐾 Mascotas</span>
+              @for (amenity of amenities; track amenity.label) {
+                <span class="chip-blue">{{ amenity.icon }} {{ amenity.label }}</span>
               }
             </div>
           </div>

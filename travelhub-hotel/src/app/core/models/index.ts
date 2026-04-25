@@ -48,6 +48,19 @@ export interface HotelReservation {
   noches: number;
 }
 
+export interface Hotel {
+  id: number;
+  admin_id?: number;
+  nombre: string;
+  descripcion?: string;
+  direccion?: string;
+  ciudad: string;
+  pais: string;
+  estrellas?: number;
+  activo?: boolean;
+  image_url?: string;
+}
+
 export interface Room {
   id: number;
   hotel_id: number;

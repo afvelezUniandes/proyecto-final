@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MockHotelAdminService } from '../../core/services/mocks/mock-hotel-admin.service';
+import { HotelService } from '../../core/services/hotel.service';
 import { Room } from '../../core/models';
 
 interface RoomForm {
@@ -26,14 +27,27 @@ export class RoomsComponent implements OnInit {
   saving = false;
   deleteConfirmId: number | null = null;
 
+  uploadingImage = false;
+  uploadError = '';
+  uploadSuccess = false;
+
+  imageUrlInput = '';
+  savingUrl = false;
+  saveUrlSuccess = false;
+  saveUrlError = '';
+
   tipos = ['sencilla', 'doble', 'suite', 'familiar', 'presidencial'];
 
   form: RoomForm = this.emptyForm();
 
-  constructor(private mockService: MockHotelAdminService) {}
+  constructor(
+    private mockService: MockHotelAdminService,
+    public hotelService: HotelService,
+  ) {}
 
   ngOnInit() {
     this.loadRooms();
+    this.hotelService.loadMyHotel().subscribe();
   }
 
   loadRooms() {
@@ -120,5 +134,61 @@ export class RoomsComponent implements OnInit {
       currency: 'COP',
       maximumFractionDigits: 0,
     }).format(p);
+  }
+
+  onImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    const hotel = this.hotelService.hotel();
+    if (!file || !hotel) return;
+
+    this.uploadError = '';
+    this.uploadSuccess = false;
+
+    if (file.size > 5 * 1024 * 1024) {
+      this.uploadError = 'La imagen no puede superar 5 MB.';
+      input.value = '';
+      return;
+    }
+
+    this.uploadingImage = true;
+    this.uploadError = '';
+    this.uploadSuccess = false;
+
+    this.hotelService.uploadImage(hotel.id, file).subscribe({
+      next: () => {
+        this.uploadingImage = false;
+        this.uploadSuccess = true;
+        setTimeout(() => (this.uploadSuccess = false), 3000);
+      },
+      error: (e) => {
+        this.uploadingImage = false;
+        this.uploadError = e?.error?.error || 'Error al subir la imagen.';
+      },
+    });
+
+    input.value = '';
+  }
+
+  saveImageUrl() {
+    const hotel = this.hotelService.hotel();
+    if (!this.imageUrlInput.trim() || !hotel) return;
+
+    this.savingUrl = true;
+    this.saveUrlSuccess = false;
+    this.saveUrlError = '';
+
+    this.hotelService.setImageUrl(hotel.id, this.imageUrlInput.trim()).subscribe({
+      next: () => {
+        this.savingUrl = false;
+        this.saveUrlSuccess = true;
+        this.imageUrlInput = '';
+        setTimeout(() => (this.saveUrlSuccess = false), 3000);
+      },
+      error: (e) => {
+        this.savingUrl = false;
+        this.saveUrlError = e?.error?.error || 'Error al guardar la URL.';
+      },
+    });
   }
 }

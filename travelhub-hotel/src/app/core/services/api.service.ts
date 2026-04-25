@@ -30,6 +30,16 @@ export class ApiService {
     return this.http.patch<T>(`${this.baseUrl}${path}`, body).pipe(catchError(this.handleError));
   }
 
+  put<T>(path: string, body: unknown): Observable<T> {
+    return this.http.put<T>(`${this.baseUrl}${path}`, body).pipe(catchError(this.handleError));
+  }
+
+  uploadFile<T>(path: string, file: File, fieldName = 'file'): Observable<T> {
+    const formData = new FormData();
+    formData.append(fieldName, file, file.name);
+    return this.http.post<T>(`${this.baseUrl}${path}`, formData).pipe(catchError(this.handleError));
+  }
+
   private handleError(error: unknown) {
     return throwError(() => error);
   }

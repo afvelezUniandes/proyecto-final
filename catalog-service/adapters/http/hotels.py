@@ -3,12 +3,23 @@ from sqlalchemy.orm import sessionmaker
 from adapters.orm.models import Hotel, Habitacion, Base
 from sqlalchemy import create_engine
 import os
+import uuid
+import boto3
+from botocore.exceptions import BotoCoreError, ClientError
 
 bp = Blueprint('hotels', __name__)
 
 DATABASE_URL = os.getenv('CATALOG_DATABASE_URL', 'postgresql://user:password@localhost:5432/travelhub')
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
+
+S3_BUCKET = os.getenv('S3_BUCKET', 'travelhub-images-proyecto')
+S3_REGION = os.getenv('S3_REGION', 'us-east-1')
+
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
+
+def _allowed_file(filename: str) -> bool:
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def make_cache_key_hotels():
     """Genera una cache key basada en los parámetros de la query"""
@@ -100,7 +111,10 @@ def get_hotels():
             'ciudad': h.ciudad,
             'pais': h.pais,
             'estrellas': h.estrellas,
-            'activo': h.activo
+            'activo': h.activo,
+            'image_url': h.image_url,
+            'descripcion': h.descripcion,
+            'direccion': h.direccion,
         } for h in hotels
     ]
     session.close()
@@ -345,18 +359,23 @@ def delete_room(room_id):
 @bp.route('/rooms', methods=['GET'])
 def get_rooms():
     cache = current_app.cache
-    cache_key = 'rooms:all'
-    
+
+    hotel_id = request.args.get('hotel_id')
+    cache_key = f'rooms:hotel:{hotel_id}' if hotel_id else 'rooms:all'
+
     # Intentar obtener del cache
     cached_result = cache.get(cache_key)
     if cached_result:
         response = jsonify(cached_result)
         response.headers['X-Cache'] = 'HIT'
         return response
-    
+
     # Si no está en cache, consultar la base de datos
     session = Session()
-    rooms = session.query(Habitacion).all()
+    query = session.query(Habitacion)
+    if hotel_id:
+        query = query.filter(Habitacion.hotel_id == int(hotel_id))
+    rooms = query.all()
     result = [
         {
             'id': r.id,
@@ -400,3 +419,49 @@ def cache_stats():
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@bp.route('/hotels/<int:hotel_id>/image', methods=['POST'])
+def upload_hotel_image(hotel_id):
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+
+    file = request.files['file']
+    if not file or not file.filename:
+        return jsonify({'error': 'Empty file'}), 400
+    if not _allowed_file(file.filename):
+        return jsonify({'error': 'File type not allowed. Use jpg, jpeg, png or webp'}), 400
+    if file.content_length and file.content_length > 5 * 1024 * 1024:
+        return jsonify({'error': 'File exceeds 5 MB limit'}), 400
+
+    session = Session()
+    try:
+        hotel = session.query(Hotel).filter(Hotel.id == hotel_id).first()
+        if not hotel:
+            return jsonify({'error': 'Hotel not found'}), 404
+
+        ext = file.filename.rsplit('.', 1)[1].lower()
+        key = f"hotels/{uuid.uuid4().hex}.{ext}"
+
+        s3 = boto3.client('s3', region_name=S3_REGION)
+        s3.upload_fileobj(
+            file,
+            S3_BUCKET,
+            key,
+            ExtraArgs={'ContentType': file.content_type or 'image/jpeg'},
+        )
+
+        image_url = f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com/{key}"
+        hotel.image_url = image_url
+        session.commit()
+
+        current_app.cache.clear()
+
+        return jsonify({'image_url': image_url}), 200
+    except (BotoCoreError, ClientError) as e:
+        session.rollback()
+        return jsonify({'error': f'S3 upload failed: {str(e)}'}), 500
+    except Exception as e:
+        session.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        session.close()
