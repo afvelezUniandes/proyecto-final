@@ -24,8 +24,6 @@ jobs:
             path: ./auth-service
           - name: Catalog Service
             path: ./catalog-service
-          - name: Client Gateway
-            path: ./client-gateway
           - name: Reservation Service
             path: ./reservation-service
 
