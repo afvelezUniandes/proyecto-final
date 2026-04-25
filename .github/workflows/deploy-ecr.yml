@@ -20,6 +20,7 @@ jobs:
       auth: ${{ steps.filter.outputs.auth }}
       catalog: ${{ steps.filter.outputs.catalog }}
       gateway: ${{ steps.filter.outputs.gateway }}
+      reservation: ${{ steps.filter.outputs.reservation }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -35,6 +36,8 @@ jobs:
               - 'catalog-service/**'
             gateway:
               - 'client-gateway/**'
+            reservation:
+              - 'reservation-service/**'
 
   # Build y push para auth-service
   build-auth:
@@ -132,15 +135,47 @@ jobs:
           echo "Tag: gateway-latest"
           echo "Full URI: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:gateway-latest"
 
+  # Build y push para reservation-service
+  build-reservation:
+    name: Build Reservation Service
+    needs: detect-changes
+    if: needs.detect-changes.outputs.reservation == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:reservation-latest ./reservation-service
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:reservation-latest
+
+      - name: Image info
+        run: |
+          echo "✅ Reservation service image pushed successfully!"
+          echo "Tag: reservation-latest"
+          echo "Full URI: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:reservation-latest"
+
   # Deploy a ECS (solo en main)
   deploy-ecs:
     name: Deploy to ECS
-    needs: [build-auth, build-catalog, build-gateway]
+    needs: [build-auth, build-catalog, build-gateway, build-reservation]
     runs-on: ubuntu-latest
     if: |
       always() &&
       !contains(needs.*.result, 'failure') &&
-      (needs.build-auth.result == 'success' || needs.build-catalog.result == 'success' || needs.build-gateway.result == 'success')
+      (needs.build-auth.result == 'success' || needs.build-catalog.result == 'success' || needs.build-gateway.result == 'success' || needs.build-reservation.result == 'success')
 
     steps:
       - name: Configure AWS credentials
@@ -171,7 +206,14 @@ jobs:
   deploy-notification:
     name: Deployment Summary
     needs:
-      [detect-changes, build-auth, build-catalog, build-gateway, deploy-ecs]
+      [
+        detect-changes,
+        build-auth,
+        build-catalog,
+        build-gateway,
+        build-reservation,
+        deploy-ecs,
+      ]
     runs-on: ubuntu-latest
     if: always()
 
@@ -198,6 +240,12 @@ jobs:
             echo "- ✅ Gateway Service" >> $GITHUB_STEP_SUMMARY
           else
             echo "- ⏭️ Gateway Service (no changes)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.detect-changes.outputs.reservation }}" == "true" ]; then
+            echo "- ✅ Reservation Service" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ⏭️ Reservation Service (no changes)" >> $GITHUB_STEP_SUMMARY
           fi
 
           echo "" >> $GITHUB_STEP_SUMMARY
