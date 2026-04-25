@@ -67,8 +67,18 @@ def sign_up():
             session.close()
             return jsonify({'error': 'No se pudo conectar con el servicio de hoteles.'}), 503
 
+    token = jwt.encode({
+        'user_id': user.id,
+        'rol': user.rol.value if user.rol else 'user',
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+    }, SECRET_KEY, algorithm='HS256')
     session.close()
-    return jsonify({'message': 'User created', 'hotel_id': hotel_id if 'hotel_id' in dir() else None}), 201
+    return jsonify({
+        'message': 'User created',
+        'hotel_id': hotel_id if 'hotel_id' in dir() else None,
+        'token': token,
+        'rol': user.rol.value if user.rol else 'user'
+    }), 201
 
 @bp.route('/sign-in', methods=['POST'])
 def sign_in():

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MockHotelAdminService } from '../../core/services/mocks/mock-hotel-admin.service';
+import { HotelService } from '../../core/services/hotel.service';
 import { HotelStats, HotelReservation, WeeklyOccupancy } from '../../core/models';
 
 @Component({
@@ -15,10 +16,19 @@ export class DashboardComponent implements OnInit {
   recentReservations: HotelReservation[] = [];
   weeklyOccupancy: WeeklyOccupancy[] = [];
   loading = true;
+  uploadingImage = false;
+  uploadError = '';
+  uploadSuccess = false;
 
-  constructor(private mockService: MockHotelAdminService) {}
+  constructor(
+    private mockService: MockHotelAdminService,
+    public hotelService: HotelService,
+  ) {}
 
   ngOnInit() {
+    this.hotelService.loadMyHotel().subscribe({
+      error: (err) => console.error('[HotelService] loadMyHotel failed:', err),
+    });
     this.mockService.getStats().subscribe({ next: (s) => (this.stats = s) });
     this.mockService.getWeeklyOccupancy().subscribe({ next: (w) => (this.weeklyOccupancy = w) });
     this.mockService.getReservations({}).subscribe({
@@ -30,7 +40,11 @@ export class DashboardComponent implements OnInit {
   }
 
   formatPrice(p: number): string {
-    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(p);
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      maximumFractionDigits: 0,
+    }).format(p);
   }
 
   estadoClass(estado: string): string {
@@ -44,5 +58,29 @@ export class DashboardComponent implements OnInit {
 
   maxOccupancy(): number {
     return Math.max(...this.weeklyOccupancy.map((d) => d.porcentaje), 1);
+  }
+
+  onImageSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const hotel = this.hotelService.hotel();
+    if (!hotel) return;
+    if (file.size > 5 * 1024 * 1024) {
+      this.uploadError = 'La imagen no puede superar 5 MB.';
+      return;
+    }
+    this.uploadError = '';
+    this.uploadSuccess = false;
+    this.uploadingImage = true;
+    this.hotelService.uploadImage(hotel.id, file).subscribe({
+      next: () => {
+        this.uploadingImage = false;
+        this.uploadSuccess = true;
+      },
+      error: (e) => {
+        this.uploadingImage = false;
+        this.uploadError = e?.error?.error || 'Error al subir la imagen.';
+      },
+    });
   }
 }

@@ -22,6 +22,11 @@ export class AuthService {
     private router: Router,
   ) {}
 
+  setToken(token: string): void {
+    this._token.set(token);
+    localStorage.setItem(this.TOKEN_KEY, token);
+  }
+
   login(req: SignInRequest): Observable<AuthResponse> {
     return this.api.post<AuthResponse>('/auth/sign-in', req).pipe(
       tap((res) => {
