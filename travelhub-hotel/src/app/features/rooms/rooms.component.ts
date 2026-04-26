@@ -1,8 +1,8 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MockHotelAdminService } from '../../core/services/mocks/mock-hotel-admin.service';
 import { HotelService } from '../../core/services/hotel.service';
+import { MockHotelAdminService } from '../../core/services/mocks/mock-hotel-admin.service';
 import { Room } from '../../core/models';
 
 interface RoomForm {
@@ -43,13 +43,13 @@ export class RoomsComponent implements OnInit {
   hotelLoadError = '';
 
   constructor(
-    private mockService: MockHotelAdminService,
     public hotelService: HotelService,
+    private mockService: MockHotelAdminService,
   ) {}
 
   ngOnInit() {
-    this.loadRooms();
     this.hotelService.loadMyHotel().subscribe({
+      next: (hotel) => this.loadRooms(hotel.id),
       error: (err) => {
         console.error('[HotelService] loadMyHotel failed:', err);
         this.hotelLoadError =
@@ -58,8 +58,10 @@ export class RoomsComponent implements OnInit {
     });
   }
 
-  loadRooms() {
-    this.mockService.getRooms().subscribe({ next: (r) => (this.rooms = r) });
+  loadRooms(hotelId?: number) {
+    const id = hotelId ?? this.hotelService.hotel()?.id;
+    if (!id) return;
+    this.hotelService.getRooms(id).subscribe({ next: (r) => (this.rooms = r) });
   }
 
   openAdd() {
@@ -89,20 +91,31 @@ export class RoomsComponent implements OnInit {
   save() {
     if (!this.form.nombre.trim() || !this.form.tipo || this.form.precio_noche <= 0) return;
     this.saving = true;
+    const hotel = this.hotelService.hotel();
     if (this.editingRoom) {
-      this.mockService.updateRoom(this.editingRoom.id, { ...this.form }).subscribe({
+      this.hotelService.updateRoom(this.editingRoom.id, { ...this.form }).subscribe({
         next: () => {
           this.saving = false;
           this.closePanel();
           this.loadRooms();
         },
+        error: () => {
+          this.saving = false;
+        },
       });
     } else {
+      if (!hotel) {
+        this.saving = false;
+        return;
+      }
       this.mockService.createRoom({ ...this.form, moneda: 'COP' }).subscribe({
         next: () => {
           this.saving = false;
           this.closePanel();
           this.loadRooms();
+        },
+        error: () => {
+          this.saving = false;
         },
       });
     }

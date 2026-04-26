@@ -34,6 +34,10 @@ export class ApiService {
     return this.http.put<T>(`${this.baseUrl}${path}`, body).pipe(catchError(this.handleError));
   }
 
+  delete<T>(path: string): Observable<T> {
+    return this.http.delete<T>(`${this.baseUrl}${path}`).pipe(catchError(this.handleError));
+  }
+
   uploadFile<T>(path: string, file: File, fieldName = 'file'): Observable<T> {
     const formData = new FormData();
     formData.append(fieldName, file, file.name);

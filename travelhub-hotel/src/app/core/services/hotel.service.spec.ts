@@ -3,7 +3,7 @@ import { of } from 'rxjs';
 import { vi } from 'vitest';
 import { HotelService } from './hotel.service';
 import { ApiService } from './api.service';
-import { Hotel } from '../models/index';
+import { Hotel, Room } from '../models/index';
 
 describe('HotelService', () => {
   let service: HotelService;
@@ -93,6 +93,87 @@ describe('HotelService', () => {
         image_url: 'https://s3.amazonaws.com/hotels/otra.jpg',
       });
       expect(service.hotel()?.image_url).toBe('https://s3.amazonaws.com/hotels/otra.jpg');
+    });
+  });
+
+  describe('getRooms()', () => {
+    const mockRooms: Room[] = [
+      {
+        id: 1,
+        hotel_id: 1,
+        nombre: 'Suite Principal',
+        tipo: 'suite',
+        capacidad: 2,
+        disponible: true,
+        precio_noche: 300000,
+        moneda: 'COP',
+      },
+      {
+        id: 2,
+        hotel_id: 1,
+        nombre: 'Habitación Doble',
+        tipo: 'doble',
+        capacidad: 2,
+        disponible: true,
+        precio_noche: 180000,
+        moneda: 'COP',
+      },
+    ];
+
+    it('should call GET /catalog/rooms with hotel_id param', () => {
+      apiGetFn.mockReturnValue(of(mockRooms));
+
+      service.getRooms(1).subscribe((rooms) => {
+        expect(rooms).toEqual(mockRooms);
+      });
+
+      expect(apiGetFn).toHaveBeenCalledWith('/catalog/rooms', { hotel_id: 1 });
+    });
+
+    it('should return empty array when hotel has no rooms', () => {
+      apiGetFn.mockReturnValue(of([]));
+
+      service.getRooms(99).subscribe((rooms) => {
+        expect(rooms).toEqual([]);
+        expect(rooms.length).toBe(0);
+      });
+
+      expect(apiGetFn).toHaveBeenCalledWith('/catalog/rooms', { hotel_id: 99 });
+    });
+  });
+
+  describe('updateRoom()', () => {
+    const mockRoom: Room = {
+      id: 5,
+      hotel_id: 1,
+      nombre: 'Suite Ejecutiva',
+      tipo: 'suite',
+      capacidad: 3,
+      disponible: true,
+      precio_noche: 450000,
+      moneda: 'COP',
+    };
+
+    it('should call PUT /catalog/rooms/:id with the provided data', () => {
+      const updatedRoom = { ...mockRoom, precio_noche: 500000 };
+      apiPutFn.mockReturnValue(of(updatedRoom));
+
+      service.updateRoom(5, { precio_noche: 500000 }).subscribe((room) => {
+        expect(room.precio_noche).toBe(500000);
+      });
+
+      expect(apiPutFn).toHaveBeenCalledWith('/catalog/rooms/5', { precio_noche: 500000 });
+    });
+
+    it('should return the full updated room from the backend', () => {
+      const updatedRoom = { ...mockRoom, nombre: 'Suite Premium', capacidad: 4 };
+      apiPutFn.mockReturnValue(of(updatedRoom));
+
+      service.updateRoom(5, { nombre: 'Suite Premium', capacidad: 4 }).subscribe((room) => {
+        expect(room).toEqual(updatedRoom);
+        expect(room.nombre).toBe('Suite Premium');
+        expect(room.capacidad).toBe(4);
+      });
     });
   });
 });

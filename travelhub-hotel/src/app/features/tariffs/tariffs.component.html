@@ -4,58 +4,114 @@
     <p class="text-gray-500 text-sm">Actualiza los precios por noche de cada habitación</p>
   </div>
 
-  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="w-full">
-        <thead>
-          <tr class="bg-gray-50 border-b border-gray-100">
-            <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">Habitación</th>
-            <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">Capacidad</th>
-            <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">Precio actual</th>
-            <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">Nuevo precio (COP)</th>
-            <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">Acción</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-50">
-          @for (row of rows; track row.id) {
-            <tr class="hover:bg-gray-50 transition">
-              <td class="px-6 py-4">
-                <div class="font-medium text-gray-900 text-sm">{{ row.nombre }}</div>
-                <div class="text-xs text-gray-400 capitalize">{{ row.tipo }}</div>
-              </td>
-              <td class="px-6 py-4 text-sm text-gray-700">{{ row.capacidad }} personas</td>
-              <td class="px-6 py-4">
-                <span class="text-[#1D4ED8] font-bold text-sm">{{ formatPrice(row.precio_noche) }}</span>
-                <span class="text-gray-400 text-xs ml-1">/ noche</span>
-              </td>
-              <td class="px-6 py-4">
-                <input
-                  [(ngModel)]="row.newPrice"
-                  type="number"
-                  min="1"
-                  placeholder="Ej: 350000"
-                  class="w-40 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-800 outline-none focus:border-[#1D4ED8] transition"
-                />
-                @if (row.saveError) {
-                  <p class="text-red-500 text-xs mt-1">{{ row.saveError }}</p>
-                }
-              </td>
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-3">
-                  <button
-                    (click)="updateTariff(row)"
-                    [disabled]="row.saving"
-                    class="bg-[#1D4ED8] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-60 transition"
-                  >{{ row.saving ? 'Guardando...' : 'Actualizar precio' }}</button>
-                  @if (row.saved) {
-                    <span class="text-green-600 text-xs font-medium">✓ Guardado</span>
-                  }
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+  @if (loading) {
+    <div class="flex justify-center py-16">
+      <div
+        class="w-8 h-8 border-4 border-[#1D4ED8] border-t-transparent rounded-full animate-spin"
+      ></div>
     </div>
-  </div>
+  }
+
+  @if (loadError && !loading) {
+    <div class="bg-red-50 border border-red-200 rounded-2xl px-6 py-4 text-sm text-red-700">
+      ⚠️ {{ loadError }}
+    </div>
+  }
+
+  @if (!loading && !loadError) {
+    @if (rows.length === 0) {
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+        <div class="text-5xl mb-4">🛏️</div>
+        <p class="font-semibold text-gray-700 text-lg">No hay habitaciones creadas</p>
+        <p class="text-sm text-gray-400 mt-1 mb-6">
+          Primero debes crear las habitaciones de tu hotel para poder gestionar sus tarifas.
+        </p>
+        <a
+          routerLink="/rooms"
+          class="inline-flex items-center gap-2 bg-[#1D4ED8] text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-blue-700 transition"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          Crear habitaciones
+        </a>
+      </div>
+    } @else {
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-100">
+                <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
+                  Habitación
+                </th>
+                <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
+                  Capacidad
+                </th>
+                <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
+                  Precio actual
+                </th>
+                <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
+                  Nuevo precio (COP)
+                </th>
+                <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
+                  Acción
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              @for (row of rows; track row.id) {
+                <tr class="hover:bg-gray-50 transition">
+                  <td class="px-6 py-4">
+                    <div class="font-medium text-gray-900 text-sm">{{ row.nombre }}</div>
+                    <div class="text-xs text-gray-400 capitalize">{{ row.tipo }}</div>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-700">{{ row.capacidad }} personas</td>
+                  <td class="px-6 py-4">
+                    <span class="text-[#1D4ED8] font-bold text-sm">{{
+                      formatPrice(row.precio_noche)
+                    }}</span>
+                    <span class="text-gray-400 text-xs ml-1">/ noche</span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <input
+                      [(ngModel)]="row.newPrice"
+                      type="number"
+                      min="1"
+                      placeholder="Ej: 350000"
+                      class="w-40 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-800 outline-none focus:border-[#1D4ED8] transition"
+                    />
+                    @if (row.saveError) {
+                      <p class="text-red-500 text-xs mt-1">{{ row.saveError }}</p>
+                    }
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <button
+                        (click)="updateTariff(row)"
+                        [disabled]="row.saving"
+                        class="bg-[#1D4ED8] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-60 transition"
+                      >
+                        {{ row.saving ? 'Guardando...' : 'Actualizar precio' }}
+                      </button>
+                      @if (row.saved) {
+                        <span class="text-green-600 text-xs font-medium">✓ Guardado</span>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
 </div>
