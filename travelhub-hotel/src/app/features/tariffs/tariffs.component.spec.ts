@@ -4,6 +4,7 @@ import { vi } from 'vitest';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TariffsComponent } from './tariffs.component';
 import { HotelService } from '../../core/services/hotel.service';
+import { RoomService } from '../../core/services/room.service';
 import { Hotel, Room } from '../../core/models';
 
 const mockHotel: Hotel = {
@@ -47,7 +48,7 @@ async function createComponent(
     hotelError?: boolean;
   } = {},
 ) {
-  const getRoomsFn = overrides.roomsError
+  const listFn = overrides.roomsError
     ? vi.fn().mockReturnValue(throwError(() => ({ error: { error: 'Server error' } })))
     : vi.fn().mockReturnValue(of(overrides.rooms ?? mockRooms));
 
@@ -55,7 +56,7 @@ async function createComponent(
     ? vi.fn().mockReturnValue(throwError(() => new Error('Hotel not found')))
     : vi.fn().mockReturnValue(of(mockHotel));
 
-  const updateRoomFn = vi.fn();
+  const updateFn = vi.fn();
 
   const hotelSignal = vi
     .fn()
@@ -64,20 +65,26 @@ async function createComponent(
   const mockHotelService = {
     hotel: hotelSignal,
     loadMyHotel: loadMyHotelFn,
-    getRooms: getRoomsFn,
-    updateRoom: updateRoomFn,
+  };
+
+  const mockRoomService = {
+    list: listFn,
+    update: updateFn,
   };
 
   await TestBed.configureTestingModule({
     imports: [TariffsComponent, RouterTestingModule],
-    providers: [{ provide: HotelService, useValue: mockHotelService }],
+    providers: [
+      { provide: HotelService, useValue: mockHotelService },
+      { provide: RoomService, useValue: mockRoomService },
+    ],
   }).compileComponents();
 
   const fixture = TestBed.createComponent(TariffsComponent);
   const component = fixture.componentInstance;
   fixture.detectChanges();
 
-  return { fixture, component, getRoomsFn, loadMyHotelFn, updateRoomFn };
+  return { fixture, component, listFn, loadMyHotelFn, updateFn };
 }
 
 describe('TariffsComponent', () => {
@@ -102,17 +109,17 @@ describe('TariffsComponent', () => {
       expect(loadMyHotelFn).not.toHaveBeenCalled();
     });
 
-    it('debe llamar getRooms con el hotel_id correcto', async () => {
-      const { getRoomsFn } = await createComponent();
-      expect(getRoomsFn).toHaveBeenCalledWith(1);
+    it('debe llamar roomService.list con el hotel_id correcto', async () => {
+      const { listFn } = await createComponent();
+      expect(listFn).toHaveBeenCalledWith(1);
     });
   });
 
   describe('ngOnInit() — hotel NO está en el signal', () => {
-    it('debe llamar loadMyHotel y luego getRooms', async () => {
-      const { loadMyHotelFn, getRoomsFn } = await createComponent({ hotel: null });
+    it('debe llamar loadMyHotel y luego roomService.list', async () => {
+      const { loadMyHotelFn, listFn } = await createComponent({ hotel: null });
       expect(loadMyHotelFn).toHaveBeenCalled();
-      expect(getRoomsFn).toHaveBeenCalledWith(mockHotel.id);
+      expect(listFn).toHaveBeenCalledWith(mockHotel.id);
     });
 
     it('debe poblar rows correctamente tras loadMyHotel', async () => {
@@ -163,21 +170,32 @@ describe('TariffsComponent', () => {
       expect(component.rows[0].saveError).toBe('Ingresa un precio válido mayor a 0.');
     });
 
-    it('debe llamar updateRoom con roomId y precio_noche correctos', async () => {
+    it('debe llamar roomService.update con roomId y precio entero', async () => {
       const updatedRoom = { ...mockRooms[0], precio_noche: 400000 };
-      const { component, updateRoomFn } = await createComponent();
-      updateRoomFn.mockReturnValue(of(updatedRoom));
+      const { component, updateFn } = await createComponent();
+      updateFn.mockReturnValue(of(updatedRoom));
 
       component.rows[0].newPrice = '400000';
       component.updateTariff(component.rows[0]);
 
-      expect(updateRoomFn).toHaveBeenCalledWith(1, { precio_noche: 400000 });
+      expect(updateFn).toHaveBeenCalledWith(1, { precio_noche: 400000 });
+    });
+
+    it('debe redondear decimales antes de enviar al backend', async () => {
+      const updatedRoom = { ...mockRooms[0], precio_noche: 400001 };
+      const { component, updateFn } = await createComponent();
+      updateFn.mockReturnValue(of(updatedRoom));
+
+      component.rows[0].newPrice = '400000.7';
+      component.updateTariff(component.rows[0]);
+
+      expect(updateFn).toHaveBeenCalledWith(1, { precio_noche: 400001 });
     });
 
     it('debe actualizar precio_noche y newPrice en el row tras éxito', async () => {
       const updatedRoom = { ...mockRooms[0], precio_noche: 400000 };
-      const { component, updateRoomFn } = await createComponent();
-      updateRoomFn.mockReturnValue(of(updatedRoom));
+      const { component, updateFn } = await createComponent();
+      updateFn.mockReturnValue(of(updatedRoom));
 
       component.rows[0].newPrice = '400000';
       component.updateTariff(component.rows[0]);
@@ -191,8 +209,8 @@ describe('TariffsComponent', () => {
     it('debe limpiar saved=true después de 3 segundos', async () => {
       vi.useFakeTimers();
       const updatedRoom = { ...mockRooms[0], precio_noche: 400000 };
-      const { component, updateRoomFn } = await createComponent();
-      updateRoomFn.mockReturnValue(of(updatedRoom));
+      const { component, updateFn } = await createComponent();
+      updateFn.mockReturnValue(of(updatedRoom));
 
       component.rows[0].newPrice = '400000';
       component.updateTariff(component.rows[0]);
@@ -204,8 +222,8 @@ describe('TariffsComponent', () => {
     });
 
     it('debe setear saveError si el servidor devuelve error', async () => {
-      const { component, updateRoomFn } = await createComponent();
-      updateRoomFn.mockReturnValue(throwError(() => ({ error: { error: 'Room not found' } })));
+      const { component, updateFn } = await createComponent();
+      updateFn.mockReturnValue(throwError(() => ({ error: { error: 'Room not found' } })));
 
       component.rows[0].newPrice = '400000';
       component.updateTariff(component.rows[0]);
@@ -215,8 +233,8 @@ describe('TariffsComponent', () => {
     });
 
     it('debe usar mensaje genérico si el error no tiene detalle', async () => {
-      const { component, updateRoomFn } = await createComponent();
-      updateRoomFn.mockReturnValue(throwError(() => ({})));
+      const { component, updateFn } = await createComponent();
+      updateFn.mockReturnValue(throwError(() => ({})));
 
       component.rows[0].newPrice = '400000';
       component.updateTariff(component.rows[0]);

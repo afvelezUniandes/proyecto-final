@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { of, switchMap, finalize } from 'rxjs';
 import { HotelService } from '../../core/services/hotel.service';
+import { RoomService } from '../../core/services/room.service';
 import { Room } from '../../core/models';
 
 interface TariffRow extends Room {
@@ -26,6 +27,7 @@ export class TariffsComponent implements OnInit {
 
   constructor(
     private hotelService: HotelService,
+    private roomService: RoomService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -36,7 +38,7 @@ export class TariffsComponent implements OnInit {
 
     hotel$
       .pipe(
-        switchMap((h) => this.hotelService.getRooms(h.id)),
+        switchMap((h) => this.roomService.list(h.id)),
         finalize(() => {
           this.loading = false;
           this.cdr.markForCheck();
@@ -67,7 +69,7 @@ export class TariffsComponent implements OnInit {
   }
 
   updateTariff(row: TariffRow) {
-    const price = parseFloat(row.newPrice);
+    const price = Math.round(parseFloat(row.newPrice));
     if (!price || price <= 0 || isNaN(price)) {
       row.saveError = 'Ingresa un precio válido mayor a 0.';
       return;
@@ -75,7 +77,7 @@ export class TariffsComponent implements OnInit {
     row.saving = true;
     row.saved = false;
     row.saveError = '';
-    this.hotelService.updateRoom(row.id, { precio_noche: price }).subscribe({
+    this.roomService.update(row.id, { precio_noche: price }).subscribe({
       next: (updated) => {
         row.saving = false;
         row.precio_noche = updated.precio_noche;
