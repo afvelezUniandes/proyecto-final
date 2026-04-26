@@ -288,18 +288,50 @@ def update_hotel(hotel_id):
 
 @bp.route('/rooms', methods=['POST'])
 def create_room():
-    data = request.json
+    data = request.json or {}
     session = Session()
     try:
+        # Validaciones de negocio
+        nombre = (data.get('nombre') or '').strip()
+        if not nombre:
+            return jsonify({'error': 'El nombre de la habitación es obligatorio'}), 400
+
+        try:
+            capacidad = int(data.get('capacidad', 2))
+        except (TypeError, ValueError):
+            return jsonify({'error': 'La capacidad debe ser un número entero'}), 400
+        if capacidad < 0:
+            return jsonify({'error': 'La capacidad debe ser un número positivo (>= 0)'}), 400
+
+        try:
+            precio_noche = int(data.get('precio_noche'))
+        except (TypeError, ValueError):
+            return jsonify({'error': 'El precio por noche debe ser un número entero'}), 400
+        if precio_noche <= 0:
+            return jsonify({'error': 'El precio por noche debe ser un entero positivo'}), 400
+
+        hotel_id = data.get('hotel_id')
+        if hotel_id is None:
+            return jsonify({'error': 'hotel_id es obligatorio'}), 400
+
+        # Unicidad del nombre dentro del mismo hotel
+        existing = session.query(Habitacion).filter(
+            Habitacion.hotel_id == hotel_id,
+            func.lower(Habitacion.nombre) == nombre.lower(),
+        ).first()
+        if existing:
+            return jsonify({'error': 'Ya existe una habitación con ese nombre en este hotel'}), 409
+
         room = Habitacion(
-            hotel_id=data['hotel_id'],
-            nombre=data['nombre'],
+            hotel_id=hotel_id,
+            nombre=nombre,
             tipo=data.get('tipo', 'estandar'),
-            capacidad=data.get('capacidad', 2),
-            precio_noche=data['precio_noche'],
+            capacidad=capacidad,
+            precio_noche=precio_noche,
             moneda=data.get('moneda', 'COP'),
-            disponible=True,
+            disponible=bool(data.get('disponible', True)),
             imagen_url=data.get('imagen_url', ''),
+            descripcion=(data.get('descripcion') or '').strip() or None,
         )
         session.add(room)
         session.commit()
@@ -314,6 +346,7 @@ def create_room():
             'precio_noche': float(room.precio_noche),
             'moneda': room.moneda,
             'disponible': room.disponible,
+            'descripcion': room.descripcion,
         }), 201
     except Exception as e:
         session.rollback()
@@ -324,24 +357,51 @@ def create_room():
 
 @bp.route('/rooms/<int:room_id>', methods=['PUT'])
 def update_room(room_id):
-    data = request.json
+    data = request.json or {}
     session = Session()
     try:
         room = session.query(Habitacion).filter(Habitacion.id == room_id).first()
         if not room:
             return jsonify({'error': 'Room not found'}), 404
+
         if 'nombre' in data:
-            room.nombre = data['nombre']
+            nombre = (data.get('nombre') or '').strip()
+            if not nombre:
+                return jsonify({'error': 'El nombre de la habitación es obligatorio'}), 400
+            # Unicidad por hotel (excluyendo la propia)
+            duplicated = session.query(Habitacion).filter(
+                Habitacion.hotel_id == room.hotel_id,
+                Habitacion.id != room.id,
+                func.lower(Habitacion.nombre) == nombre.lower(),
+            ).first()
+            if duplicated:
+                return jsonify({'error': 'Ya existe una habitación con ese nombre en este hotel'}), 409
+            room.nombre = nombre
         if 'tipo' in data:
             room.tipo = data['tipo']
         if 'capacidad' in data:
-            room.capacidad = data['capacidad']
+            try:
+                capacidad = int(data['capacidad'])
+            except (TypeError, ValueError):
+                return jsonify({'error': 'La capacidad debe ser un número entero'}), 400
+            if capacidad < 0:
+                return jsonify({'error': 'La capacidad debe ser un número positivo (>= 0)'}), 400
+            room.capacidad = capacidad
         if 'precio_noche' in data:
-            room.precio_noche = data['precio_noche']
+            try:
+                precio_noche = int(data['precio_noche'])
+            except (TypeError, ValueError):
+                return jsonify({'error': 'El precio por noche debe ser un número entero'}), 400
+            if precio_noche <= 0:
+                return jsonify({'error': 'El precio por noche debe ser un entero positivo'}), 400
+            room.precio_noche = precio_noche
         if 'moneda' in data:
             room.moneda = data['moneda']
         if 'disponible' in data:
-            room.disponible = data['disponible']
+            room.disponible = bool(data['disponible'])
+        if 'descripcion' in data:
+            desc = (data.get('descripcion') or '').strip()
+            room.descripcion = desc or None
         session.commit()
         cache = current_app.cache
         cache.clear()
@@ -354,6 +414,7 @@ def update_room(room_id):
             'precio_noche': float(room.precio_noche),
             'moneda': room.moneda,
             'disponible': room.disponible,
+            'descripcion': room.descripcion,
         }), 200
     except Exception as e:
         session.rollback()
@@ -410,7 +471,8 @@ def get_rooms():
             'capacidad': r.capacidad,
             'precio_noche': float(r.precio_noche),
             'moneda': r.moneda,
-            'disponible': r.disponible
+            'disponible': r.disponible,
+            'descripcion': r.descripcion,
         } for r in rooms
     ]
     session.close()

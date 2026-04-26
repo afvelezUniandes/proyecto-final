@@ -1,8 +1,8 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MockHotelAdminService } from '../../core/services/mocks/mock-hotel-admin.service';
 import { HotelService } from '../../core/services/hotel.service';
+import { RoomService } from '../../core/services/room.service';
 import { Room } from '../../core/models';
 
 interface RoomForm {
@@ -14,6 +14,9 @@ interface RoomForm {
   disponible: boolean;
 }
 
+// Alfanumérico permisivo: letras (con tildes), números, espacios y signos básicos.
+const DESCRIPTION_PATTERN = /^[\p{L}\p{N}\s.,;:()\-_/'"¡!¿?]*$/u;
+
 @Component({
   selector: 'app-rooms',
   standalone: true,
@@ -21,10 +24,16 @@ interface RoomForm {
   templateUrl: './rooms.component.html',
 })
 export class RoomsComponent implements OnInit {
-  rooms: Room[] = [];
+  rooms = signal<Room[]>([]);
+  loadingRooms = signal(false);
   panelOpen = signal(false);
   editingRoom: Room | null = null;
   saving = false;
+  saveError = '';
+  nameError = '';
+  capacityError = '';
+  priceError = '';
+  descriptionError = '';
   deleteConfirmId: number | null = null;
 
   uploadingImage = false;
@@ -42,29 +51,39 @@ export class RoomsComponent implements OnInit {
 
   hotelLoadError = '';
 
-  constructor(
-    private mockService: MockHotelAdminService,
-    public hotelService: HotelService,
-  ) {}
+  readonly hotelService = inject(HotelService);
+  private readonly roomService = inject(RoomService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
-    this.loadRooms();
     this.hotelService.loadMyHotel().subscribe({
+      next: () => this.loadRooms(),
       error: (err) => {
         console.error('[HotelService] loadMyHotel failed:', err);
         this.hotelLoadError =
           err?.error?.error || 'No se pudo cargar el hotel. Verifica la conexión.';
+        this.cdr.detectChanges();
       },
     });
   }
 
   loadRooms() {
-    this.mockService.getRooms().subscribe({ next: (r) => (this.rooms = r) });
+    const hotel = this.hotelService.hotel();
+    if (!hotel) return;
+    this.loadingRooms.set(true);
+    this.roomService.list(hotel.id).subscribe({
+      next: (r) => {
+        this.rooms.set(r);
+        this.loadingRooms.set(false);
+      },
+      error: () => this.loadingRooms.set(false),
+    });
   }
 
   openAdd() {
     this.editingRoom = null;
     this.form = this.emptyForm();
+    this.clearErrors();
     this.panelOpen.set(true);
   }
 
@@ -78,6 +97,7 @@ export class RoomsComponent implements OnInit {
       descripcion: room.descripcion || '',
       disponible: room.disponible,
     };
+    this.clearErrors();
     this.panelOpen.set(true);
   }
 
@@ -86,26 +106,77 @@ export class RoomsComponent implements OnInit {
     this.editingRoom = null;
   }
 
-  save() {
-    if (!this.form.nombre.trim() || !this.form.tipo || this.form.precio_noche <= 0) return;
-    this.saving = true;
-    if (this.editingRoom) {
-      this.mockService.updateRoom(this.editingRoom.id, { ...this.form }).subscribe({
-        next: () => {
-          this.saving = false;
-          this.closePanel();
-          this.loadRooms();
-        },
-      });
-    } else {
-      this.mockService.createRoom({ ...this.form, moneda: 'COP' }).subscribe({
-        next: () => {
-          this.saving = false;
-          this.closePanel();
-          this.loadRooms();
-        },
-      });
+  private clearErrors() {
+    this.saveError = '';
+    this.nameError = '';
+    this.capacityError = '';
+    this.priceError = '';
+    this.descriptionError = '';
+  }
+
+  private validateForm(): boolean {
+    this.clearErrors();
+    let ok = true;
+    if (!this.form.nombre.trim()) {
+      this.nameError = 'El nombre es obligatorio.';
+      ok = false;
     }
+    if (!Number.isInteger(this.form.capacidad) || this.form.capacidad < 0) {
+      this.capacityError = 'La capacidad debe ser un entero positivo (>= 0).';
+      ok = false;
+    }
+    if (!Number.isInteger(this.form.precio_noche) || this.form.precio_noche <= 0) {
+      this.priceError = 'El precio debe ser un entero positivo.';
+      ok = false;
+    }
+    const desc = this.form.descripcion?.trim() || '';
+    if (desc && !DESCRIPTION_PATTERN.test(desc)) {
+      this.descriptionError = 'La descripción solo admite caracteres alfanuméricos.';
+      ok = false;
+    }
+    return ok;
+  }
+
+  save() {
+    if (!this.validateForm()) return;
+    const hotel = this.hotelService.hotel();
+    if (!hotel) return;
+
+    this.saving = true;
+    const payload = {
+      nombre: this.form.nombre.trim(),
+      tipo: this.form.tipo,
+      capacidad: this.form.capacidad,
+      precio_noche: this.form.precio_noche,
+      descripcion: this.form.descripcion?.trim() || '',
+      disponible: this.form.disponible,
+    };
+
+    const obs = this.editingRoom
+      ? this.roomService.update(this.editingRoom.id, payload)
+      : this.roomService.create({ ...payload, hotel_id: hotel.id, moneda: 'COP' });
+
+    obs.subscribe({
+      next: () => {
+        this.saving = false;
+        this.closePanel();
+        this.loadRooms();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.saving = false;
+        const status = err?.status;
+        const backendMsg = err?.error?.error;
+        if (status === 409) {
+          this.nameError = backendMsg || 'Ya existe una habitación con ese nombre.';
+        } else if (status === 400 && backendMsg) {
+          this.saveError = backendMsg;
+        } else {
+          this.saveError = backendMsg || 'No se pudo guardar la habitación.';
+        }
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   confirmDelete(id: number) {
@@ -117,7 +188,7 @@ export class RoomsComponent implements OnInit {
   }
 
   doDelete(id: number) {
-    this.mockService.deleteRoom(id).subscribe({
+    this.roomService.remove(id).subscribe({
       next: () => {
         this.deleteConfirmId = null;
         this.loadRooms();
@@ -144,6 +215,25 @@ export class RoomsComponent implements OnInit {
     }).format(p);
   }
 
+  /** Vista previa con separador de miles del precio mientras el usuario escribe. */
+  formattedPriceInput(): string {
+    const p = this.form.precio_noche;
+    if (!p || p <= 0) return '';
+    return new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(p);
+  }
+
+  /** Limpia el 0 inicial al enfocar el campo de precio. */
+  onPriceFocus() {
+    if (!this.form.precio_noche || this.form.precio_noche === 0) {
+      this.form.precio_noche = null as unknown as number;
+    }
+  }
+
+  /** Restaura 0 si el usuario deja el campo vacío. */
+  onPriceBlur() {
+    this.form.precio_noche ??= 0;
+  }
+
   onImageSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -160,18 +250,20 @@ export class RoomsComponent implements OnInit {
     }
 
     this.uploadingImage = true;
-    this.uploadError = '';
-    this.uploadSuccess = false;
-
     this.hotelService.uploadImage(hotel.id, file).subscribe({
       next: () => {
         this.uploadingImage = false;
         this.uploadSuccess = true;
-        setTimeout(() => (this.uploadSuccess = false), 3000);
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          this.uploadSuccess = false;
+          this.cdr.detectChanges();
+        }, 3000);
       },
       error: (e) => {
         this.uploadingImage = false;
         this.uploadError = e?.error?.error || 'Error al subir la imagen.';
+        this.cdr.detectChanges();
       },
     });
 
@@ -191,11 +283,16 @@ export class RoomsComponent implements OnInit {
         this.savingUrl = false;
         this.saveUrlSuccess = true;
         this.imageUrlInput = '';
-        setTimeout(() => (this.saveUrlSuccess = false), 3000);
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          this.saveUrlSuccess = false;
+          this.cdr.detectChanges();
+        }, 3000);
       },
       error: (e) => {
         this.savingUrl = false;
         this.saveUrlError = e?.error?.error || 'Error al guardar la URL.';
+        this.cdr.detectChanges();
       },
     });
   }

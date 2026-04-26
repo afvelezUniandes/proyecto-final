@@ -1,7 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MockHotelAdminService } from '../../core/services/mocks/mock-hotel-admin.service';
+import { RouterLink } from '@angular/router';
+import { of, switchMap, finalize } from 'rxjs';
+import { HotelService } from '../../core/services/hotel.service';
+import { RoomService } from '../../core/services/room.service';
 import { Room } from '../../core/models';
 
 interface TariffRow extends Room {
@@ -14,51 +17,77 @@ interface TariffRow extends Room {
 @Component({
   selector: 'app-tariffs',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './tariffs.component.html',
 })
 export class TariffsComponent implements OnInit {
   rows: TariffRow[] = [];
+  loading = false;
+  loadError = '';
 
-  constructor(private mockService: MockHotelAdminService) {}
+  constructor(
+    private hotelService: HotelService,
+    private roomService: RoomService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit() {
-    this.mockService.getRooms().subscribe({
-      next: (rooms) => {
-        this.rows = rooms.map((r) => ({
-          ...r,
-          newPrice: String(r.precio_noche),
-          saving: false,
-          saved: false,
-          saveError: '',
-        }));
-      },
-    });
+    this.loading = true;
+    const hotel = this.hotelService.hotel();
+    const hotel$ = hotel ? of(hotel) : this.hotelService.loadMyHotel();
+
+    hotel$
+      .pipe(
+        switchMap((h) => this.roomService.list(h.id)),
+        finalize(() => {
+          this.loading = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: (rooms) => {
+          this.rows = rooms.map((r) => ({
+            ...r,
+            newPrice: String(r.precio_noche ?? 0),
+            saving: false,
+            saved: false,
+            saveError: '',
+          }));
+        },
+        error: () => {
+          this.loadError = 'No se pudieron cargar las habitaciones.';
+        },
+      });
   }
 
   formatPrice(p: number): string {
-    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(p);
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      maximumFractionDigits: 0,
+    }).format(p);
   }
 
   updateTariff(row: TariffRow) {
-    const price = parseFloat(row.newPrice);
-    if (!price || price <= 0) {
+    const price = Math.round(parseFloat(row.newPrice));
+    if (!price || price <= 0 || isNaN(price)) {
       row.saveError = 'Ingresa un precio válido mayor a 0.';
       return;
     }
     row.saving = true;
     row.saved = false;
     row.saveError = '';
-    this.mockService.updateTariff(row.id, price).subscribe({
-      next: () => {
+    this.roomService.update(row.id, { precio_noche: price }).subscribe({
+      next: (updated) => {
         row.saving = false;
-        row.precio_noche = price;
+        row.precio_noche = updated.precio_noche;
+        row.newPrice = String(updated.precio_noche);
         row.saved = true;
         setTimeout(() => (row.saved = false), 3000);
       },
-      error: () => {
+      error: (err) => {
         row.saving = false;
-        row.saveError = 'Error al actualizar.';
+        row.saveError = err?.error?.error || 'Error al actualizar el precio.';
       },
     });
   }
