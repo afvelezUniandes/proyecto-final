@@ -19,6 +19,20 @@ export class HomeComponent implements OnInit {
   huespedes = 1;
   cities: string[] = [];
   popularDestinations = ['Bogotá', 'Medellín', 'Cartagena', 'Cali', 'Santa Marta'];
+  dateError = '';
+
+  get today(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  get minCheckOut(): string {
+    if (this.checkIn) {
+      const d = new Date(this.checkIn);
+      d.setDate(d.getDate() + 1);
+      return d.toISOString().split('T')[0];
+    }
+    return this.today;
+  }
 
   constructor(
     private catalog: CatalogService,
@@ -35,6 +49,16 @@ export class HomeComponent implements OnInit {
   }
 
   search() {
+    this.dateError = '';
+    const today = this.today;
+    if (this.checkIn && this.checkIn < today) {
+      this.dateError = 'La fecha de check-in no puede ser anterior a hoy.';
+      return;
+    }
+    if (this.checkIn && this.checkOut && this.checkOut <= this.checkIn) {
+      this.dateError = 'La fecha de check-out debe ser posterior al check-in.';
+      return;
+    }
     this.router.navigate(['/search'], {
       queryParams: {
         ciudad: this.ciudad,

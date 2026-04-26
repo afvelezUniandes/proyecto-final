@@ -24,12 +24,26 @@ export class SearchComponent implements OnInit {
   pageSize = 10;
   sortBy: 'default' | 'price_asc' | 'price_desc' | 'stars' = 'default';
   error = '';
+  dateError = '';
   sortOptions = [
     { key: 'default', label: 'Relevancia' },
     { key: 'stars', label: '⭐ Estrellas' },
     { key: 'price_asc', label: '💰 Precio ↑' },
     { key: 'price_desc', label: '💰 Precio ↓' },
   ];
+
+  get today(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  get minCheckOut(): string {
+    if (this.checkIn) {
+      const d = new Date(this.checkIn);
+      d.setDate(d.getDate() + 1);
+      return d.toISOString().split('T')[0];
+    }
+    return this.today;
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -49,20 +63,38 @@ export class SearchComponent implements OnInit {
   }
 
   loadHotels() {
+    this.dateError = '';
+    const today = this.today;
+    if (this.checkIn && this.checkIn < today) {
+      this.dateError = 'La fecha de check-in no puede ser anterior a hoy.';
+      return;
+    }
+    if (this.checkIn && this.checkOut && this.checkOut <= this.checkIn) {
+      this.dateError = 'La fecha de check-out debe ser posterior al check-in.';
+      return;
+    }
     this.loading = true;
     this.error = '';
-    this.catalog.getHotels({ ciudad: this.ciudad, page: this.page }).subscribe({
-      next: (res) => {
-        this.hotels = res.hotels || [];
-        this.total = res.total || this.hotels.length;
-        this.loading = false;
-        this.applySort();
-      },
-      error: () => {
-        this.error = 'No se pudieron cargar los hoteles. Intenta nuevamente.';
-        this.loading = false;
-      },
-    });
+    this.catalog
+      .getHotels({
+        ciudad: this.ciudad || undefined,
+        fechaCheckin: this.checkIn || undefined,
+        fechaCheckout: this.checkOut || undefined,
+        capacidad: this.huespedes > 0 ? this.huespedes : undefined,
+        page: this.page,
+      })
+      .subscribe({
+        next: (res) => {
+          this.hotels = res.hotels || [];
+          this.total = res.total || this.hotels.length;
+          this.loading = false;
+          this.applySort();
+        },
+        error: () => {
+          this.error = 'No se pudieron cargar los hoteles. Intenta nuevamente.';
+          this.loading = false;
+        },
+      });
   }
 
   applySort() {

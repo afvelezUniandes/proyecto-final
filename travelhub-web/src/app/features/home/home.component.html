@@ -64,6 +64,7 @@
           <input
             [(ngModel)]="checkIn"
             type="date"
+            [min]="today"
             class="w-full px-3 py-2 text-sm text-gray-800 border-b border-gray-200 outline-none focus:border-[#1D4ED8] transition bg-transparent"
           />
         </div>
@@ -74,6 +75,7 @@
           <input
             [(ngModel)]="checkOut"
             type="date"
+            [min]="minCheckOut"
             class="w-full px-3 py-2 text-sm text-gray-800 border-b border-gray-200 outline-none focus:border-[#1D4ED8] transition bg-transparent"
           />
         </div>
@@ -96,6 +98,9 @@
           🔍 Buscar Hospedajes
         </button>
       </div>
+      @if (dateError) {
+        <p class="text-red-500 text-xs mt-2 px-1">⚠️ {{ dateError }}</p>
+      }
     </div>
   </div>
 

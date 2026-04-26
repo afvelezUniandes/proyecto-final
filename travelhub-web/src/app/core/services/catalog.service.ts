@@ -16,6 +16,9 @@ export class CatalogService {
       ciudad?: string;
       nombre?: string;
       estrellas?: number;
+      fechaCheckin?: string;
+      fechaCheckout?: string;
+      capacidad?: number;
       page?: number;
       per_page?: number;
     } = {},
@@ -24,6 +27,9 @@ export class CatalogService {
     if (params.ciudad) query['ciudad'] = params.ciudad;
     if (params.nombre) query['nombre'] = params.nombre;
     if (params.estrellas) query['estrellas'] = params.estrellas;
+    if (params.fechaCheckin) query['fecha_checkin'] = params.fechaCheckin;
+    if (params.fechaCheckout) query['fecha_checkout'] = params.fechaCheckout;
+    if (params.capacidad) query['capacidad'] = params.capacidad;
     if (params.page) query['page'] = params.page;
     if (params.per_page) query['per_page'] = params.per_page;
     return this.api.get<HotelsResponse>('/catalog/hotels', query);
