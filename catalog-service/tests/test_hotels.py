@@ -29,7 +29,7 @@ class TestHotelsEndpoints:
                 return []
         
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def close(self):
                 pass
@@ -87,7 +87,7 @@ class TestHotelsEndpoints:
                 return [MockHotel()]
         
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def close(self):
                 pass
@@ -142,7 +142,7 @@ class TestHotelsEndpoints:
                 return [MockHotel()]
         
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def close(self):
                 pass
@@ -197,7 +197,7 @@ class TestHotelsEndpoints:
                 return [MockHotel()]
         
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def close(self):
                 pass
@@ -252,7 +252,7 @@ class TestHotelsEndpoints:
                 return hotels
         
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def close(self):
                 pass
@@ -292,7 +292,7 @@ class TestHotelsEndpoints:
                 return [MockRoom()]
 
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def close(self):
                 pass
@@ -333,7 +333,7 @@ class TestHotelsEndpoints:
                 return [MockRoom()]
 
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def close(self):
                 pass
@@ -375,7 +375,7 @@ class TestHotelsEndpoints:
                 return MockHotel()
 
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def close(self):
                 pass
@@ -407,7 +407,7 @@ class TestHotelsEndpoints:
                 return None
 
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def close(self):
                 pass
@@ -461,7 +461,7 @@ class TestHotelsEndpoints:
                 return [MockHotel()]
 
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def close(self):
                 pass
@@ -581,7 +581,7 @@ class TestAdditionalEndpoints:
                 return MockHotel()
 
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def close(self):
                 pass
@@ -605,7 +605,7 @@ class TestAdditionalEndpoints:
                 return None
 
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def close(self):
                 pass
@@ -689,7 +689,7 @@ class TestAdditionalEndpoints:
                 return hotel_obj
 
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def commit(self):
                 pass
@@ -720,7 +720,7 @@ class TestAdditionalEndpoints:
                 return None
 
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def rollback(self):
                 pass
@@ -783,7 +783,7 @@ class TestAdditionalEndpoints:
                 return room_obj
 
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def commit(self):
                 pass
@@ -812,7 +812,7 @@ class TestAdditionalEndpoints:
                 return None
 
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def rollback(self):
                 pass
@@ -844,7 +844,7 @@ class TestAdditionalEndpoints:
                 return room_obj
 
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def delete(self, obj):
                 pass
@@ -874,7 +874,7 @@ class TestAdditionalEndpoints:
                 return None
 
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def rollback(self):
                 pass
@@ -933,7 +933,7 @@ class TestAdditionalEndpoints:
                 return hotel_obj
 
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def commit(self):
                 pass
@@ -967,7 +967,7 @@ class TestAdditionalEndpoints:
                 return None
 
         class MockSession:
-            def query(self, model):
+            def query(self, *args):
                 return MockQuery()
             def rollback(self):
                 pass

@@ -9,8 +9,8 @@ object SearchUtils {
     const val FILTER_PRICE_DESC = "price_desc"
 
     fun applyFilter(hotels: List<Hotel>, filter: String): List<Hotel> = when (filter) {
-        FILTER_PRICE_ASC  -> hotels.sortedBy { it.precio_noche ?: 0.0 }
-        FILTER_PRICE_DESC -> hotels.sortedByDescending { it.precio_noche ?: 0.0 }
+        FILTER_PRICE_ASC  -> hotels.sortedWith(compareBy({ it.precio_noche ?: it.estrellas.toDouble() }, { it.estrellas }))
+        FILTER_PRICE_DESC -> hotels.sortedWith(compareByDescending<Hotel> { it.precio_noche ?: it.estrellas.toDouble() }.thenByDescending { it.estrellas })
         else              -> hotels.sortedByDescending { it.estrellas } // FILTER_STARS default
     }
 
