@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { ApiService } from './api.service';
-import { Hotel } from '../models/index';
+import { Hotel, Room } from '../models/index';
 
 @Injectable({ providedIn: 'root' })
 export class HotelService {
@@ -31,5 +31,13 @@ export class HotelService {
     return this.api
       .put<Hotel>(`/catalog/hotels/${hotelId}`, { image_url: url })
       .pipe(tap((hotel) => this._hotel.set(hotel)));
+  }
+
+  getRooms(hotelId: number): Observable<Room[]> {
+    return this.api.get<Room[]>('/catalog/rooms', { hotel_id: hotelId });
+  }
+
+  updateRoom(roomId: number, data: Partial<Omit<Room, 'id' | 'hotel_id'>>): Observable<Room> {
+    return this.api.put<Room>(`/catalog/rooms/${roomId}`, data);
   }
 }
