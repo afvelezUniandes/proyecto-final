@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request, current_app
 from sqlalchemy.orm import sessionmaker
 from adapters.orm.models import Hotel, Habitacion, Base
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func
 import os
 import uuid
 import boto3
@@ -31,7 +31,10 @@ def make_cache_key_hotels():
         f"estrellas:{args.get('estrellas', '')}",
         f"activo:{args.get('activo', '')}",
         f"page:{args.get('page', '1')}",
-        f"per_page:{args.get('per_page', '20')}"
+        f"per_page:{args.get('per_page', '20')}",
+        f"fecha_checkin:{args.get('fecha_checkin', '')}",
+        f"fecha_checkout:{args.get('fecha_checkout', '')}",
+        f"capacidad:{args.get('capacidad', '')}"
     ]
     return 'hotels:' + ':'.join(key_parts)
 
@@ -86,6 +89,11 @@ def get_hotels():
     pais = request.args.get('pais')
     estrellas = request.args.get('estrellas')
     activo = request.args.get('activo')
+    capacidad = request.args.get('capacidad')
+    # fecha_checkin y fecha_checkout se reciben y se pasarán al reservations-service
+    # cuando se implemente disponibilidad real por fechas; por ahora se ignoran
+    _ = request.args.get('fecha_checkin')
+    _ = request.args.get('fecha_checkout')
     if nombre:
         query = query.filter(Hotel.nombre.ilike(f'%{nombre}%'))
     if ciudad:
@@ -99,11 +107,27 @@ def get_hotels():
             query = query.filter(Hotel.activo.is_(True))
         elif activo.lower() == 'false':
             query = query.filter(Hotel.activo.is_(False))
+    # Solo hoteles que tengan al menos una habitación disponible con suficiente capacidad
+    room_subq = session.query(Habitacion.id).filter(
+        Habitacion.hotel_id == Hotel.id,
+        Habitacion.disponible.is_(True),
+    )
+    if capacidad:
+        room_subq = room_subq.filter(Habitacion.capacidad >= int(capacidad))
+    query = query.filter(room_subq.exists())
     # Paginación
     page = int(request.args.get('page', 1))
     per_page = int(request.args.get('per_page', 20))
     total = query.count()
     hotels = query.offset((page - 1) * per_page).limit(per_page).all()
+    hotel_ids = [h.id for h in hotels]
+    # Precio mínimo por noche de habitaciones disponibles (una sola query extra)
+    min_prices = dict(
+        session.query(Habitacion.hotel_id, func.min(Habitacion.precio_noche))
+        .filter(Habitacion.hotel_id.in_(hotel_ids), Habitacion.disponible.is_(True))
+        .group_by(Habitacion.hotel_id)
+        .all()
+    ) if hotel_ids else {}
     result = [
         {
             'id': h.id,
@@ -115,6 +139,7 @@ def get_hotels():
             'image_url': h.image_url,
             'descripcion': h.descripcion,
             'direccion': h.direccion,
+            'precio_noche': float(min_prices.get(h.id, 0)),
         } for h in hotels
     ]
     session.close()
