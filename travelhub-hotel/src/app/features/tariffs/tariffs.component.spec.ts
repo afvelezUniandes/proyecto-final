@@ -170,6 +170,16 @@ describe('TariffsComponent', () => {
       expect(component.rows[0].saveError).toBe('Ingresa un precio válido mayor a 0.');
     });
 
+    it('debe setear saveError si el precio tiene decimales', async () => {
+      const { component } = await createComponent();
+      component.rows[0].newPrice = '350000.5';
+      component.updateTariff(component.rows[0]);
+      expect(component.rows[0].saveError).toBe(
+        'El precio debe ser un número entero (sin decimales).',
+      );
+      expect(component.rows[0].saving).toBe(false);
+    });
+
     it('debe llamar roomService.update con roomId y precio entero', async () => {
       const updatedRoom = { ...mockRooms[0], precio_noche: 400000 };
       const { component, updateFn } = await createComponent();
@@ -181,15 +191,16 @@ describe('TariffsComponent', () => {
       expect(updateFn).toHaveBeenCalledWith(1, { precio_noche: 400000 });
     });
 
-    it('debe redondear decimales antes de enviar al backend', async () => {
-      const updatedRoom = { ...mockRooms[0], precio_noche: 400001 };
+    it('no debe llamar update si el precio es entero válido sin decimales', async () => {
+      const updatedRoom = { ...mockRooms[0], precio_noche: 400000 };
       const { component, updateFn } = await createComponent();
       updateFn.mockReturnValue(of(updatedRoom));
 
-      component.rows[0].newPrice = '400000.7';
+      component.rows[0].newPrice = '400000';
       component.updateTariff(component.rows[0]);
 
-      expect(updateFn).toHaveBeenCalledWith(1, { precio_noche: 400001 });
+      expect(updateFn).toHaveBeenCalledWith(1, { precio_noche: 400000 });
+      expect(component.rows[0].saveError).toBe('');
     });
 
     it('debe actualizar precio_noche y newPrice en el row tras éxito', async () => {

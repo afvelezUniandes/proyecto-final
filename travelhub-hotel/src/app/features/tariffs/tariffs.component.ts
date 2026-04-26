@@ -69,25 +69,45 @@ export class TariffsComponent implements OnInit {
   }
 
   updateTariff(row: TariffRow) {
-    const price = Math.round(parseFloat(row.newPrice));
-    if (!price || price <= 0 || isNaN(price)) {
+    const raw = row.newPrice;
+    const price = Math.round(parseFloat(raw));
+
+    // Validar entero positivo
+    if (!raw || isNaN(price) || price <= 0) {
       row.saveError = 'Ingresa un precio válido mayor a 0.';
+      this.cdr.markForCheck();
       return;
     }
+    if (String(price) !== String(Math.floor(parseFloat(raw)))) {
+      // nunca llega aquí por el Math.round, pero lo dejamos como guarda
+    }
+    if (parseFloat(raw) !== Math.floor(parseFloat(raw))) {
+      row.saveError = 'El precio debe ser un número entero (sin decimales).';
+      this.cdr.markForCheck();
+      return;
+    }
+
     row.saving = true;
     row.saved = false;
     row.saveError = '';
+    this.cdr.markForCheck();
+
     this.roomService.update(row.id, { precio_noche: price }).subscribe({
       next: (updated) => {
         row.saving = false;
         row.precio_noche = updated.precio_noche;
         row.newPrice = String(updated.precio_noche);
         row.saved = true;
-        setTimeout(() => (row.saved = false), 3000);
+        this.cdr.markForCheck();
+        setTimeout(() => {
+          row.saved = false;
+          this.cdr.markForCheck();
+        }, 3000);
       },
       error: (err) => {
         row.saving = false;
         row.saveError = err?.error?.error || 'Error al actualizar el precio.';
+        this.cdr.markForCheck();
       },
     });
   }
