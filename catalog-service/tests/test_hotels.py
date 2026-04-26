@@ -284,6 +284,7 @@ class TestHotelsEndpoints:
             precio_noche = Decimal('350.00')
             moneda = 'COP'
             disponible = True
+            descripcion = ''
 
         class MockQuery:
             def filter(self, *args):
@@ -325,6 +326,7 @@ class TestHotelsEndpoints:
             precio_noche = Decimal('200.00')
             moneda = 'COP'
             disponible = True
+            descripcion = ''
 
         class MockQuery:
             def filter(self, *args):
