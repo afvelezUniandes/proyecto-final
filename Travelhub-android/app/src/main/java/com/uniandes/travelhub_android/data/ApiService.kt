@@ -19,6 +19,9 @@ interface ApiService {
         @Query("ciudad") ciudad: String? = null,
         @Query("nombre") nombre: String? = null,
         @Query("estrellas") estrellas: Int? = null,
+        @Query("fecha_checkin") fechaCheckin: String? = null,
+        @Query("fecha_checkout") fechaCheckout: String? = null,
+        @Query("capacidad") capacidad: Int? = null,
         @Query("page") page: Int = 1,
         @Query("per_page") perPage: Int = 20
     ): Response<HotelsResponse>

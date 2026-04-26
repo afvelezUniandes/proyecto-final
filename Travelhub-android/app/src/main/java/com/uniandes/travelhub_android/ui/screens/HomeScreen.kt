@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import com.uniandes.travelhub_android.data.ApiClient
 import com.uniandes.travelhub_android.data.LangStore
-import com.uniandes.travelhub_android.ui.components.BottomNavBar
+import coil.compose.AsyncImage
 import com.uniandes.travelhub_android.ui.theme.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -525,12 +525,6 @@ private fun GuestStepper(
 
 @Composable
 fun HotelCard(hotel: Hotel, onClick: () -> Unit) {
-    val hotelColors = listOf(
-        Color(0xFFDBEAFE), Color(0xFFFEF3C7), Color(0xFFDCFCE7),
-        Color(0xFFEDE9FE), Color(0xFFFFE4E6)
-    )
-    val hotelColor = hotelColors[hotel.id % hotelColors.size]
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -540,90 +534,95 @@ fun HotelCard(hotel: Hotel, onClick: () -> Unit) {
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
-        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
-            // Logo hotel
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(hotelColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column {
+            // Imagen del hotel
+            if (!hotel.image_url.isNullOrBlank()) {
+                AsyncImage(
+                    model = hotel.image_url,
+                    contentDescription = hotel.nombre,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp)
+                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                )
+            } else {
+                val hotelColors = listOf(
+                    Color(0xFFDBEAFE), Color(0xFFFEF3C7), Color(0xFFDCFCE7),
+                    Color(0xFFEDE9FE), Color(0xFFFFE4E6)
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                        .background(hotelColors[hotel.id % hotelColors.size]),
+                    contentAlignment = Alignment.Center
+                ) {
                     Icon(
                         Icons.Default.Hotel,
                         contentDescription = null,
                         tint = TravelBlue,
-                        modifier = Modifier.size(32.dp)
-                    )
-                    Text(
-                        text = hotel.nombre.take(10),
-                        fontSize = 9.sp,
-                        color = TravelBlue,
-                        fontWeight = FontWeight.Medium
+                        modifier = Modifier.size(40.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Text(
-                        text = hotel.nombre,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF111827),
-                        modifier = Modifier.weight(1f)
-                    )
-                    IconButton(
-                        onClick = {},
-                        modifier = Modifier.size(28.dp)
+            Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top
                     ) {
-                        Icon(
-                            Icons.Default.FavoriteBorder,
-                            contentDescription = null,
-                            tint = TravelGray,
-                            modifier = Modifier.size(18.dp)
+                        Text(
+                            text = hotel.nombre,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF111827),
+                            modifier = Modifier.weight(1f)
+                        )
+                        IconButton(
+                            onClick = {},
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.FavoriteBorder,
+                                contentDescription = null,
+                                tint = TravelGray,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+
+                    // Ubicación
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.LocationOn, contentDescription = null, tint = TravelRed, modifier = Modifier.size(14.dp))
+                        Text(" ${hotel.ciudad}, ${hotel.pais}", fontSize = 12.sp, color = TravelGray)
+                    }
+
+                    // Estrellas
+                    Row(modifier = Modifier.padding(vertical = 4.dp)) {
+                        repeat(hotel.estrellas) {
+                            Text("★", color = Color(0xFFF59E0B), fontSize = 12.sp)
+                        }
+                        repeat(5 - hotel.estrellas) {
+                            Text("★", color = TravelGrayLight, fontSize = 12.sp)
+                        }
+                        Text(
+                            text = " " + stringResource(R.string.hotel_stars_label, hotel.estrellas),
+                            fontSize = 12.sp, color = TravelGray
                         )
                     }
-                }
 
-                // Ubicación
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = TravelRed, modifier = Modifier.size(14.dp))
-                    Text(" ${hotel.ciudad}, ${hotel.pais}", fontSize = 12.sp, color = TravelGray)
-                }
-
-                // Estrellas
-                Row(modifier = Modifier.padding(vertical = 4.dp)) {
-                    repeat(hotel.estrellas) {
-                        Text("★", color = Color(0xFFF59E0B), fontSize = 12.sp)
-                    }
-                    repeat(5 - hotel.estrellas) {
-                        Text("★", color = TravelGrayLight, fontSize = 12.sp)
-                    }
-                    Text(
-                        text = " " + stringResource(R.string.hotel_stars_label, hotel.estrellas),
-                        fontSize = 12.sp, color = TravelGray
-                    )
-                }
-
-                // Amenidades chip (mock)
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    items(listOf("WiFi", "Piscina", "Gym").take(3)) { amenity ->
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(TravelBlueLight.copy(alpha = 0.5f))
-                                .padding(horizontal = 8.dp, vertical = 3.dp)
-                        ) {
-                            Text(amenity, fontSize = 11.sp, color = TravelBlue)
-                        }
+                    // Precio por noche (real desde la API)
+                    if (hotel.precio_noche != null && hotel.precio_noche > 0) {
+                        Text(
+                            text = "Desde ${java.text.NumberFormat.getNumberInstance(java.util.Locale("es","CO")).format(hotel.precio_noche)} COP/noche",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = TravelBlue
+                        )
                     }
                 }
             }

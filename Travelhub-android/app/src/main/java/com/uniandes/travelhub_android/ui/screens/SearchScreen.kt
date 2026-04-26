@@ -51,7 +51,13 @@ fun SearchScreen(
             isLoading = true
             errorMsg = null
             try {
-                val resp = ApiClient.api.getHotels(ciudad = ciudad.ifBlank { null })
+                val totalGuests = adultos + ninos
+                val resp = ApiClient.api.getHotels(
+                    ciudad = ciudad.ifBlank { null },
+                    fechaCheckin = checkIn.ifBlank { null },
+                    fechaCheckout = checkOut.ifBlank { null },
+                    capacidad = if (totalGuests > 0) totalGuests else null
+                )
                 if (resp.isSuccessful) {
                     val result = resp.body()?.hotels ?: emptyList()
                     hotels = SearchUtils.applyFilter(result, selectedFilter)
