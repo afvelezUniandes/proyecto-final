@@ -32,6 +32,7 @@ export interface Room {
   precio_noche: number;
   moneda: string;
   imagen_url?: string;
+  descripcion?: string;
 }
 
 export interface Reservation {
