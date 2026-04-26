@@ -284,6 +284,7 @@ class TestHotelsEndpoints:
             precio_noche = Decimal('350.00')
             moneda = 'COP'
             disponible = True
+            descripcion = ''
 
         class MockQuery:
             def filter(self, *args):
@@ -325,6 +326,7 @@ class TestHotelsEndpoints:
             precio_noche = Decimal('200.00')
             moneda = 'COP'
             disponible = True
+            descripcion = ''
 
         class MockQuery:
             def filter(self, *args):
@@ -533,6 +535,7 @@ class TestAdditionalEndpoints:
             precio_noche = Decimal('200.00')
             moneda = 'COP'
             disponible = True
+            descripcion = None
         return MockRoom
 
     # ── GET /cities ───────────────────────────────────────────────────────────
@@ -741,34 +744,114 @@ class TestAdditionalEndpoints:
 
     # ── POST /rooms ───────────────────────────────────────────────────────────
 
+    def _mock_session_for_create(self, existing_room=None):
+        """Helper que devuelve un Session mock cuya .query().filter().first() retorna existing_room."""
+        class MockQuery:
+            def filter(self, *args, **kwargs):
+                return self
+            def first(self):
+                return existing_room
+
+        class MockSession:
+            def query(self, *args, **kwargs):
+                return MockQuery()
+            def add(self, obj):
+                pass
+            def commit(self):
+                pass
+            def rollback(self):
+                pass
+            def close(self):
+                pass
+        return MockSession
+
     def test_create_room(self, client, monkeypatch):
         import unittest.mock as mock_mod
 
+        MockSessionCls = self._mock_session_for_create(existing_room=None)
+
         with mock_mod.patch('adapters.http.hotels.Habitacion') as MockRoomClass, \
-             mock_mod.patch('adapters.http.hotels.Session') as MockSessionFactory:
+             mock_mod.patch('adapters.http.hotels.Session', lambda: MockSessionCls()):
             instance = MockRoomClass.return_value
             instance.id = 10
             instance.hotel_id = 1
             instance.nombre = 'Doble'
             instance.tipo = 'doble'
             instance.capacidad = 2
-            instance.precio_noche = Decimal('150.00')
+            instance.precio_noche = Decimal('150000')
             instance.moneda = 'COP'
             instance.disponible = True
-
-            ms = mock_mod.MagicMock()
-            MockSessionFactory.return_value = ms
+            instance.descripcion = 'WiFi'
 
             response = client.post('/rooms',
                 data=json.dumps({
                     'hotel_id': 1,
                     'nombre': 'Doble',
                     'precio_noche': 150000,
+                    'capacidad': 2,
+                    'descripcion': 'WiFi',
                 }),
                 content_type='application/json'
             )
 
         assert response.status_code == 201
+
+    def test_create_room_duplicate_name_returns_409(self, client):
+        import adapters.http.hotels as hotels_module
+
+        class ExistingRoom:
+            id = 99
+
+        MockSessionCls = self._mock_session_for_create(existing_room=ExistingRoom())
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSessionCls()
+
+        response = client.post('/rooms',
+            data=json.dumps({
+                'hotel_id': 1,
+                'nombre': 'Doble',
+                'precio_noche': 150000,
+            }),
+            content_type='application/json'
+        )
+
+        hotels_module.Session = original_session
+        assert response.status_code == 409
+        assert 'nombre' in json.loads(response.data)['error'].lower()
+
+    def test_create_room_negative_capacity_returns_400(self, client):
+        response = client.post('/rooms',
+            data=json.dumps({
+                'hotel_id': 1,
+                'nombre': 'Doble',
+                'precio_noche': 150000,
+                'capacidad': -1,
+            }),
+            content_type='application/json'
+        )
+        assert response.status_code == 400
+
+    def test_create_room_invalid_price_returns_400(self, client):
+        response = client.post('/rooms',
+            data=json.dumps({
+                'hotel_id': 1,
+                'nombre': 'Doble',
+                'precio_noche': 0,
+            }),
+            content_type='application/json'
+        )
+        assert response.status_code == 400
+
+    def test_create_room_missing_name_returns_400(self, client):
+        response = client.post('/rooms',
+            data=json.dumps({
+                'hotel_id': 1,
+                'nombre': '   ',
+                'precio_noche': 150000,
+            }),
+            content_type='application/json'
+        )
+        assert response.status_code == 400
 
     # ── PUT /rooms/<id> ───────────────────────────────────────────────────────
 

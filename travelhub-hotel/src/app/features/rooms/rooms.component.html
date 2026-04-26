@@ -76,7 +76,7 @@
 
   <!-- Room cards -->
   <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-    @for (room of rooms; track room.id) {
+    @for (room of rooms(); track room.id) {
       <div
         class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
       >
@@ -164,7 +164,12 @@
   @if (panelOpen()) {
     <div class="fixed inset-0 z-40 flex">
       <!-- Backdrop -->
-      <div class="flex-1 bg-black/40" (click)="closePanel()"></div>
+      <button
+        type="button"
+        aria-label="Cerrar panel"
+        class="flex-1 bg-black/40"
+        (click)="closePanel()"
+      ></button>
       <!-- Panel -->
       <div class="w-full max-w-md bg-white shadow-xl flex flex-col">
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
@@ -181,20 +186,28 @@
 
         <div class="flex-1 overflow-y-auto px-6 py-5 space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">Nombre</label>
+            <label for="room-nombre" class="block text-sm font-medium text-gray-700 mb-1.5">Nombre</label>
             <input
+              id="room-nombre"
               [(ngModel)]="form.nombre"
               name="nombre"
               type="text"
               placeholder="Suite Premium"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-800 outline-none focus:border-[#1D4ED8] transition"
+              class="w-full px-3 py-2 border rounded-lg text-sm text-gray-800 outline-none transition"
+              [class.border-red-400]="nameError"
+              [class.border-gray-200]="!nameError"
+              [class.focus:border-[#1D4ED8]]="!nameError"
             />
+            @if (nameError) {
+              <p class="text-xs text-red-500 mt-1">{{ nameError }}</p>
+            }
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">Tipo</label>
+              <label for="room-tipo" class="block text-sm font-medium text-gray-700 mb-1.5">Tipo</label>
               <select
+                id="room-tipo"
                 [(ngModel)]="form.tipo"
                 name="tipo"
                 class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-800 outline-none focus:border-[#1D4ED8] transition"
@@ -205,43 +218,70 @@
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1.5">Capacidad</label>
+              <label for="room-capacidad" class="block text-sm font-medium text-gray-700 mb-1.5">Capacidad</label>
               <input
+                id="room-capacidad"
                 [(ngModel)]="form.capacidad"
                 name="capacidad"
                 type="number"
-                min="1"
-                max="20"
-                class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-800 outline-none focus:border-[#1D4ED8] transition"
+                min="0"
+                step="1"
+                class="w-full px-3 py-2 border rounded-lg text-sm text-gray-800 outline-none transition"
+                [class.border-red-400]="capacityError"
+                [class.border-gray-200]="!capacityError"
+                [class.focus:border-[#1D4ED8]]="!capacityError"
               />
+              @if (capacityError) {
+                <p class="text-xs text-red-500 mt-1">{{ capacityError }}</p>
+              }
             </div>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5"
+            <label for="room-precio" class="block text-sm font-medium text-gray-700 mb-1.5"
               >Precio por noche (COP)</label
             >
             <input
+              id="room-precio"
               [(ngModel)]="form.precio_noche"
               name="precio_noche"
               type="number"
-              min="0"
+              min="1"
+              step="1"
               placeholder="350000"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-800 outline-none focus:border-[#1D4ED8] transition"
+              (focus)="onPriceFocus()"
+              (blur)="onPriceBlur()"
+              class="w-full px-3 py-2 border rounded-lg text-sm text-gray-800 outline-none transition"
+              [class.border-red-400]="priceError"
+              [class.border-gray-200]="!priceError"
+              [class.focus:border-[#1D4ED8]]="!priceError"
             />
+            @if (formattedPriceInput()) {
+              <p class="text-xs text-gray-500 mt-1">Vista previa: $ {{ formattedPriceInput() }}</p>
+            }
+            @if (priceError) {
+              <p class="text-xs text-red-500 mt-1">{{ priceError }}</p>
+            }
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5"
+            <label for="room-descripcion" class="block text-sm font-medium text-gray-700 mb-1.5"
               >Descripción <span class="text-gray-400 font-normal">(opcional)</span></label
             >
             <textarea
+              id="room-descripcion"
               [(ngModel)]="form.descripcion"
               name="descripcion"
               rows="3"
               placeholder="WiFi, TV, baño privado..."
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-800 outline-none focus:border-[#1D4ED8] transition resize-none"
+              class="w-full px-3 py-2 border rounded-lg text-sm text-gray-800 outline-none transition resize-none"
+              [class.border-red-400]="descriptionError"
+              [class.border-gray-200]="!descriptionError"
+              [class.focus:border-[#1D4ED8]]="!descriptionError"
             ></textarea>
+            @if (descriptionError) {
+              <p class="text-xs text-red-500 mt-1">{{ descriptionError }}</p>
+            }
           </div>
 
           <div class="flex items-center gap-3">
@@ -264,6 +304,9 @@
           </div>
         </div>
 
+        @if (saveError) {
+          <p class="px-6 pb-2 text-xs text-red-500">{{ saveError }}</p>
+        }
         <div class="px-6 py-4 border-t border-gray-100 flex gap-3">
           <button
             (click)="closePanel()"
@@ -273,7 +316,7 @@
           </button>
           <button
             (click)="save()"
-            [disabled]="saving || !form.nombre.trim() || form.precio_noche <= 0"
+            [disabled]="saving"
             class="flex-1 bg-[#1D4ED8] text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-blue-700 disabled:opacity-60 transition"
           >
             {{ saving ? 'Guardando...' : editingRoom ? 'Guardar cambios' : 'Agregar' }}

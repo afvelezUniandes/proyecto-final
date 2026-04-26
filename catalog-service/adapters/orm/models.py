@@ -32,3 +32,4 @@ class Habitacion(Base):
     precio_noche = Column(Numeric(10,2))
     moneda = Column(String(3))
     imagen_url = Column(String(500))
+    descripcion = Column(Text)
