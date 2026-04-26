@@ -8,7 +8,14 @@ class TestHotelsEndpoints:
     def test_get_hotels_empty(self, client, monkeypatch):
         """Test de obtener hoteles cuando no hay datos"""
         class MockQuery:
+            def __init__(self):
+                self._group_by = False
             def filter(self, *args):
+                return self
+            def exists(self):
+                return self
+            def group_by(self, *args):
+                self._group_by = True
                 return self
             def count(self):
                 return 0
@@ -17,6 +24,8 @@ class TestHotelsEndpoints:
             def limit(self, n):
                 return self
             def all(self):
+                if self._group_by:
+                    return []
                 return []
         
         class MockSession:
@@ -55,9 +64,16 @@ class TestHotelsEndpoints:
             direccion = 'Calle 1 # 1-1'
         
         class MockQuery:
+            def __init__(self):
+                self._group_by = False
             def filter(self, *args):
                 return self
             def filter_by(self, **kwargs):
+                return self
+            def exists(self):
+                return self
+            def group_by(self, *args):
+                self._group_by = True
                 return self
             def count(self):
                 return 1
@@ -66,6 +82,8 @@ class TestHotelsEndpoints:
             def limit(self, n):
                 return self
             def all(self):
+                if self._group_by:
+                    return []
                 return [MockHotel()]
         
         class MockSession:
@@ -103,7 +121,14 @@ class TestHotelsEndpoints:
             direccion = None
         
         class MockQuery:
+            def __init__(self):
+                self._group_by = False
             def filter(self, *args):
+                return self
+            def exists(self):
+                return self
+            def group_by(self, *args):
+                self._group_by = True
                 return self
             def count(self):
                 return 1
@@ -112,6 +137,8 @@ class TestHotelsEndpoints:
             def limit(self, n):
                 return self
             def all(self):
+                if self._group_by:
+                    return []
                 return [MockHotel()]
         
         class MockSession:
@@ -149,7 +176,14 @@ class TestHotelsEndpoints:
             direccion = None
         
         class MockQuery:
+            def __init__(self):
+                self._group_by = False
             def filter(self, *args):
+                return self
+            def exists(self):
+                return self
+            def group_by(self, *args):
+                self._group_by = True
                 return self
             def count(self):
                 return 1
@@ -158,6 +192,8 @@ class TestHotelsEndpoints:
             def limit(self, n):
                 return self
             def all(self):
+                if self._group_by:
+                    return []
                 return [MockHotel()]
         
         class MockSession:
@@ -195,7 +231,14 @@ class TestHotelsEndpoints:
         }) for i in range(1, 6)]
         
         class MockQuery:
+            def __init__(self):
+                self._group_by = False
             def filter(self, *args):
+                return self
+            def exists(self):
+                return self
+            def group_by(self, *args):
+                self._group_by = True
                 return self
             def count(self):
                 return 50
@@ -204,6 +247,8 @@ class TestHotelsEndpoints:
             def limit(self, n):
                 return self
             def all(self):
+                if self._group_by:
+                    return []
                 return hotels
         
         class MockSession:
@@ -395,7 +440,14 @@ class TestHotelsEndpoints:
             direccion = 'Cra 7 # 32-15'
 
         class MockQuery:
+            def __init__(self):
+                self._group_by = False
             def filter(self, *args):
+                return self
+            def exists(self):
+                return self
+            def group_by(self, *args):
+                self._group_by = True
                 return self
             def count(self):
                 return 1
@@ -404,6 +456,8 @@ class TestHotelsEndpoints:
             def limit(self, n):
                 return self
             def all(self):
+                if self._group_by:
+                    return []
                 return [MockHotel()]
 
         class MockSession:

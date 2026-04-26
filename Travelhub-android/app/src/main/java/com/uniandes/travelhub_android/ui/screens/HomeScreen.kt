@@ -32,6 +32,7 @@ import androidx.compose.ui.window.PopupProperties
 import com.uniandes.travelhub_android.data.ApiClient
 import com.uniandes.travelhub_android.data.LangStore
 import coil.compose.AsyncImage
+import com.uniandes.travelhub_android.ui.components.BottomNavBar
 import com.uniandes.travelhub_android.ui.theme.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
