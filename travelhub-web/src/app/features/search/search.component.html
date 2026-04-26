@@ -16,37 +16,55 @@
 
   <!-- Inline search bar -->
   <div class="bg-[#1D4ED8] px-6 py-4">
-    <div
-      class="max-w-5xl mx-auto bg-white rounded-xl p-3 shadow flex flex-col sm:flex-row gap-3 items-end"
-    >
-      <input
-        [(ngModel)]="ciudad"
-        placeholder="Ciudad"
-        class="flex-1 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
-      />
-      <input
-        [(ngModel)]="checkIn"
-        type="date"
-        class="flex-1 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
-      />
-      <input
-        [(ngModel)]="checkOut"
-        type="date"
-        class="flex-1 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
-      />
-      <input
-        [(ngModel)]="huespedes"
-        type="number"
-        min="1"
-        placeholder="Huéspedes"
-        class="w-28 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
-      />
-      <button
-        (click)="loadHotels()"
-        class="bg-[#F97316] text-white text-sm font-semibold px-6 py-2 rounded-lg hover:bg-orange-600 transition"
-      >
-        Buscar
-      </button>
+    <div class="max-w-5xl mx-auto">
+      <div class="bg-white rounded-xl p-3 shadow flex flex-col sm:flex-row gap-3 items-end">
+        <div class="flex-1 flex flex-col gap-0.5 min-w-0">
+          <label class="text-xs font-semibold text-gray-400 uppercase px-1">Ciudad</label>
+          <input
+            [(ngModel)]="ciudad"
+            placeholder="Bogotá, Colombia"
+            class="flex-1 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
+          />
+        </div>
+        <div class="flex-1 flex flex-col gap-0.5 min-w-0">
+          <label class="text-xs font-semibold text-gray-400 uppercase px-1">Check-in</label>
+          <input
+            [(ngModel)]="checkIn"
+            type="date"
+            [min]="today"
+            class="flex-1 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
+          />
+        </div>
+        <div class="flex-1 flex flex-col gap-0.5 min-w-0">
+          <label class="text-xs font-semibold text-gray-400 uppercase px-1">Check-out</label>
+          <input
+            [(ngModel)]="checkOut"
+            type="date"
+            [min]="minCheckOut"
+            class="flex-1 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
+          />
+        </div>
+        <div class="flex flex-col gap-0.5">
+          <label class="text-xs font-semibold text-gray-400 uppercase px-1">Huéspedes</label>
+          <input
+            [(ngModel)]="huespedes"
+            type="number"
+            min="1"
+            max="20"
+            placeholder="Huéspedes"
+            class="w-28 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
+          />
+        </div>
+        <button
+          (click)="loadHotels()"
+          class="bg-[#F97316] text-white text-sm font-semibold px-6 py-2 rounded-lg hover:bg-orange-600 transition whitespace-nowrap"
+        >
+          🔍 Buscar
+        </button>
+      </div>
+      @if (dateError) {
+        <p class="text-red-200 text-xs mt-2 px-1">⚠️ {{ dateError }}</p>
+      }
     </div>
   </div>
 
@@ -67,7 +85,16 @@
       }
       @if (ciudad) {
         <span class="ml-auto text-sm text-gray-500">
-          {{ total }} resultado(s) en {{ ciudad }}
+          {{ total }} resultado(s)
+          @if (ciudad) {
+            en <strong>{{ ciudad }}</strong>
+          }
+          @if (checkIn && checkOut) {
+            · {{ checkIn }} → {{ checkOut }}
+          }
+          @if (huespedes > 0) {
+            · {{ huespedes }} huésped(es)
+          }
         </span>
       }
     </div>
@@ -157,8 +184,15 @@
         @if (hotels.length === 0) {
           <div class="text-center py-24 text-gray-400">
             <div class="text-6xl mb-4">🔍</div>
-            <p class="text-lg font-medium">Sin resultados</p>
-            <p class="text-sm">Intenta con otra ciudad o ajusta los filtros</p>
+            <p class="text-lg font-medium text-gray-600">Sin resultados disponibles</p>
+            <p class="text-sm mt-1">
+              No encontramos hospedajes que cumplan los criterios de búsqueda.
+              @if (huespedes > 1) {
+                Prueba reduciendo el número de huéspedes o cambiando las fechas.
+              } @else {
+                Intenta con otra ciudad o ajusta los filtros.
+              }
+            </p>
           </div>
         }
       </div>
