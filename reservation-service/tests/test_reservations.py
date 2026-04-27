@@ -248,3 +248,173 @@ class TestHealthAndRoot:
     def test_root(self, client):
         response = client.get('/')
         assert response.status_code == 200
+
+
+class TestGetReservationsFiltered:
+
+    def test_get_reservations_filtered_by_estado(self, client, monkeypatch):
+        """Filtrar por estado devuelve solo las que coinciden."""
+        import adapters.http.reservations as mod
+        monkeypatch.setattr(mod, 'Session', lambda: MockSession([MockReserva()]))
+
+        response = client.get('/reservations?estado=confirmada', headers=auth_header())
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert len(data) == 1
+        assert data[0]['estado'] == 'confirmada'
+
+
+class TestCreateReservationConflict:
+
+    def test_create_reservation_conflict(self, client, monkeypatch):
+        """Habitación ya reservada en esas fechas devuelve 409."""
+        import adapters.http.reservations as mod
+
+        class ConflictSession(MockSession):
+            def first(self):
+                return MockReserva()  # siempre hay conflicto
+
+        monkeypatch.setattr(mod, 'Session', lambda: ConflictSession([]))
+
+        payload = {
+            'habitacion_id': 10,
+            'hotel_id': 2,
+            'fecha_checkin': '2026-03-15',
+            'fecha_checkout': '2026-03-20',
+            'num_huespedes': 2,
+            'monto_total': 2250000
+        }
+        response = client.post(
+            '/reservations',
+            data=json.dumps(payload),
+            content_type='application/json',
+            headers=auth_header()
+        )
+        assert response.status_code == 409
+        data = json.loads(response.data)
+        assert 'disponible' in data['error']
+
+
+class TestHotelCancelReservation:
+
+    def test_hotel_cancel_unauthorized(self, client):
+        """Sin X-Hotel-Id devuelve 401."""
+        response = client.patch('/reservations/1/hotel-cancel')
+        assert response.status_code == 401
+
+    def test_hotel_cancel_invalid_hotel_id(self, client):
+        """X-Hotel-Id inválido devuelve 400."""
+        response = client.patch('/reservations/1/hotel-cancel', headers={'X-Hotel-Id': 'abc'})
+        assert response.status_code == 400
+
+    def test_hotel_cancel_not_found(self, client, monkeypatch):
+        """Reserva no pertenece al hotel → 404."""
+        import adapters.http.reservations as mod
+        monkeypatch.setattr(mod, 'Session', lambda: MockSession([]))
+
+        response = client.patch('/reservations/999/hotel-cancel', headers={'X-Hotel-Id': '2'})
+        assert response.status_code == 404
+
+    def test_hotel_cancel_already_cancelled(self, client, monkeypatch):
+        """Reserva ya cancelada devuelve 400."""
+        import adapters.http.reservations as mod
+
+        class CancelledReserva(MockReserva):
+            estado = 'cancelada'
+
+        monkeypatch.setattr(mod, 'Session', lambda: MockSession([CancelledReserva()]))
+
+        response = client.patch('/reservations/1/hotel-cancel', headers={'X-Hotel-Id': '2'})
+        assert response.status_code == 400
+
+    def test_hotel_cancel_success(self, client, monkeypatch):
+        """Cancelar reserva confirmada por hotel → 200."""
+        import adapters.http.reservations as mod
+
+        class MutableReserva(MockReserva):
+            estado = 'confirmada'
+
+        monkeypatch.setattr(mod, 'Session', lambda: MockSession([MutableReserva()]))
+
+        response = client.patch('/reservations/1/hotel-cancel', headers={'X-Hotel-Id': '2'})
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data['estado'] == 'cancelada'
+
+
+class TestGetHotelReservations:
+
+    def test_get_hotel_reservations_empty(self, client, monkeypatch):
+        """Hotel sin reservas devuelve lista vacía."""
+        import adapters.http.reservations as mod
+        monkeypatch.setattr(mod, 'Session', lambda: MockSession([]))
+
+        response = client.get('/reservations/hotel/2')
+        assert response.status_code == 200
+        assert json.loads(response.data) == []
+
+    def test_get_hotel_reservations_with_data(self, client, monkeypatch):
+        """Hotel con reservas devuelve la lista."""
+        import adapters.http.reservations as mod
+        monkeypatch.setattr(mod, 'Session', lambda: MockSession([MockReserva()]))
+
+        response = client.get('/reservations/hotel/2')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert len(data) == 1
+        assert data[0]['hotel_id'] == 2
+
+    def test_get_hotel_reservations_filters(self, client, monkeypatch):
+        """Filtros de estado, codigo, fechas se aplican sin error."""
+        import adapters.http.reservations as mod
+        monkeypatch.setattr(mod, 'Session', lambda: MockSession([MockReserva()]))
+
+        response = client.get(
+            '/reservations/hotel/2?estado=confirmada&codigo=TH&fecha_desde=2026-01-01&fecha_hasta=2026-12-31'
+        )
+        assert response.status_code == 200
+
+
+class TestOccupiedRooms:
+
+    def test_occupied_rooms_missing_params(self, client):
+        """Sin parámetros devuelve 400."""
+        response = client.get('/reservations/occupied-rooms')
+        assert response.status_code == 400
+
+    def test_occupied_rooms_invalid_dates(self, client):
+        """Fecha inválida devuelve 400."""
+        response = client.get('/reservations/occupied-rooms?hotel_id=1&fecha_checkin=bad&fecha_checkout=bad')
+        assert response.status_code == 400
+
+    def test_occupied_rooms_checkout_before_checkin(self, client):
+        """checkout <= checkin devuelve 400."""
+        response = client.get(
+            '/reservations/occupied-rooms?hotel_id=1&fecha_checkin=2026-03-20&fecha_checkout=2026-03-15'
+        )
+        assert response.status_code == 400
+
+    def test_occupied_rooms_success(self, client, monkeypatch):
+        """Habitaciones ocupadas devuelve lista de IDs."""
+        import adapters.http.reservations as mod
+        monkeypatch.setattr(mod, 'Session', lambda: MockSession([MockReserva()]))
+
+        response = client.get(
+            '/reservations/occupied-rooms?hotel_id=2&fecha_checkin=2026-03-15&fecha_checkout=2026-03-20'
+        )
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert 'occupied_room_ids' in data
+        assert 10 in data['occupied_room_ids']
+
+    def test_occupied_rooms_no_overlap(self, client, monkeypatch):
+        """Sin reservas en esas fechas devuelve lista vacía."""
+        import adapters.http.reservations as mod
+        monkeypatch.setattr(mod, 'Session', lambda: MockSession([]))
+
+        response = client.get(
+            '/reservations/occupied-rooms?hotel_id=2&fecha_checkin=2026-05-01&fecha_checkout=2026-05-05'
+        )
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data['occupied_room_ids'] == []
