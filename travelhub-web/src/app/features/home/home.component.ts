@@ -41,6 +41,10 @@ export class HomeComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    this.checkIn = this.today;
+    this.checkOut = tomorrow.toISOString().split('T')[0];
     this.catalog.getCities().subscribe({ next: (c) => (this.cities = c), error: () => {} });
   }
 
