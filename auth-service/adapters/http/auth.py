@@ -133,6 +133,26 @@ def get_profile():
         session.close()
 
 
+@bp.route('/users/<int:user_id>', methods=['GET'])
+def get_user_by_id(user_id):
+    """Endpoint interno para que el gateway enriquezca datos de reservas con info del huésped."""
+    session = Session()
+    try:
+        user = session.query(Usuario).filter_by(id=user_id).first()
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        return jsonify({
+            'id': user.id,
+            'nombre': user.nombre,
+            'email': user.email,
+            'telefono': user.telefono or '',
+            'pais': user.pais or '',
+            'idioma_preferido': user.idioma_preferido or 'es',
+        }), 200
+    finally:
+        session.close()
+
+
 @bp.route('/profile', methods=['PUT'])
 def update_profile():
     user_id = _get_user_id_from_header(request)

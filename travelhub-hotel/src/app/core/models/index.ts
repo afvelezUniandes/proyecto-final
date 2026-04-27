@@ -31,12 +31,9 @@ export interface HotelStats {
 export interface HotelReservation {
   id: number;
   codigo: string;
-  huesped_nombre: string;
-  huesped_email: string;
-  huesped_telefono: string;
-  huesped_pais: string;
-  huesped_idioma: string;
-  habitacion_nombre: string;
+  usuario_id?: number;
+  habitacion_id?: number;
+  hotel_id?: number;
   fecha_checkin: string;
   fecha_checkout: string;
   num_huespedes: number;
@@ -44,8 +41,15 @@ export interface HotelReservation {
   monto_total: number;
   moneda: string;
   estado: 'confirmada' | 'cancelada' | 'completada';
-  precio_noche: number;
-  noches: number;
+  // Campos enriquecidos por el gateway (requiere gateway actualizado)
+  huesped_nombre?: string;
+  huesped_email?: string;
+  huesped_telefono?: string;
+  huesped_pais?: string;
+  huesped_idioma?: string;
+  habitacion_nombre?: string;
+  precio_noche?: number;
+  noches?: number;
 }
 
 export interface Hotel {

@@ -170,7 +170,7 @@ export class MockHotelAdminService {
     if (filters.search) {
       const q = filters.search.toLowerCase();
       filtered = filtered.filter(
-        (r) => r.codigo.toLowerCase().includes(q) || r.huesped_nombre.toLowerCase().includes(q),
+        (r) => r.codigo?.toLowerCase().includes(q) || r.huesped_nombre?.toLowerCase().includes(q),
       );
     }
     if (filters.estado && filters.estado !== 'all') {

@@ -54,8 +54,10 @@ export class SearchComponent implements OnInit {
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
       this.ciudad = params['ciudad'] || '';
-      this.checkIn = params['checkIn'] || '';
-      this.checkOut = params['checkOut'] || '';
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      this.checkIn = params['checkIn'] || this.today;
+      this.checkOut = params['checkOut'] || tomorrow.toISOString().split('T')[0];
       this.huespedes = +params['huespedes'] || 1;
       this.page = +params['page'] || 1;
       this.loadHotels();
@@ -115,6 +117,7 @@ export class SearchComponent implements OnInit {
   goToDetail(id: number | string) {
     this.router.navigate(['/hotel', id], {
       queryParams: {
+        ciudad: this.ciudad || '',
         checkIn: this.checkIn || '',
         checkOut: this.checkOut || '',
         huespedes: this.huespedes || 1,

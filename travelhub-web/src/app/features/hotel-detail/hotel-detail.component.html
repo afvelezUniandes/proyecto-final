@@ -94,13 +94,28 @@
             <div class="grid sm:grid-cols-2 gap-4">
               @for (room of rooms; track room.id) {
                 <div
-                  (click)="selectedRoomId = room.id"
+                  (click)="room.disponible && (selectedRoomId = room.id)"
                   [class.ring-2]="selectedRoomId === room.id"
                   [class.ring-[#1D4ED8]]="selectedRoomId === room.id"
-                  class="bg-white border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-[#1D4ED8] transition"
+                  [class.opacity-50]="!room.disponible"
+                  [class.cursor-not-allowed]="!room.disponible"
+                  [class.cursor-pointer]="room.disponible"
+                  [class.hover:border-[#1D4ED8]]="room.disponible"
+                  class="bg-white border border-gray-200 rounded-xl p-4 transition relative"
                 >
-                  <div class="flex items-center justify-between">
-                    <span class="font-semibold text-gray-900 text-sm">{{ room.tipo }}</span>
+                  @if (!room.disponible) {
+                    <div class="absolute top-3 right-3">
+                      <span
+                        class="bg-red-100 text-red-600 text-xs font-semibold px-2 py-0.5 rounded-full"
+                        >No disponible</span
+                      >
+                    </div>
+                  }
+                  <div class="flex items-center justify-between pr-24">
+                    <div>
+                      <span class="font-semibold text-gray-900 text-sm">{{ room.nombre }}</span>
+                      <span class="text-gray-400 text-xs ml-1">— {{ room.tipo }}</span>
+                    </div>
                     @if (selectedRoomId === room.id) {
                       <span class="text-[#1D4ED8] text-xs font-medium">✓ Seleccionada</span>
                     }
@@ -132,27 +147,33 @@
                 class="bg-green-50 border border-green-200 text-green-700 rounded-xl p-4 text-sm text-center"
               >
                 <div class="text-3xl mb-2">🎉</div>
-                <p class="font-semibold">¡Reserva exitosa!</p>
+                <p class="font-semibold mb-1">¡Reserva confirmada!</p>
+                @if (reservationCode) {
+                  <p class="text-xs text-gray-500 mb-1">Código de reserva</p>
+                  <p class="font-mono font-bold text-gray-900 text-base tracking-wider mb-3">
+                    {{ reservationCode }}
+                  </p>
+                }
                 <a
                   routerLink="/reservations"
-                  class="text-[#1D4ED8] text-xs mt-2 inline-block underline"
+                  class="inline-block bg-[#1D4ED8] text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 transition"
                   >Ver mis reservas</a
                 >
               </div>
             } @else {
               <div class="space-y-3">
-                <!-- Dates summary -->
+                <!-- Dates summary (read-only, from search) -->
                 <div class="bg-gray-50 rounded-xl p-4 space-y-2">
                   <div class="flex justify-between items-center">
                     <span class="text-xs font-semibold text-gray-400 uppercase">Check-in</span>
                     <span class="text-sm font-medium text-gray-800">
-                      {{ checkIn ? (checkIn | date: 'dd MMM yyyy' : '' : 'es') : '—' }}
+                      {{ checkIn ? (checkIn | date: 'dd MMM yyyy') : '—' }}
                     </span>
                   </div>
                   <div class="flex justify-between items-center">
                     <span class="text-xs font-semibold text-gray-400 uppercase">Check-out</span>
                     <span class="text-sm font-medium text-gray-800">
-                      {{ checkOut ? (checkOut | date: 'dd MMM yyyy' : '' : 'es') : '—' }}
+                      {{ checkOut ? (checkOut | date: 'dd MMM yyyy') : '—' }}
                     </span>
                   </div>
                   <div class="flex justify-between items-center">
@@ -176,7 +197,8 @@
                   >
                     @for (room of rooms; track room.id) {
                       <option [ngValue]="room.id" [disabled]="!room.disponible">
-                        {{ room.tipo }} — {{ formatPrice(room.precio_noche) }}/noche
+                        {{ room.nombre }} ({{ room.tipo }}) —
+                        {{ formatPrice(room.precio_noche) }}/noche
                         {{ room.disponible ? '' : '(no disponible)' }}
                       </option>
                     }
@@ -204,7 +226,17 @@
                 }
 
                 @if (reserveError) {
-                  <p class="text-red-600 text-xs">{{ reserveError }}</p>
+                  <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p class="text-red-600 text-xs">{{ reserveError }}</p>
+                    @if (isUnavailableError) {
+                      <a
+                        [routerLink]="['/search']"
+                        [queryParams]="searchParams"
+                        class="text-[#1D4ED8] text-xs underline mt-1 inline-block"
+                        >Buscar habitaciones alternativas →</a
+                      >
+                    }
+                  </div>
                 }
 
                 <button
