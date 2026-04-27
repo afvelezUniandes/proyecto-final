@@ -32,15 +32,22 @@ export class SearchComponent implements OnInit {
     { key: 'price_desc', label: '💰 Precio ↓' },
   ];
 
+  private localDateStr(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
   get today(): string {
-    return new Date().toISOString().split('T')[0];
+    return this.localDateStr(new Date());
   }
 
   get minCheckOut(): string {
     if (this.checkIn) {
-      const d = new Date(this.checkIn);
+      const d = new Date(this.checkIn + 'T00:00:00');
       d.setDate(d.getDate() + 1);
-      return d.toISOString().split('T')[0];
+      return this.localDateStr(d);
     }
     return this.today;
   }
@@ -57,7 +64,7 @@ export class SearchComponent implements OnInit {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       this.checkIn = params['checkIn'] || this.today;
-      this.checkOut = params['checkOut'] || tomorrow.toISOString().split('T')[0];
+      this.checkOut = params['checkOut'] || this.localDateStr(tomorrow);
       this.huespedes = +params['huespedes'] || 1;
       this.page = +params['page'] || 1;
       this.loadHotels();
