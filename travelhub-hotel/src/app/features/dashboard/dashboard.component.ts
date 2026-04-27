@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { MockHotelAdminService } from '../../core/services/mocks/mock-hotel-admin.service';
+import { switchMap } from 'rxjs';
 import { HotelService } from '../../core/services/hotel.service';
+import { ReservationService } from '../../core/services/reservation.service';
 import { HotelStats, HotelReservation, WeeklyOccupancy } from '../../core/models';
 
 @Component({
@@ -16,27 +17,46 @@ export class DashboardComponent implements OnInit {
   recentReservations: HotelReservation[] = [];
   weeklyOccupancy: WeeklyOccupancy[] = [];
   loading = true;
+  loadError = '';
   uploadingImage = false;
   uploadError = '';
   uploadSuccess = false;
 
   constructor(
-    private mockService: MockHotelAdminService,
+    private reservationService: ReservationService,
     public hotelService: HotelService,
   ) {}
 
   ngOnInit() {
-    this.hotelService.loadMyHotel().subscribe({
-      error: (err) => console.error('[HotelService] loadMyHotel failed:', err),
-    });
-    this.mockService.getStats().subscribe({ next: (s) => (this.stats = s) });
-    this.mockService.getWeeklyOccupancy().subscribe({ next: (w) => (this.weeklyOccupancy = w) });
-    this.mockService.getReservations({}).subscribe({
-      next: (res) => {
-        this.recentReservations = res.reservations.slice(0, 5);
-        this.loading = false;
-      },
-    });
+    const hotel = this.hotelService.hotel();
+    const hotel$ = hotel ? [hotel] : null;
+
+    this.hotelService
+      .loadMyHotel()
+      .pipe(switchMap((h) => this.reservationService.getStats(h.id)))
+      .subscribe({
+        next: (statsResp) => {
+          const { weekly_occupancy, ...statsFields } = statsResp;
+          this.stats = statsFields;
+          this.weeklyOccupancy = weekly_occupancy || [];
+        },
+        error: () => {
+          this.loadError = 'No se pudieron cargar las estadísticas.';
+        },
+      });
+
+    this.hotelService
+      .loadMyHotel()
+      .pipe(switchMap((h) => this.reservationService.getReservations(h.id, { per_page: 5 })))
+      .subscribe({
+        next: (reservations) => {
+          this.recentReservations = reservations.slice(0, 5);
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
+      });
   }
 
   formatPrice(p: number): string {

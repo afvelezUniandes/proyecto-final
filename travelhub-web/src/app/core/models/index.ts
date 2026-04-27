@@ -9,6 +9,7 @@ export interface Hotel {
   direccion?: string;
   image_url?: string;
   precio_noche?: number;
+  precio_noche_max?: number;
   tiene_piscina?: boolean;
   tiene_gimnasio?: boolean;
   tiene_spa?: boolean;

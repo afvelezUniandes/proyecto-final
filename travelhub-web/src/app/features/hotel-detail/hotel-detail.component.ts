@@ -28,6 +28,8 @@ export class HotelDetailComponent implements OnInit {
   reserving = false;
   reserveError = '';
   reserveSuccess = false;
+  reservationCode = '';
+  isUnavailableError = false;
   searchParams: Record<string, string | number> = {};
 
   readonly amenities = [
@@ -128,14 +130,27 @@ export class HotelDetailComponent implements OnInit {
   }
 
   reserve() {
+    if (!this.auth.isLoggedIn()) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
     if (!this.selectedRoomId || !this.checkIn || !this.checkOut) {
-      this.reserveError = 'Selecciona habitacion y fechas.';
+      this.reserveError = 'Selecciona habitación y fechas.';
       return;
     }
     if (!this.hotel) return;
 
+    const room = this.selectedRoom();
+    if (room && !room.disponible) {
+      this.reserveError =
+        'La habitación seleccionada no está disponible para las fechas indicadas.';
+      this.isUnavailableError = true;
+      return;
+    }
+
     this.reserving = true;
     this.reserveError = '';
+    this.isUnavailableError = false;
     this.reservationService
       .createReservation({
         habitacion_id: this.selectedRoomId,
@@ -147,12 +162,19 @@ export class HotelDetailComponent implements OnInit {
         moneda: 'COP',
       })
       .subscribe({
-        next: () => {
+        next: (reservation) => {
+          this.reservationCode = reservation.codigo || '';
           this.reserveSuccess = true;
           this.reserving = false;
         },
         error: (e) => {
           this.reserveError = e?.error?.error || 'Error al crear la reserva.';
+          if (e?.status === 409) {
+            this.isUnavailableError = true;
+            this.rooms = this.rooms.map((r) =>
+              r.id === this.selectedRoomId ? { ...r, disponible: false } : r,
+            );
+          }
           this.reserving = false;
         },
       });

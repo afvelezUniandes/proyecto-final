@@ -129,6 +129,16 @@ def create_reservation():
         if checkout <= checkin:
             return jsonify({'error': 'checkout must be after checkin'}), 400
 
+        # Validar que la habitación no esté ya reservada en esas fechas
+        conflicto = session.query(Reserva).filter(
+            Reserva.habitacion_id == data['habitacion_id'],
+            Reserva.estado == 'confirmada',
+            Reserva.fecha_checkin < checkout,
+            Reserva.fecha_checkout > checkin
+        ).first()
+        if conflicto:
+            return jsonify({'error': 'La habitación no está disponible para las fechas seleccionadas'}), 409
+
         codigo = generate_codigo()
         # Garantizar unicidad del código
         while session.query(Reserva).filter(Reserva.codigo == codigo).first():
@@ -178,7 +188,38 @@ def create_reservation():
 
 
 # ──────────────────────────────────────────────
-# GET /reservations/hotel/<hotel_id>  — reservas de un hotel (vista admin)
+# PATCH /reservations/<id>/hotel-cancel  — cancelar reserva como admin del hotel
+# Requiere header X-Hotel-Id que el gateway valida contra el hotel_id de la reserva.
+# ──────────────────────────────────────────────
+@bp.route('/reservations/<int:reserva_id>/hotel-cancel', methods=['PATCH'])
+def hotel_cancel_reservation(reserva_id):
+    hotel_id = request.headers.get('X-Hotel-Id')
+    if not hotel_id:
+        return jsonify({'error': 'Unauthorized'}), 401
+    try:
+        hotel_id = int(hotel_id)
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Invalid hotel id'}), 400
+
+    session = Session()
+    try:
+        reserva = session.query(Reserva).filter(
+            Reserva.id == reserva_id,
+            Reserva.hotel_id == hotel_id
+        ).first()
+        if not reserva:
+            return jsonify({'error': 'Reservation not found'}), 404
+        if reserva.estado != 'confirmada':
+            return jsonify({'error': 'Only confirmed reservations can be cancelled'}), 400
+
+        reserva.estado = 'cancelada'
+        session.commit()
+        return jsonify(reserva_to_dict(reserva)), 200
+    finally:
+        session.close()
+
+
+# ──────────────────────────────────────────────
 # ──────────────────────────────────────────────
 @bp.route('/reservations/hotel/<int:hotel_id>', methods=['GET'])
 def get_hotel_reservations(hotel_id):
