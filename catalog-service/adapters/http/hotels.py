@@ -128,6 +128,12 @@ def get_hotels():
         .group_by(Habitacion.hotel_id)
         .all()
     ) if hotel_ids else {}
+    max_prices = dict(
+        session.query(Habitacion.hotel_id, func.max(Habitacion.precio_noche))
+        .filter(Habitacion.hotel_id.in_(hotel_ids), Habitacion.disponible.is_(True))
+        .group_by(Habitacion.hotel_id)
+        .all()
+    ) if hotel_ids else {}
     result = [
         {
             'id': h.id,
@@ -140,6 +146,7 @@ def get_hotels():
             'descripcion': h.descripcion,
             'direccion': h.direccion,
             'precio_noche': float(min_prices.get(h.id, 0)),
+            'precio_noche_max': float(max_prices.get(h.id, 0)),
         } for h in hotels
     ]
     session.close()
