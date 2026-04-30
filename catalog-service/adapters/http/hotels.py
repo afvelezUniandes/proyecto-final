@@ -21,6 +21,21 @@ ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
 def _allowed_file(filename: str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
+def _hotel_dict(h) -> dict:
+    return {
+        'id': h.id,
+        'admin_id': h.admin_id,
+        'nombre': h.nombre,
+        'descripcion': h.descripcion,
+        'direccion': h.direccion,
+        'ciudad': h.ciudad,
+        'pais': h.pais,
+        'estrellas': h.estrellas,
+        'activo': h.activo,
+        'image_url': h.image_url,
+    }
+
 def make_cache_key_hotels():
     """Genera una cache key basada en los parámetros de la query"""
     args = request.args
@@ -172,18 +187,7 @@ def get_hotel(hotel_id):
         hotel = session.query(Hotel).filter(Hotel.id == hotel_id).first()
         if not hotel:
             return jsonify({'error': 'Hotel not found'}), 404
-        return jsonify({
-            'id': hotel.id,
-            'admin_id': hotel.admin_id,
-            'nombre': hotel.nombre,
-            'descripcion': hotel.descripcion,
-            'direccion': hotel.direccion,
-            'ciudad': hotel.ciudad,
-            'pais': hotel.pais,
-            'estrellas': hotel.estrellas,
-            'activo': hotel.activo,
-            'image_url': hotel.image_url,
-        }), 200
+        return jsonify(_hotel_dict(hotel)), 200
     finally:
         session.close()
 
@@ -195,18 +199,7 @@ def get_hotel_by_admin(admin_id):
         hotel = session.query(Hotel).filter(Hotel.admin_id == admin_id).first()
         if not hotel:
             return jsonify({'error': 'No hotel found for this admin'}), 404
-        return jsonify({
-            'id': hotel.id,
-            'admin_id': hotel.admin_id,
-            'nombre': hotel.nombre,
-            'descripcion': hotel.descripcion,
-            'direccion': hotel.direccion,
-            'ciudad': hotel.ciudad,
-            'pais': hotel.pais,
-            'estrellas': hotel.estrellas,
-            'activo': hotel.activo,
-            'image_url': hotel.image_url,
-        }), 200
+        return jsonify(_hotel_dict(hotel)), 200
     finally:
         session.close()
 
@@ -233,15 +226,7 @@ def create_hotel():
         session.commit()
         cache = current_app.cache
         cache.clear()
-        return jsonify({
-            'id': hotel.id,
-            'admin_id': hotel.admin_id,
-            'nombre': hotel.nombre,
-            'ciudad': hotel.ciudad,
-            'pais': hotel.pais,
-            'estrellas': hotel.estrellas,
-            'activo': hotel.activo,
-        }), 201
+        return jsonify(_hotel_dict(hotel)), 201
     except Exception as e:
         session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -257,35 +242,14 @@ def update_hotel(hotel_id):
         hotel = session.query(Hotel).filter(Hotel.id == hotel_id).first()
         if not hotel:
             return jsonify({'error': 'Hotel not found'}), 404
-        if 'nombre' in data:
-            hotel.nombre = data['nombre']
-        if 'descripcion' in data:
-            hotel.descripcion = data['descripcion']
-        if 'direccion' in data:
-            hotel.direccion = data['direccion']
-        if 'ciudad' in data:
-            hotel.ciudad = data['ciudad']
-        if 'pais' in data:
-            hotel.pais = data['pais']
-        if 'estrellas' in data:
-            hotel.estrellas = data['estrellas']
-        if 'image_url' in data:
-            hotel.image_url = data['image_url']
+        for field in ('nombre', 'descripcion', 'direccion', 'ciudad', 'pais',
+                      'estrellas', 'image_url'):
+            if field in data:
+                setattr(hotel, field, data[field])
         session.commit()
         cache = current_app.cache
         cache.clear()
-        return jsonify({
-            'id': hotel.id,
-            'admin_id': hotel.admin_id,
-            'nombre': hotel.nombre,
-            'descripcion': hotel.descripcion,
-            'direccion': hotel.direccion,
-            'ciudad': hotel.ciudad,
-            'pais': hotel.pais,
-            'estrellas': hotel.estrellas,
-            'activo': hotel.activo,
-            'image_url': hotel.image_url,
-        }), 200
+        return jsonify(_hotel_dict(hotel)), 200
     except Exception as e:
         session.rollback()
         return jsonify({'error': str(e)}), 500

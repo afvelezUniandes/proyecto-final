@@ -26,6 +26,11 @@ interface ApiService {
         @Query("per_page") perPage: Int = 20
     ): Response<HotelsResponse>
 
+    @GET("/catalog/hotels/{id}")
+    suspend fun getHotel(
+        @Path("id") id: Int
+    ): Response<Hotel>
+
     @GET("/catalog/rooms")
     suspend fun getRooms(
         @Query("hotel_id") hotelId: Int

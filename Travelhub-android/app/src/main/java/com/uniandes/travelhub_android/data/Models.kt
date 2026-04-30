@@ -20,7 +20,15 @@ data class Hotel(
     val descripcion: String? = null,
     val direccion: String? = null,
     val image_url: String? = null,
-    val precio_noche: Double? = null
+    val precio_noche: Double? = null,
+    val tiene_piscina: Boolean? = null,
+    val tiene_gimnasio: Boolean? = null,
+    val tiene_spa: Boolean? = null,
+    val permite_mascotas: Boolean? = null,
+    val tiene_restaurante: Boolean? = null,
+    val tiene_bar: Boolean? = null,
+    val tiene_wifi: Boolean? = null,
+    val tiene_parqueadero: Boolean? = null
 )
 
 data class HotelsResponse(
