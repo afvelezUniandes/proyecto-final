@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { LanguageSelectorComponent } from '../../../shared/language-selector/language-selector.component';
 
@@ -10,7 +11,7 @@ type Tab = 'login' | 'register';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, LanguageSelectorComponent, RouterLink],
+  imports: [CommonModule, FormsModule, LanguageSelectorComponent, RouterLink, TranslateModule],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
@@ -36,6 +37,7 @@ export class LoginComponent {
   constructor(
     private auth: AuthService,
     private router: Router,
+    private translate: TranslateService,
   ) {}
 
   setTab(t: Tab) {
@@ -48,7 +50,7 @@ export class LoginComponent {
   onLogin() {
     this.loginError.set(null);
     if (!this.loginEmail || !this.loginPassword) {
-      this.loginError.set('Por favor completa todos los campos.');
+      this.loginError.set(this.translate.instant('AUTH.ERR_EMPTY_FIELDS'));
       return;
     }
     this.loginLoading = true;
@@ -59,8 +61,8 @@ export class LoginComponent {
         const status = err?.status;
         this.loginError.set(
           status === 401
-            ? 'Correo o contraseña incorrectos.'
-            : 'Error al conectar. Intenta de nuevo.',
+            ? this.translate.instant('AUTH.ERR_WRONG_CREDENTIALS')
+            : this.translate.instant('AUTH.ERR_CONNECT'),
         );
       },
     });
@@ -75,23 +77,21 @@ export class LoginComponent {
       !this.registerPassword ||
       !this.registerConfirm
     ) {
-      this.registerError.set('Por favor completa todos los campos.');
+      this.registerError.set(this.translate.instant('AUTH.ERR_EMPTY_FIELDS'));
       return;
     }
     const emailRe = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
     if (!emailRe.test(this.registerEmail.trim())) {
-      this.registerError.set('Ingresa un correo electrónico válido.');
+      this.registerError.set(this.translate.instant('AUTH.ERR_INVALID_EMAIL'));
       return;
     }
     const passwordRe = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
     if (!passwordRe.test(this.registerPassword)) {
-      this.registerError.set(
-        'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial.',
-      );
+      this.registerError.set(this.translate.instant('AUTH.ERR_WEAK_PASSWORD'));
       return;
     }
     if (this.registerPassword !== this.registerConfirm) {
-      this.registerError.set('Las contraseñas no coinciden.');
+      this.registerError.set(this.translate.instant('AUTH.ERR_PASSWORD_MISMATCH'));
       return;
     }
     this.registerLoading = true;
@@ -104,15 +104,15 @@ export class LoginComponent {
       .subscribe({
         next: () => {
           this.registerLoading = false;
-          this.registerSuccess.set('¡Cuenta creada! Ahora inicia sesión.');
+          this.registerSuccess.set(this.translate.instant('AUTH.SUCCESS_REGISTER'));
           setTimeout(() => this.setTab('login'), 1500);
         },
         error: (err) => {
           this.registerLoading = false;
           this.registerError.set(
             err?.status === 400
-              ? 'Este correo ya está registrado.'
-              : 'Error al registrar. Intenta de nuevo.',
+              ? this.translate.instant('AUTH.ERR_EMAIL_TAKEN')
+              : this.translate.instant('AUTH.ERR_REGISTER'),
           );
         },
       });

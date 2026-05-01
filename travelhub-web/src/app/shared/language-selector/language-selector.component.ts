@@ -1,7 +1,8 @@
-import { Component, signal, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LangService } from '../../core/services/lang.service';
 
-type Lang = 'es' | 'en';
+export type Lang = 'es' | 'en';
 type Theme = 'dark' | 'light';
 
 const LANGS: Record<Lang, { flag: string; label: string }> = {
@@ -15,20 +16,30 @@ const LANGS: Record<Lang, { flag: string; label: string }> = {
   imports: [CommonModule],
   template: `
     <div class="relative">
-      <button
-        (click)="open.set(!open())"
-        [class]="btnClass()"
-      >
+      <button (click)="open = !open" [class]="btnClass()">
         <span>{{ langs[current()].flag }}</span>
         <span>{{ langs[current()].label }}</span>
-        <svg class="w-3 h-3 transition-transform" [class.rotate-180]="open()" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+        <svg
+          class="w-3 h-3 transition-transform"
+          [class.rotate-180]="open"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.5"
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
 
-      @if (open()) {
-        <div class="fixed inset-0 z-10" (click)="open.set(false)"></div>
-        <div class="absolute right-0 mt-1 z-20 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden min-w-[128px]">
+      @if (open) {
+        <div class="fixed inset-0 z-10" (click)="open = false"></div>
+        <div
+          class="absolute right-0 mt-1 z-20 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden min-w-32"
+        >
           @for (entry of langEntries; track entry.key) {
             <button
               (click)="select(entry.key)"
@@ -51,16 +62,20 @@ const LANGS: Record<Lang, { flag: string; label: string }> = {
 export class LanguageSelectorComponent {
   theme = input<Theme>('dark');
   langs = LANGS;
-  current = signal<Lang>('es');
-  open = signal(false);
+  open = false;
 
   langEntries = [
     { key: 'es' as Lang, flag: '🇪🇸', full: 'Español' },
     { key: 'en' as Lang, flag: '🇺🇸', full: 'English' },
   ];
 
+  constructor(public langService: LangService) {}
+
+  current = computed(() => this.langService.currentLang());
+
   btnClass(): string {
-    const base = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border';
+    const base =
+      'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border';
     if (this.theme() === 'light') {
       return `${base} text-gray-600 border-gray-300 hover:bg-gray-100 hover:text-gray-800`;
     }
@@ -68,7 +83,7 @@ export class LanguageSelectorComponent {
   }
 
   select(lang: Lang) {
-    this.current.set(lang);
-    this.open.set(false);
+    this.langService.setLang(lang);
+    this.open = false;
   }
 }

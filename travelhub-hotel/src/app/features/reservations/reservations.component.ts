@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { switchMap } from 'rxjs';
 import { HotelService } from '../../core/services/hotel.service';
 import { ReservationService } from '../../core/services/reservation.service';
@@ -10,7 +11,7 @@ import { HotelReservation } from '../../core/models';
 @Component({
   selector: 'app-hotel-reservations',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './reservations.component.html',
 })
 export class ReservationsComponent implements OnInit {
@@ -32,6 +33,7 @@ export class ReservationsComponent implements OnInit {
     private hotelService: HotelService,
     private reservationService: ReservationService,
     private router: Router,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -49,10 +51,12 @@ export class ReservationsComponent implements OnInit {
           ];
           this.loading = false;
           this.applyFilters();
+          this.cdr.detectChanges();
         },
         error: () => {
           this.loadError = 'No se pudieron cargar las reservas.';
           this.loading = false;
+          this.cdr.detectChanges();
         },
       });
   }

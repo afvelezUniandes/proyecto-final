@@ -8,16 +8,16 @@
       <span class="text-white font-bold text-xl">TravelHub</span>
     </div>
     <div class="flex items-center gap-6">
-      <a routerLink="/home" class="text-white/90 text-sm font-medium hover:text-white transition"
-        >Inicio</a
-      >
+      <a routerLink="/home" class="text-white/90 text-sm font-medium hover:text-white transition">{{
+        'NAV.HOME' | translate
+      }}</a>
       <a
         routerLink="/reservations"
         class="text-white/90 text-sm font-medium hover:text-white transition"
-        >Mis Reservas</a
+        >{{ 'NAV.RESERVATIONS' | translate }}</a
       >
       <button (click)="logout()" class="text-white/80 text-sm hover:text-white transition">
-        Salir
+        {{ 'NAV.LOGOUT' | translate }}
       </button>
       <app-language-selector />
       <a
@@ -33,10 +33,10 @@
   <!-- Hero -->
   <div class="bg-[#1D4ED8] px-6 pb-24 pt-16 text-center">
     <h1 class="text-white text-4xl lg:text-5xl font-extrabold mb-4 drop-shadow">
-      ¿A dónde quieres viajar?
+      {{ 'HOME.HERO_TITLE' | translate }}
     </h1>
     <p class="text-white/80 text-lg mb-12">
-      Encuentra el hospedaje perfecto entre miles de opciones verificadas
+      {{ 'HOME.HERO_SUBTITLE' | translate }}
     </p>
 
     <!-- Search widget -->
@@ -44,11 +44,13 @@
       <div class="flex flex-col lg:flex-row gap-3 items-end">
         <!-- City -->
         <div class="flex-1 flex flex-col gap-1 text-left min-w-0">
-          <label class="text-xs font-semibold text-gray-400 uppercase px-1">Ciudad</label>
+          <label class="text-xs font-semibold text-gray-400 uppercase px-1">{{
+            'HOME.CITY_LABEL' | translate
+          }}</label>
           <input
             [(ngModel)]="ciudad"
             list="cities-list"
-            placeholder="Bogotá, Colombia"
+            [placeholder]="'HOME.CITY_PLACEHOLDER' | translate"
             class="w-full px-3 py-2 text-sm text-gray-800 border-b border-gray-200 outline-none focus:border-[#1D4ED8] transition bg-transparent"
           />
           <datalist id="cities-list">
@@ -60,7 +62,9 @@
         <div class="hidden lg:block w-px h-10 bg-gray-200"></div>
         <!-- Check-in -->
         <div class="flex-1 flex flex-col gap-1 text-left min-w-0">
-          <label class="text-xs font-semibold text-gray-400 uppercase px-1">Check-in</label>
+          <label class="text-xs font-semibold text-gray-400 uppercase px-1">{{
+            'HOME.CHECKIN_LABEL' | translate
+          }}</label>
           <input
             [(ngModel)]="checkIn"
             type="date"
@@ -71,7 +75,9 @@
         <div class="hidden lg:block w-px h-10 bg-gray-200"></div>
         <!-- Check-out -->
         <div class="flex-1 flex flex-col gap-1 text-left min-w-0">
-          <label class="text-xs font-semibold text-gray-400 uppercase px-1">Check-out</label>
+          <label class="text-xs font-semibold text-gray-400 uppercase px-1">{{
+            'HOME.CHECKOUT_LABEL' | translate
+          }}</label>
           <input
             [(ngModel)]="checkOut"
             type="date"
@@ -82,7 +88,9 @@
         <div class="hidden lg:block w-px h-10 bg-gray-200"></div>
         <!-- Guests -->
         <div class="flex-1 flex flex-col gap-1 text-left min-w-0">
-          <label class="text-xs font-semibold text-gray-400 uppercase px-1">Huéspedes</label>
+          <label class="text-xs font-semibold text-gray-400 uppercase px-1">{{
+            'HOME.GUESTS_LABEL' | translate
+          }}</label>
           <input
             [(ngModel)]="huespedes"
             type="number"
@@ -95,7 +103,7 @@
           (click)="search()"
           class="bg-[#F97316] text-white font-semibold px-8 py-3 rounded-xl hover:bg-orange-600 active:scale-95 transition-all flex items-center gap-2 whitespace-nowrap shadow-lg"
         >
-          🔍 Buscar Hospedajes
+          🔍 {{ 'HOME.SEARCH_BTN' | translate }}
         </button>
       </div>
       @if (dateError) {
@@ -107,7 +115,9 @@
   <!-- Popular destinations -->
   <div class="max-w-5xl mx-auto w-full px-6 -mt-8">
     <div class="bg-white rounded-2xl shadow-lg p-6">
-      <h2 class="text-gray-700 font-semibold text-sm mb-4">Destinos populares</h2>
+      <h2 class="text-gray-700 font-semibold text-sm mb-4">
+        {{ 'HOME.POPULAR_TITLE' | translate }}
+      </h2>
       <div class="flex flex-wrap gap-3">
         @for (dest of popularDestinations; track dest) {
           <button
@@ -126,6 +136,6 @@
 
   <!-- Footer -->
   <div class="mt-auto py-8 text-center text-gray-400 text-xs">
-    © 2025 TravelHub · Todos los derechos reservados
+    © 2025 TravelHub · {{ 'HOME.FOOTER' | translate }}
   </div>
 </div>

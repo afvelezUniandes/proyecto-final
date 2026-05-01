@@ -1,6 +1,8 @@
 <div class="space-y-6">
   <div class="flex items-center gap-2 text-sm text-gray-400">
-    <a routerLink="/reservations" class="hover:text-[#1D4ED8] transition">← Reservas</a>
+    <a routerLink="/reservations" class="hover:text-[#1D4ED8] transition">{{
+      'RESERVATION_DETAIL.BREADCRUMB' | translate
+    }}</a>
     @if (detail) {
       <span>›</span>
       <span class="text-gray-700">{{ detail.codigo }}</span>
@@ -9,7 +11,7 @@
 
   @if (notFound) {
     <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">
-      Reserva no encontrada.
+      {{ 'RESERVATION_DETAIL.NOT_FOUND' | translate }}
     </div>
   }
 
@@ -22,20 +24,20 @@
         </p>
       </div>
       <div class="flex items-center gap-3 flex-wrap">
-        <span class="text-sm px-3 py-1 rounded-full font-medium {{ estadoClass(detail.estado) }}">{{
-          detail.estado
-        }}</span>
+        <span class="text-sm px-3 py-1 rounded-full font-medium {{ estadoClass(detail.estado) }}">
+          {{ 'RESERVATION.STATUS.' + detail.estado | translate }}
+        </span>
         <button
           (click)="reenviarConfirmacion()"
           class="border border-gray-200 text-gray-600 text-sm px-4 py-2 rounded-lg hover:bg-gray-50"
         >
-          📧 Reenviar
+          📧 {{ 'RESERVATION_DETAIL.RESEND_BTN' | translate }}
         </button>
         <button
           (click)="imprimir()"
           class="border border-gray-200 text-gray-600 text-sm px-4 py-2 rounded-lg hover:bg-gray-50"
         >
-          🖨️ Imprimir
+          🖨️ {{ 'RESERVATION_DETAIL.PRINT_BTN' | translate }}
         </button>
         @if (detail.estado !== 'cancelada') {
           <button
@@ -43,7 +45,11 @@
             [disabled]="canceling"
             class="border border-red-200 text-red-600 text-sm px-4 py-2 rounded-lg hover:bg-red-50 disabled:opacity-60"
           >
-            {{ canceling ? 'Cancelando...' : '❌ Cancelar' }}
+            {{
+              canceling
+                ? ('RESERVATION_DETAIL.CANCELLING' | translate)
+                : ('RESERVATION_DETAIL.CANCEL_BTN' | translate)
+            }}
           </button>
         }
       </div>
@@ -51,7 +57,7 @@
 
     @if (markCanceledSuccess) {
       <div class="bg-orange-50 border border-orange-200 text-orange-700 rounded-xl p-3 text-sm">
-        Reserva cancelada correctamente.
+        {{ 'RESERVATION_DETAIL.CANCEL_OK' | translate }}
       </div>
     }
     @if (cancelError) {
@@ -64,28 +70,30 @@
       <div class="lg:col-span-2 space-y-6">
         <!-- Guest -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 class="font-semibold text-gray-900 mb-4">Información del huésped</h2>
+          <h2 class="font-semibold text-gray-900 mb-4">
+            {{ 'RESERVATION_DETAIL.GUEST_INFO' | translate }}
+          </h2>
           <div class="grid sm:grid-cols-2 gap-4 text-sm">
             <div>
-              <p class="text-gray-400">Nombre</p>
+              <p class="text-gray-400">{{ 'RESERVATION_DETAIL.NAME_LABEL' | translate }}</p>
               <p class="font-medium text-gray-900 mt-0.5">
                 {{ detail.huesped_nombre || 'Huésped #' + detail.usuario_id }}
               </p>
             </div>
             <div>
-              <p class="text-gray-400">Correo</p>
+              <p class="text-gray-400">{{ 'RESERVATION_DETAIL.EMAIL_LABEL' | translate }}</p>
               <p class="font-medium text-gray-900 mt-0.5">{{ detail.huesped_email }}</p>
             </div>
             <div>
-              <p class="text-gray-400">Teléfono</p>
+              <p class="text-gray-400">{{ 'RESERVATION_DETAIL.PHONE_LABEL' | translate }}</p>
               <p class="font-medium text-gray-900 mt-0.5">{{ detail.huesped_telefono }}</p>
             </div>
             <div>
-              <p class="text-gray-400">Huéspedes</p>
+              <p class="text-gray-400">{{ 'RESERVATION_DETAIL.GUESTS_LABEL' | translate }}</p>
               <p class="font-medium text-gray-900 mt-0.5">{{ detail.num_huespedes }}</p>
             </div>
             <div>
-              <p class="text-gray-400">País</p>
+              <p class="text-gray-400">{{ 'RESERVATION_DETAIL.COUNTRY_LABEL' | translate }}</p>
               <p class="font-medium text-gray-900 mt-0.5">{{ detail.huesped_pais }}</p>
             </div>
           </div>
@@ -93,26 +101,28 @@
 
         <!-- Details -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 class="font-semibold text-gray-900 mb-4">Detalles de la reserva</h2>
+          <h2 class="font-semibold text-gray-900 mb-4">
+            {{ 'RESERVATION_DETAIL.STAY_DETAILS' | translate }}
+          </h2>
           <div class="grid sm:grid-cols-2 gap-4 text-sm">
             <div>
-              <p class="text-gray-400">Habitación</p>
+              <p class="text-gray-400">{{ 'RESERVATION_DETAIL.ROOM_LABEL' | translate }}</p>
               <p class="font-medium text-gray-900 mt-0.5">{{ detail.habitacion_nombre }}</p>
             </div>
             <div>
-              <p class="text-gray-400">Noches</p>
+              <p class="text-gray-400">{{ 'RESERVATION_DETAIL.NIGHTS_LABEL' | translate }}</p>
               <p class="font-medium text-gray-900 mt-0.5">{{ detail.noches }}</p>
             </div>
             <div>
-              <p class="text-gray-400">Check-in</p>
+              <p class="text-gray-400">{{ 'RESERVATION_DETAIL.CHECKIN_LABEL' | translate }}</p>
               <p class="font-medium text-gray-900 mt-0.5">{{ detail.fecha_checkin }}</p>
             </div>
             <div>
-              <p class="text-gray-400">Check-out</p>
+              <p class="text-gray-400">{{ 'RESERVATION_DETAIL.CHECKOUT_LABEL' | translate }}</p>
               <p class="font-medium text-gray-900 mt-0.5">{{ detail.fecha_checkout }}</p>
             </div>
             <div>
-              <p class="text-gray-400">Total</p>
+              <p class="text-gray-400">{{ 'RESERVATION_DETAIL.TOTAL_LABEL' | translate }}</p>
               <p class="font-bold text-[#1D4ED8] mt-0.5 text-base">
                 {{ formatPrice(detail.monto_total) }}
               </p>
@@ -122,16 +132,20 @@
 
         <!-- Fecha de creación -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 class="font-semibold text-gray-900 mb-4">Información adicional</h2>
+          <h2 class="font-semibold text-gray-900 mb-4">
+            {{ 'RESERVATION_DETAIL.ADDITIONAL' | translate }}
+          </h2>
           <div class="space-y-2 text-sm">
             <div class="flex items-center gap-3">
               <div
-                class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-lg flex-shrink-0"
+                class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-lg shrink-0"
               >
                 📋
               </div>
               <div>
-                <p class="text-sm font-medium text-gray-900">Reserva creada</p>
+                <p class="text-sm font-medium text-gray-900">
+                  {{ 'RESERVATION_DETAIL.CREATED' | translate }}
+                </p>
                 <p class="text-xs text-gray-400 mt-0.5">{{ detail.fecha_creacion }}</p>
               </div>
             </div>
@@ -142,19 +156,26 @@
       <!-- Payment summary -->
       <div>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 class="font-semibold text-gray-900 mb-4">Resumen de pago</h2>
+          <h2 class="font-semibold text-gray-900 mb-4">
+            {{ 'RESERVATION_DETAIL.PAYMENT' | translate }}
+          </h2>
           <div class="space-y-3 text-sm">
             <div class="flex justify-between text-gray-600">
-              <span>{{ formatPrice(detail.precio_noche ?? 0) }} × {{ detail.noches }} noches</span>
+              <span
+                >{{ formatPrice(detail.precio_noche ?? 0) }} × {{ detail.noches }}
+                {{ 'RESERVATION_DETAIL.NIGHTS_LABEL' | translate }}</span
+              >
               <span>{{ formatPrice(detail.monto_total) }}</span>
             </div>
             <div class="border-t border-gray-100 pt-3 flex justify-between font-bold text-gray-900">
-              <span>Total</span>
+              <span>{{ 'RESERVATION_DETAIL.TOTAL_LABEL' | translate }}</span>
               <span class="text-[#1D4ED8]">{{ formatPrice(detail.monto_total) }}</span>
             </div>
           </div>
           <div class="mt-4 pt-4 border-t border-gray-100">
-            <p class="text-xs text-gray-400">Moneda</p>
+            <p class="text-xs text-gray-400">
+              {{ 'RESERVATION_DETAIL.CURRENCY_LABEL' | translate }}
+            </p>
             <p class="text-sm font-medium text-gray-900 mt-1">{{ detail.moneda }}</p>
           </div>
         </div>

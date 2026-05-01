@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { HotelAdminService } from '../../../core/services/hotel-admin.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Reservation, Room } from '../../../core/models';
@@ -9,7 +10,7 @@ import { map } from 'rxjs';
 @Component({
   selector: 'app-hotel-reservation-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslateModule],
   templateUrl: './hotel-reservation-detail.component.html',
 })
 export class HotelReservationDetailComponent implements OnInit {
@@ -29,12 +30,13 @@ export class HotelReservationDetailComponent implements OnInit {
         const id = Number(this.route.snapshot.paramMap.get('id'));
         this.hotelAdmin.getHotelReservations(hotel.id).subscribe({
           next: (reservas) => {
-            const found = reservas.find(r => r.id === id);
+            const found = reservas.find((r) => r.id === id);
             this.reservation.set(found || null);
             if (found) {
-              this.hotelAdmin.getRooms(hotel.id).pipe(
-                map(rooms => rooms.find(r => r.id === found.habitacion_id) || null)
-              ).subscribe({ next: (r) => this.room.set(r) });
+              this.hotelAdmin
+                .getRooms(hotel.id)
+                .pipe(map((rooms) => rooms.find((r) => r.id === found.habitacion_id) || null))
+                .subscribe({ next: (r) => this.room.set(r) });
             }
             this.loading.set(false);
           },

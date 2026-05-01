@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { HotelAdminService } from '../../../core/services/hotel-admin.service';
 
@@ -10,7 +11,7 @@ type Step = 'login' | 'register-user' | 'register-hotel';
 @Component({
   selector: 'app-hotel-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
   templateUrl: './hotel-login.component.html',
 })
 export class HotelLoginComponent {
@@ -115,49 +116,53 @@ export class HotelLoginComponent {
       return;
     }
     this.regLoading = true;
-    this.auth.register({
-      nombre: this.regNombre.trim(),
-      email: this.regEmail.trim(),
-      password: this.regPassword,
-      rol: 'hotel',
-    }).subscribe({
-      next: () => {
-        this.auth.login({ email: this.regEmail.trim(), password: this.regPassword }).subscribe({
-          next: () => {
-            this.auth.fetchProfile();
-            this.hotelAdmin.createHotel({
-              nombre: this.regHotelNombre.trim(),
-              ciudad: this.regCiudad.trim(),
-              pais: this.regPais.trim(),
-              direccion: this.regDireccion.trim(),
-              descripcion: this.regDescripcion.trim(),
-            }).subscribe({
-              next: () => {
-                this.regLoading = false;
-                this.regSuccess.set('Hotel registrado correctamente.');
-                setTimeout(() => this.router.navigate(['/hotel/dashboard']), 1000);
-              },
-              error: () => {
-                this.regLoading = false;
-                this.regError.set('Cuenta creada pero error al registrar el hotel.');
-              },
-            });
-          },
-          error: () => {
-            this.regLoading = false;
-            this.regError.set('Cuenta creada. Inicia sesión para continuar.');
-            this.goToLogin();
-          },
-        });
-      },
-      error: (err) => {
-        this.regLoading = false;
-        this.regError.set(
-          err?.status === 400
-            ? 'Este correo ya está registrado.'
-            : 'Error al registrar. Intenta de nuevo.',
-        );
-      },
-    });
+    this.auth
+      .register({
+        nombre: this.regNombre.trim(),
+        email: this.regEmail.trim(),
+        password: this.regPassword,
+        rol: 'hotel',
+      })
+      .subscribe({
+        next: () => {
+          this.auth.login({ email: this.regEmail.trim(), password: this.regPassword }).subscribe({
+            next: () => {
+              this.auth.fetchProfile();
+              this.hotelAdmin
+                .createHotel({
+                  nombre: this.regHotelNombre.trim(),
+                  ciudad: this.regCiudad.trim(),
+                  pais: this.regPais.trim(),
+                  direccion: this.regDireccion.trim(),
+                  descripcion: this.regDescripcion.trim(),
+                })
+                .subscribe({
+                  next: () => {
+                    this.regLoading = false;
+                    this.regSuccess.set('Hotel registrado correctamente.');
+                    setTimeout(() => this.router.navigate(['/hotel/dashboard']), 1000);
+                  },
+                  error: () => {
+                    this.regLoading = false;
+                    this.regError.set('Cuenta creada pero error al registrar el hotel.');
+                  },
+                });
+            },
+            error: () => {
+              this.regLoading = false;
+              this.regError.set('Cuenta creada. Inicia sesión para continuar.');
+              this.goToLogin();
+            },
+          });
+        },
+        error: (err) => {
+          this.regLoading = false;
+          this.regError.set(
+            err?.status === 400
+              ? 'Este correo ya está registrado.'
+              : 'Error al registrar. Intenta de nuevo.',
+          );
+        },
+      });
   }
 }

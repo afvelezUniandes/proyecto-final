@@ -8,18 +8,20 @@
       <a routerLink="/home" class="text-white font-bold text-lg">TravelHub</a>
     </div>
     <div class="flex items-center gap-4">
-      <a routerLink="/home" class="text-white/90 text-sm hover:text-white">Inicio</a>
+      <a routerLink="/home" class="text-white/90 text-sm hover:text-white">{{
+        'NAV.HOME' | translate
+      }}</a>
       <a
         routerLink="/reservations"
         class="text-white text-sm font-semibold border-b border-white/50"
-        >Mis Reservas</a
+        >{{ 'NAV.RESERVATIONS' | translate }}</a
       >
       <app-language-selector />
     </div>
   </nav>
 
   <div class="max-w-4xl mx-auto px-6 py-8">
-    <h1 class="text-2xl font-bold text-gray-900 mb-6">Mis Reservas</h1>
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">{{ 'RESERVATIONS.TITLE' | translate }}</h1>
 
     <!-- Tabs -->
     <div class="flex gap-2 mb-6 flex-wrap">
@@ -57,11 +59,13 @@
             <div class="flex items-start justify-between gap-4">
               <div class="flex-1">
                 <div class="flex items-center gap-3 mb-1">
-                  <h3 class="font-bold text-gray-900">Reserva #{{ r.id }}</h3>
+                  <h3 class="font-bold text-gray-900">
+                    {{ 'RESERVATIONS.BOOKING_PREFIX' | translate }}{{ r.id }}
+                  </h3>
                   <span
                     class="text-xs px-2 py-0.5 rounded-full font-medium {{ estadoClass(r.estado) }}"
                   >
-                    {{ r.estado }}
+                    {{ 'RESERVATION.STATUS.' + r.estado | translate }}
                   </span>
                 </div>
                 <p class="text-gray-500 text-sm">
@@ -82,7 +86,7 @@
                   [routerLink]="['/reservations', r.id]"
                   class="text-[#1D4ED8] border border-[#1D4ED8]/30 text-xs px-3 py-1.5 rounded-lg hover:bg-blue-50 transition text-center"
                 >
-                  Ver Detalle
+                  Ver {{ 'COMMON.DETAIL' | translate }}
                 </a>
                 @if (
                   r.estado.toLowerCase() !== 'cancelada' && r.estado.toLowerCase() !== 'completada'
@@ -92,7 +96,11 @@
                     [disabled]="cancelingId === r.id"
                     class="text-red-600 border border-red-200 text-xs px-3 py-1.5 rounded-lg hover:bg-red-50 disabled:opacity-50 transition"
                   >
-                    {{ cancelingId === r.id ? 'Cancelando...' : 'Cancelar' }}
+                    {{
+                      cancelingId === r.id
+                        ? ('RESERVATIONS.CANCELLING' | translate)
+                        : ('RESERVATIONS.CANCEL_BTN' | translate)
+                    }}
                   </button>
                 }
               </div>
@@ -102,12 +110,12 @@
         @if (filtered().length === 0) {
           <div class="text-center py-24 text-gray-400">
             <div class="text-6xl mb-4">📋</div>
-            <p class="text-lg font-medium">Sin reservas</p>
-            <p class="text-sm">¡Comienza a planear tu viaje!</p>
+            <p class="text-lg font-medium">{{ 'RESERVATIONS.EMPTY_TITLE' | translate }}</p>
+            <p class="text-sm">{{ 'RESERVATIONS.EMPTY_CTA' | translate }}</p>
             <a
               routerLink="/home"
               class="mt-4 inline-block bg-[#1D4ED8] text-white text-sm px-6 py-2 rounded-xl hover:bg-blue-700 transition"
-              >Buscar hospedajes</a
+              >{{ 'RESERVATIONS.SEARCH_CTA' | translate }}</a
             >
           </div>
         }

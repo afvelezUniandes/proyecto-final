@@ -1,6 +1,7 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { HotelAdminService } from '../../../core/services/hotel-admin.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { HotelDetail, Reservation, Room } from '../../../core/models';
@@ -9,7 +10,7 @@ import { map } from 'rxjs';
 @Component({
   selector: 'app-hotel-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslateModule],
   templateUrl: './hotel-dashboard.component.html',
 })
 export class HotelDashboardComponent implements OnInit {
@@ -41,27 +42,28 @@ export class HotelDashboardComponent implements OnInit {
       },
       error: () => this.loading.set(false),
     });
-    this.hotelAdmin.getRooms(hotelId).pipe(
-      map(rooms => rooms.filter(r => r.hotel_id === hotelId))
-    ).subscribe({
-      next: (rooms) => this.rooms.set(rooms),
-    });
+    this.hotelAdmin
+      .getRooms(hotelId)
+      .pipe(map((rooms) => rooms.filter((r) => r.hotel_id === hotelId)))
+      .subscribe({
+        next: (rooms) => this.rooms.set(rooms),
+      });
   }
 
   activeReservations(): number {
-    return this.reservations().filter(r => r.estado === 'confirmada').length;
+    return this.reservations().filter((r) => r.estado === 'confirmada').length;
   }
 
   totalRevenue(): number {
     return this.reservations()
-      .filter(r => r.estado !== 'cancelada')
+      .filter((r) => r.estado !== 'cancelada')
       .reduce((sum, r) => sum + (r.monto_total || 0), 0);
   }
 
   occupancyRate(): number {
     const totalRooms = this.rooms().length;
     if (!totalRooms) return 0;
-    const occupied = this.reservations().filter(r => r.estado === 'confirmada').length;
+    const occupied = this.reservations().filter((r) => r.estado === 'confirmada').length;
     return Math.min(Math.round((occupied / totalRooms) * 100), 100);
   }
 
