@@ -26,7 +26,7 @@ export class AuthService {
       tap((res) => {
         this._token.set(res.token);
         localStorage.setItem(this.TOKEN_KEY, res.token);
-        this.fetchProfile();
+        this.fetchProfile().subscribe();
       }),
     );
   }
@@ -43,14 +43,13 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  fetchProfile(): void {
-    this.api.get<User>('/auth/profile').subscribe({
-      next: (user) => {
+  fetchProfile(): Observable<User> {
+    return this.api.get<User>('/auth/profile').pipe(
+      tap((user) => {
         this._user.set(user);
         localStorage.setItem(this.USER_KEY, JSON.stringify(user));
-      },
-      error: () => {},
-    });
+      }),
+    );
   }
 
   private loadUser(): User | null {

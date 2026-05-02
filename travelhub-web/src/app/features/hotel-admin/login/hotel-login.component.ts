@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { HotelAdminService } from '../../../core/services/hotel-admin.service';
 
@@ -39,6 +39,7 @@ export class HotelLoginComponent {
     private auth: AuthService,
     private hotelAdmin: HotelAdminService,
     private router: Router,
+    private translate: TranslateService,
   ) {}
 
   goToRegister() {
@@ -57,15 +58,15 @@ export class HotelLoginComponent {
   goToStep2() {
     this.regError.set(null);
     if (!this.regNombre || !this.regEmail || !this.regPassword || !this.regConfirm) {
-      this.regError.set('Por favor completa todos los campos.');
+      this.regError.set(this.translate.instant('HOTEL_ADMIN.ERR_EMPTY'));
       return;
     }
     if (this.regPassword.length < 6) {
-      this.regError.set('La contraseña debe tener al menos 6 caracteres.');
+      this.regError.set(this.translate.instant('HOTEL_ADMIN.ERR_SHORT_PASS'));
       return;
     }
     if (this.regPassword !== this.regConfirm) {
-      this.regError.set('Las contraseñas no coinciden.');
+      this.regError.set(this.translate.instant('HOTEL_ADMIN.ERR_MISMATCH'));
       return;
     }
     this.step.set('register-hotel');
@@ -79,30 +80,34 @@ export class HotelLoginComponent {
   onLogin() {
     this.loginError.set(null);
     if (!this.loginEmail || !this.loginPassword) {
-      this.loginError.set('Por favor completa todos los campos.');
+      this.loginError.set(this.translate.instant('HOTEL_ADMIN.ERR_EMPTY'));
       return;
     }
     this.loginLoading = true;
     this.auth.login({ email: this.loginEmail.trim(), password: this.loginPassword }).subscribe({
       next: () => {
-        this.auth.fetchProfile();
-        setTimeout(() => {
-          const user = this.auth.currentUser();
-          if (user?.rol !== 'hotel') {
+        this.auth.fetchProfile().subscribe({
+          next: (user) => {
             this.loginLoading = false;
-            this.loginError.set('Esta cuenta no es de tipo hotel.');
-            this.auth.logout();
-            return;
-          }
-          this.router.navigate(['/hotel/dashboard']);
-        }, 500);
+            if (user?.rol !== 'hotel') {
+              this.loginError.set(this.translate.instant('HOTEL_ADMIN.ERR_NOT_HOTEL'));
+              this.auth.logout();
+              return;
+            }
+            this.router.navigate(['/hotel/dashboard']);
+          },
+          error: () => {
+            this.loginLoading = false;
+            this.loginError.set(this.translate.instant('HOTEL_ADMIN.ERR_CONNECT'));
+          },
+        });
       },
       error: (err) => {
         this.loginLoading = false;
         this.loginError.set(
           err?.status === 401
-            ? 'Correo o contraseña incorrectos.'
-            : 'Error al conectar. Intenta de nuevo.',
+            ? this.translate.instant('HOTEL_ADMIN.ERR_CREDENTIALS')
+            : this.translate.instant('HOTEL_ADMIN.ERR_CONNECT'),
         );
       },
     });
@@ -112,7 +117,7 @@ export class HotelLoginComponent {
     this.regError.set(null);
     this.regSuccess.set(null);
     if (!this.regHotelNombre || !this.regCiudad || !this.regPais) {
-      this.regError.set('Por favor completa todos los campos obligatorios.');
+      this.regError.set(this.translate.instant('HOTEL_ADMIN.ERR_REQUIRED_FIELDS'));
       return;
     }
     this.regLoading = true;
@@ -127,7 +132,7 @@ export class HotelLoginComponent {
         next: () => {
           this.auth.login({ email: this.regEmail.trim(), password: this.regPassword }).subscribe({
             next: () => {
-              this.auth.fetchProfile();
+              this.auth.fetchProfile().subscribe();
               this.hotelAdmin
                 .createHotel({
                   nombre: this.regHotelNombre.trim(),
@@ -139,18 +144,18 @@ export class HotelLoginComponent {
                 .subscribe({
                   next: () => {
                     this.regLoading = false;
-                    this.regSuccess.set('Hotel registrado correctamente.');
+                    this.regSuccess.set(this.translate.instant('HOTEL_ADMIN.SUCCESS_ACCOUNT'));
                     setTimeout(() => this.router.navigate(['/hotel/dashboard']), 1000);
                   },
                   error: () => {
                     this.regLoading = false;
-                    this.regError.set('Cuenta creada pero error al registrar el hotel.');
+                    this.regError.set(this.translate.instant('HOTEL_ADMIN.ERR_HOTEL_REGISTER'));
                   },
                 });
             },
             error: () => {
               this.regLoading = false;
-              this.regError.set('Cuenta creada. Inicia sesión para continuar.');
+              this.regError.set(this.translate.instant('HOTEL_ADMIN.ERR_REGISTER'));
               this.goToLogin();
             },
           });
@@ -159,8 +164,8 @@ export class HotelLoginComponent {
           this.regLoading = false;
           this.regError.set(
             err?.status === 400
-              ? 'Este correo ya está registrado.'
-              : 'Error al registrar. Intenta de nuevo.',
+              ? this.translate.instant('HOTEL_ADMIN.ERR_EMAIL_TAKEN')
+              : this.translate.instant('HOTEL_ADMIN.ERR_REGISTER'),
           );
         },
       });
