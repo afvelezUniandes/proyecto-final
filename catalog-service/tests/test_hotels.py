@@ -660,10 +660,13 @@ class TestAdditionalEndpoints:
             instance.id = 99
             instance.admin_id = 5
             instance.nombre = 'Nuevo Hotel'
+            instance.descripcion = ''
+            instance.direccion = ''
             instance.ciudad = 'Medellín'
             instance.pais = 'Colombia'
             instance.estrellas = 3
             instance.activo = True
+            instance.image_url = ''
 
             response = client.post('/hotels',
                 data=json.dumps({
