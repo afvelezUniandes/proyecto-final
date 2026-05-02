@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageSelectorComponent } from '../../shared/language-selector/language-selector.component';
 import { CatalogService } from '../../core/services/catalog.service';
 import { ReservationService } from '../../core/services/reservation.service';
@@ -12,7 +13,7 @@ import { Hotel, Room } from '../../core/models';
 @Component({
   selector: 'app-hotel-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LanguageSelectorComponent],
+  imports: [CommonModule, FormsModule, RouterLink, LanguageSelectorComponent, TranslateModule],
   templateUrl: './hotel-detail.component.html',
 })
 export class HotelDetailComponent implements OnInit {
@@ -48,6 +49,7 @@ export class HotelDetailComponent implements OnInit {
     private catalog: CatalogService,
     private reservationService: ReservationService,
     public auth: AuthService,
+    private translate: TranslateService,
   ) {}
 
   ngOnInit() {
@@ -75,7 +77,7 @@ export class HotelDetailComponent implements OnInit {
         this.loadOccupiedRooms(+id);
       },
       error: () => {
-        this.error = 'Hotel no encontrado.';
+        this.error = this.translate.instant('HOTEL_DETAIL.NOT_FOUND');
         this.loading = false;
       },
     });
@@ -135,15 +137,14 @@ export class HotelDetailComponent implements OnInit {
       return;
     }
     if (!this.selectedRoomId || !this.checkIn || !this.checkOut) {
-      this.reserveError = 'Selecciona habitación y fechas.';
+      this.reserveError = this.translate.instant('HOTEL_DETAIL.SELECT_HINT');
       return;
     }
     if (!this.hotel) return;
 
     const room = this.selectedRoom();
     if (room && !room.disponible) {
-      this.reserveError =
-        'La habitación seleccionada no está disponible para las fechas indicadas.';
+      this.reserveError = this.translate.instant('HOTEL_DETAIL.ROOM_UNAVAILABLE');
       this.isUnavailableError = true;
       return;
     }
@@ -168,7 +169,8 @@ export class HotelDetailComponent implements OnInit {
           this.reserving = false;
         },
         error: (e) => {
-          this.reserveError = e?.error?.error || 'Error al crear la reserva.';
+          this.reserveError =
+            e?.error?.error || this.translate.instant('HOTEL_DETAIL.ROOM_UNAVAILABLE');
           if (e?.status === 409) {
             this.isUnavailableError = true;
             this.rooms = this.rooms.map((r) =>

@@ -2,6 +2,7 @@ import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { HotelAdminService } from '../../../core/services/hotel-admin.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Reservation, HotelDetail, Room } from '../../../core/models';
@@ -10,7 +11,7 @@ import { map } from 'rxjs';
 @Component({
   selector: 'app-hotel-reservations',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
   templateUrl: './hotel-reservations.component.html',
 })
 export class HotelReservationsComponent implements OnInit {
@@ -34,9 +35,10 @@ export class HotelReservationsComponent implements OnInit {
       next: (h) => {
         this.hotel.set(h);
         this.loadReservations(h.id);
-        this.hotelAdmin.getRooms(h.id).pipe(
-          map(rooms => rooms.filter(r => r.hotel_id === h.id))
-        ).subscribe({ next: (rooms) => this.rooms.set(rooms) });
+        this.hotelAdmin
+          .getRooms(h.id)
+          .pipe(map((rooms) => rooms.filter((r) => r.hotel_id === h.id)))
+          .subscribe({ next: (rooms) => this.rooms.set(rooms) });
       },
       error: () => this.loading.set(false),
     });
@@ -82,7 +84,7 @@ export class HotelReservationsComponent implements OnInit {
   }
 
   roomName(habitacionId: number): string {
-    const room = this.rooms().find(r => r.id === habitacionId);
+    const room = this.rooms().find((r) => r.id === habitacionId);
     return room ? `${room.nombre} (${room.tipo})` : `#${habitacionId}`;
   }
 

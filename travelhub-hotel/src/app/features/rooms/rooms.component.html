@@ -7,7 +7,9 @@
   }
   @if (hotelService.hotel(); as hotel) {
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-      <h2 class="text-sm font-semibold text-gray-700 uppercase mb-4">Imagen principal del hotel</h2>
+      <h2 class="text-sm font-semibold text-gray-700 uppercase mb-4">
+        {{ 'ROOMS.IMAGE_TITLE' | translate }}
+      </h2>
       <div class="flex items-center gap-6">
         @if (hotel.image_url) {
           <img
@@ -17,7 +19,7 @@
           />
         } @else {
           <div
-            class="w-32 h-24 bg-gradient-to-br from-blue-100 to-blue-300 rounded-xl flex items-center justify-center"
+            class="w-32 h-24 bg-linear-to-br from-blue-100 to-blue-300 rounded-xl flex items-center justify-center"
           >
             <span class="text-4xl">🏨</span>
           </div>
@@ -25,9 +27,7 @@
         <div class="flex-1">
           <p class="text-sm text-gray-600 mb-2">
             {{
-              hotel.image_url
-                ? 'Imagen actual. Sube una nueva para reemplazarla.'
-                : 'Sin imagen. Sube una para mostrarla en el portal.'
+              hotel.image_url ? ('ROOMS.IMAGE_HAS' | translate) : ('ROOMS.IMAGE_EMPTY' | translate)
             }}
           </p>
           <label
@@ -37,9 +37,9 @@
               <span
                 class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
               ></span>
-              Subiendo...
+              {{ 'ROOMS.UPLOADING' | translate }}
             } @else {
-              📷 Subir imagen
+              📷 {{ 'ROOMS.UPLOAD_BTN' | translate }}
             }
             <input
               type="file"
@@ -50,7 +50,7 @@
             />
           </label>
           @if (uploadSuccess) {
-            <p class="text-green-600 text-xs mt-2">✓ Imagen actualizada correctamente</p>
+            <p class="text-green-600 text-xs mt-2">{{ 'ROOMS.UPLOAD_OK' | translate }}</p>
           }
           @if (uploadError) {
             <p class="text-red-500 text-xs mt-2">{{ uploadError }}</p>
@@ -63,14 +63,14 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold text-gray-900">Habitaciones</h1>
-      <p class="text-gray-500 text-sm">Gestiona las habitaciones de tu hotel</p>
+      <h1 class="text-2xl font-bold text-gray-900">{{ 'ROOMS.TITLE' | translate }}</h1>
+      <p class="text-gray-500 text-sm">{{ 'ROOMS.SUBTITLE' | translate }}</p>
     </div>
     <button
       (click)="openAdd()"
       class="flex items-center gap-2 bg-[#1D4ED8] text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-blue-700 transition"
     >
-      <span class="text-lg leading-none">+</span> Agregar habitación
+      <span class="text-lg leading-none">+</span> {{ 'ROOMS.ADD_BTN' | translate }}
     </button>
   </div>
 
@@ -81,7 +81,7 @@
         class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
       >
         <div
-          class="h-36 bg-gradient-to-br from-blue-100 to-blue-300 flex items-center justify-center"
+          class="h-36 bg-linear-to-br from-blue-100 to-blue-300 flex items-center justify-center"
         >
           <span class="text-5xl">🛏️</span>
         </div>
@@ -94,16 +94,21 @@
               [class.text-green-700]="room.disponible"
               [class.bg-yellow-100]="!room.disponible"
               [class.text-yellow-700]="!room.disponible"
-              >{{ room.disponible ? 'Disponible' : 'Ocupada' }}</span
+              >{{
+                room.disponible ? ('ROOMS.AVAILABLE' | translate) : ('ROOMS.OCCUPIED' | translate)
+              }}</span
             >
           </div>
           <div class="text-sm text-gray-500 space-y-1">
             <p>
-              👤 Capacidad:
-              <span class="font-medium text-gray-800">{{ room.capacidad }} personas</span>
+              👤 {{ 'ROOMS.CAPACITY_LABEL' | translate }}
+              <span class="font-medium text-gray-800"
+                >{{ room.capacidad }} {{ 'ROOMS.PERSONS' | translate }}</span
+              >
             </p>
             <p>
-              🏷️ Tipo: <span class="font-medium text-gray-800 capitalize">{{ room.tipo }}</span>
+              🏷️ {{ 'ROOMS.TYPE_LABEL' | translate }}
+              <span class="font-medium text-gray-800 capitalize">{{ room.tipo }}</span>
             </p>
             @if (room.descripcion) {
               <p class="text-xs text-gray-400 line-clamp-2">{{ room.descripcion }}</p>
@@ -112,7 +117,9 @@
           <div class="pt-2 border-t border-gray-100">
             <p class="text-[#1D4ED8] font-bold">
               {{ formatPrice(room.precio_noche) }}
-              <span class="text-gray-400 text-xs font-normal">/ noche</span>
+              <span class="text-gray-400 text-xs font-normal">{{
+                'ROOMS.PER_NIGHT' | translate
+              }}</span>
             </p>
           </div>
           <!-- Actions -->
@@ -121,13 +128,13 @@
               (click)="openEdit(room)"
               class="flex-1 text-xs text-[#1D4ED8] border border-[#1D4ED8]/30 py-1.5 rounded-lg hover:bg-blue-50 transition font-medium"
             >
-              ✏️ Editar
+              ✏️ {{ 'ROOMS.EDIT_BTN' | translate }}
             </button>
             <button
               (click)="confirmDelete(room.id)"
               class="flex-1 text-xs text-red-600 border border-red-200 py-1.5 rounded-lg hover:bg-red-50 transition font-medium"
             >
-              🗑️ Eliminar
+              🗑️ {{ 'ROOMS.DELETE_BTN' | translate }}
             </button>
           </div>
         </div>
@@ -140,20 +147,22 @@
     <div class="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4">
       <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
         <div class="text-3xl mb-3 text-center">⚠️</div>
-        <h3 class="font-bold text-gray-900 text-center mb-1">¿Eliminar habitación?</h3>
-        <p class="text-gray-500 text-sm text-center mb-6">Esta acción no se puede deshacer.</p>
+        <h3 class="font-bold text-gray-900 text-center mb-1">
+          {{ 'ROOMS.DELETE_TITLE' | translate }}
+        </h3>
+        <p class="text-gray-500 text-sm text-center mb-6">{{ 'ROOMS.DELETE_MSG' | translate }}</p>
         <div class="flex gap-3">
           <button
             (click)="cancelDelete()"
             class="flex-1 border border-gray-200 text-gray-600 text-sm font-semibold py-2.5 rounded-xl hover:border-gray-300 transition"
           >
-            Cancelar
+            {{ 'ROOMS.CANCEL_BTN' | translate }}
           </button>
           <button
             (click)="doDelete(deleteConfirmId!)"
             class="flex-1 bg-red-600 text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-red-700 transition"
           >
-            Sí, eliminar
+            {{ 'ROOMS.DELETE_CONFIRM' | translate }}
           </button>
         </div>
       </div>
@@ -174,7 +183,11 @@
       <div class="w-full max-w-md bg-white shadow-xl flex flex-col">
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 class="font-bold text-gray-900">
-            {{ editingRoom ? 'Editar habitación' : 'Agregar habitación' }}
+            {{
+              editingRoom
+                ? ('ROOMS.EDIT_ROOM_TITLE' | translate)
+                : ('ROOMS.ADD_ROOM_TITLE' | translate)
+            }}
           </h2>
           <button
             (click)="closePanel()"
@@ -186,7 +199,9 @@
 
         <div class="flex-1 overflow-y-auto px-6 py-5 space-y-4">
           <div>
-            <label for="room-nombre" class="block text-sm font-medium text-gray-700 mb-1.5">Nombre</label>
+            <label for="room-nombre" class="block text-sm font-medium text-gray-700 mb-1.5">{{
+              'ROOMS.NAME_LABEL' | translate
+            }}</label>
             <input
               id="room-nombre"
               [(ngModel)]="form.nombre"
@@ -205,7 +220,9 @@
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label for="room-tipo" class="block text-sm font-medium text-gray-700 mb-1.5">Tipo</label>
+              <label for="room-tipo" class="block text-sm font-medium text-gray-700 mb-1.5">{{
+                'ROOMS.TYPE_LABEL_FORM' | translate
+              }}</label>
               <select
                 id="room-tipo"
                 [(ngModel)]="form.tipo"
@@ -218,7 +235,9 @@
               </select>
             </div>
             <div>
-              <label for="room-capacidad" class="block text-sm font-medium text-gray-700 mb-1.5">Capacidad</label>
+              <label for="room-capacidad" class="block text-sm font-medium text-gray-700 mb-1.5">{{
+                'ROOMS.CAPACITY_FORM' | translate
+              }}</label>
               <input
                 id="room-capacidad"
                 [(ngModel)]="form.capacidad"
@@ -238,9 +257,9 @@
           </div>
 
           <div>
-            <label for="room-precio" class="block text-sm font-medium text-gray-700 mb-1.5"
-              >Precio por noche (COP)</label
-            >
+            <label for="room-precio" class="block text-sm font-medium text-gray-700 mb-1.5">{{
+              'ROOMS.PRICE_LABEL' | translate
+            }}</label>
             <input
               id="room-precio"
               [(ngModel)]="form.precio_noche"
@@ -266,7 +285,10 @@
 
           <div>
             <label for="room-descripcion" class="block text-sm font-medium text-gray-700 mb-1.5"
-              >Descripción <span class="text-gray-400 font-normal">(opcional)</span></label
+              >{{ 'ROOMS.DESC_LABEL' | translate }}
+              <span class="text-gray-400 font-normal"
+                >({{ 'COMMON.OPTIONAL' | translate }})</span
+              ></label
             >
             <textarea
               id="room-descripcion"
@@ -312,14 +334,20 @@
             (click)="closePanel()"
             class="flex-1 border border-gray-200 text-gray-600 text-sm font-semibold py-2.5 rounded-xl hover:border-gray-300 transition"
           >
-            Cancelar
+            {{ 'ROOMS.CANCEL_BTN' | translate }}
           </button>
           <button
             (click)="save()"
             [disabled]="saving"
             class="flex-1 bg-[#1D4ED8] text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-blue-700 disabled:opacity-60 transition"
           >
-            {{ saving ? 'Guardando...' : editingRoom ? 'Guardar cambios' : 'Agregar' }}
+            {{
+              saving
+                ? ('ROOMS.SAVING' | translate)
+                : editingRoom
+                  ? ('ROOMS.SAVE_BTN' | translate)
+                  : ('ROOMS.ADD_CONFIRM' | translate)
+            }}
           </button>
         </div>
       </div>

@@ -7,37 +7,110 @@
           <span class="text-white font-bold text-sm">T</span>
         </div>
         <div>
-          <span class="text-white font-bold text-sm">TravelHub</span>
-          <p class="text-white/50 text-xs">Portal de Hoteles</p>
+          <span class="text-white font-bold text-sm">{{
+            'HOTEL_ADMIN.NAV_BRAND' | translate
+          }}</span>
+          <p class="text-white/50 text-xs">{{ 'HOTEL_ADMIN.NAV_PORTAL' | translate }}</p>
         </div>
       </div>
     </div>
     <nav class="flex-1 px-3 mt-2">
-      <a routerLink="/hotel/dashboard"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:bg-white/5 hover:text-white mb-1">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
-        Dashboard
+      <a
+        routerLink="/hotel/dashboard"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:bg-white/5 hover:text-white mb-1"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"
+          />
+        </svg>
+        {{ 'HOTEL_ADMIN.NAV_DASHBOARD' | translate }}
       </a>
-      <a routerLink="/hotel/reservations"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:bg-white/5 hover:text-white mb-1">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-        Reservas
+      <a
+        routerLink="/hotel/reservations"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:bg-white/5 hover:text-white mb-1"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+          />
+        </svg>
+        {{ 'HOTEL_ADMIN.NAV_RESERVATIONS' | translate }}
       </a>
-      <a routerLink="/hotel/rooms"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:bg-white/5 hover:text-white mb-1">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-        Habitaciones
+      <a
+        routerLink="/hotel/rooms"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:bg-white/5 hover:text-white mb-1"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+          />
+        </svg>
+        {{ 'HOTEL_ADMIN.NAV_ROOMS' | translate }}
       </a>
-      <a routerLink="/hotel/tarifas"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-white/10 text-white mb-1">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        Tarifas
+      <a
+        routerLink="/hotel/tarifas"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-white/10 text-white mb-1"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        {{ 'HOTEL_ADMIN.NAV_TARIFFS' | translate }}
       </a>
     </nav>
     <div class="px-3 pb-5">
-      <button (click)="logout()" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 w-full">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-        Cerrar sesión
+      <button
+        (click)="logout()"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 w-full"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+          />
+        </svg>
+        {{ 'HOTEL_ADMIN.NAV_LOGOUT' | translate }}
       </button>
     </div>
   </aside>
@@ -46,27 +119,43 @@
   <main class="flex-1 ml-60">
     <div class="px-8 py-6">
       <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Tarifas</h1>
-        <p class="text-gray-500 text-sm">Actualiza los precios por noche de cada habitación</p>
+        <h1 class="text-2xl font-bold text-gray-900">
+          {{ 'HOTEL_ADMIN.TARIFFS_TITLE' | translate }}
+        </h1>
+        <p class="text-gray-500 text-sm">{{ 'HOTEL_ADMIN.TARIFFS_SUBTITLE' | translate }}</p>
       </div>
 
       @if (loading()) {
-        <div class="text-center py-16 text-gray-400">Cargando tarifas...</div>
+        <div class="text-center py-16 text-gray-400">
+          {{ 'HOTEL_ADMIN.TARIFFS_LOADING' | translate }}
+        </div>
       } @else if (rooms().length === 0) {
         <div class="text-center py-16">
-          <p class="text-gray-500 mb-3">No hay habitaciones registradas</p>
-          <a routerLink="/hotel/rooms" class="text-[#1D4ED8] font-semibold hover:underline">Ir a habitaciones</a>
+          <p class="text-gray-500 mb-3">{{ 'HOTEL_ADMIN.TARIFFS_NO_ROOMS' | translate }}</p>
+          <a routerLink="/hotel/rooms" class="text-[#1D4ED8] font-semibold hover:underline"
+            >Ir a habitaciones</a
+          >
         </div>
       } @else {
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
               <tr>
-                <th class="text-left px-5 py-3 font-semibold">Habitación</th>
-                <th class="text-left px-5 py-3 font-semibold">Capacidad</th>
-                <th class="text-left px-5 py-3 font-semibold">Precio Actual</th>
-                <th class="text-left px-5 py-3 font-semibold">Nuevo Precio ({{ rooms()[0]?.moneda || 'COP' }})</th>
-                <th class="text-left px-5 py-3 font-semibold">Acción</th>
+                <th class="text-left px-5 py-3 font-semibold">
+                  {{ 'HOTEL_ADMIN.COL_ROOM' | translate }}
+                </th>
+                <th class="text-left px-5 py-3 font-semibold">
+                  {{ 'HOTEL_ADMIN.COL_CAPACITY' | translate }}
+                </th>
+                <th class="text-left px-5 py-3 font-semibold">
+                  {{ 'HOTEL_ADMIN.COL_CURRENT_PRICE' | translate }}
+                </th>
+                <th class="text-left px-5 py-3 font-semibold">
+                  {{ 'HOTEL_ADMIN.COL_NEW_PRICE' | translate }} ({{ rooms()[0]?.moneda || 'COP' }})
+                </th>
+                <th class="text-left px-5 py-3 font-semibold">
+                  {{ 'HOTEL_ADMIN.COL_ACTION' | translate }}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -77,16 +166,30 @@
                     <p class="text-xs text-gray-400 capitalize">{{ room.tipo }}</p>
                   </td>
                   <td class="px-5 py-4 text-gray-600">{{ room.capacidad }} personas</td>
-                  <td class="px-5 py-4 font-semibold text-gray-800">${{ room.precio_noche | number:'1.0-0' }}</td>
-                  <td class="px-5 py-4">
-                    <input [(ngModel)]="newPrices[room.id]" type="number" min="0"
-                      class="w-32 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#1D4ED8]"/>
+                  <td class="px-5 py-4 font-semibold text-gray-800">
+                    ${{ room.precio_noche | number: '1.0-0' }}
                   </td>
                   <td class="px-5 py-4">
-                    <button (click)="updatePrice(room)"
-                      [disabled]="updatingId === room.id || newPrices[room.id] === room.precio_noche"
-                      class="bg-[#1D4ED8] text-white text-xs px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 font-medium">
-                      {{ updatingId === room.id ? 'Actualizando...' : 'Actualizar precio' }}
+                    <input
+                      [(ngModel)]="newPrices[room.id]"
+                      type="number"
+                      min="0"
+                      class="w-32 px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#1D4ED8]"
+                    />
+                  </td>
+                  <td class="px-5 py-4">
+                    <button
+                      (click)="updatePrice(room)"
+                      [disabled]="
+                        updatingId === room.id || newPrices[room.id] === room.precio_noche
+                      "
+                      class="bg-[#1D4ED8] text-white text-xs px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 font-medium"
+                    >
+                      {{
+                        updatingId === room.id
+                          ? ('HOTEL_ADMIN.UPDATING' | translate)
+                          : ('HOTEL_ADMIN.UPDATE_PRICE_BTN' | translate)
+                      }}
                     </button>
                   </td>
                 </tr>

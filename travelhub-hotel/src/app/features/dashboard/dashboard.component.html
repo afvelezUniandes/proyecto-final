@@ -1,7 +1,7 @@
 <div class="space-y-8">
   <div>
-    <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-    <p class="text-gray-500 text-sm mt-1">Resumen de actividad de tu hotel</p>
+    <h1 class="text-2xl font-bold text-gray-900">{{ 'DASHBOARD.TITLE' | translate }}</h1>
+    <p class="text-gray-500 text-sm mt-1">{{ 'DASHBOARD.SUBTITLE' | translate }}</p>
   </div>
 
   @if (hotelService.hotel(); as hotel) {
@@ -11,12 +11,14 @@
       >
         <span class="text-2xl">🖼️</span>
         <div class="flex-1">
-          <p class="text-sm font-semibold text-amber-800">Tu hotel no tiene imagen principal</p>
+          <p class="text-sm font-semibold text-amber-800">
+            {{ 'DASHBOARD.NO_IMAGE_TITLE' | translate }}
+          </p>
           <p class="text-xs text-amber-600 mt-0.5">
-            Agrega una foto para que los viajeros puedan ver tu hotel en el portal.
+            {{ 'DASHBOARD.NO_IMAGE_MSG' | translate }}
           </p>
           @if (uploadSuccess) {
-            <p class="text-green-600 text-xs mt-1">✓ Imagen subida correctamente</p>
+            <p class="text-green-600 text-xs mt-1">{{ 'DASHBOARD.IMAGE_OK' | translate }}</p>
           }
           @if (uploadError) {
             <p class="text-red-500 text-xs mt-1">{{ uploadError }}</p>
@@ -58,7 +60,9 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div class="flex items-center justify-between mb-4">
-          <span class="text-sm font-medium text-gray-500">Reservas Activas</span>
+          <span class="text-sm font-medium text-gray-500">{{
+            'DASHBOARD.KPI_ACTIVE' | translate
+          }}</span>
           <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl">
             📋
           </div>
@@ -70,7 +74,9 @@
       </div>
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div class="flex items-center justify-between mb-4">
-          <span class="text-sm font-medium text-gray-500">Ocupación</span>
+          <span class="text-sm font-medium text-gray-500">{{
+            'DASHBOARD.KPI_OCCUPANCY' | translate
+          }}</span>
           <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl">
             🏠
           </div>
@@ -82,7 +88,9 @@
       </div>
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div class="flex items-center justify-between mb-4">
-          <span class="text-sm font-medium text-gray-500">Ingresos (mes)</span>
+          <span class="text-sm font-medium text-gray-500">{{
+            'DASHBOARD.KPI_REVENUE' | translate
+          }}</span>
           <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl">
             💰
           </div>
@@ -92,13 +100,18 @@
       </div>
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div class="flex items-center justify-between mb-4">
-          <span class="text-sm font-medium text-gray-500">Calificación</span>
+          <span class="text-sm font-medium text-gray-500">{{
+            'DASHBOARD.KPI_RATING' | translate
+          }}</span>
           <div class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center text-xl">
             ⭐
           </div>
         </div>
         <p class="text-3xl font-bold text-gray-900">{{ stats.calificacion_promedio }}</p>
-        <p class="text-xs text-gray-400 mt-1">de 10 · {{ stats.total_resenas }} reseñas</p>
+        <p class="text-xs text-gray-400 mt-1">
+          {{ 'DASHBOARD.OF_10' | translate }} · {{ stats.total_resenas }}
+          {{ 'DASHBOARD.REVIEWS' | translate }}
+        </p>
       </div>
     </div>
 
@@ -106,7 +119,9 @@
     <div class="grid lg:grid-cols-3 gap-6">
       <!-- Bar chart occupation -->
       <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <h2 class="font-semibold text-gray-900 mb-6">Ocupación semanal</h2>
+        <h2 class="font-semibold text-gray-900 mb-6">
+          {{ 'DASHBOARD.WEEKLY_OCCUPANCY' | translate }}
+        </h2>
         <div class="flex items-end gap-3 h-40">
           @for (day of weeklyOccupancy; track day.dia) {
             <div class="flex-1 flex flex-col items-center gap-1">
@@ -125,10 +140,12 @@
       <!-- Recent reservations -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="font-semibold text-gray-900">Reservas recientes</h2>
-          <a routerLink="/reservations" class="text-[#1D4ED8] text-xs hover:underline"
-            >Ver todas →</a
-          >
+          <h2 class="font-semibold text-gray-900">
+            {{ 'DASHBOARD.RECENT_RESERVATIONS' | translate }}
+          </h2>
+          <a routerLink="/reservations" class="text-[#1D4ED8] text-xs hover:underline">{{
+            'DASHBOARD.SEE_ALL' | translate
+          }}</a>
         </div>
         <div class="space-y-3">
           @for (r of recentReservations; track r.id) {
@@ -141,7 +158,8 @@
               </div>
               <span
                 class="text-xs px-2 py-0.5 rounded-full font-medium {{ estadoClass(r.estado) }}"
-                >{{ r.estado }}</span
+                >{{ 'RESERVATION.STATUS.' + r.estado | translate }}</span
+              >
               >
             </div>
           }

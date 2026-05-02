@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CatalogService } from '../../core/services/catalog.service';
 import { AuthService } from '../../core/services/auth.service';
 import { LanguageSelectorComponent } from '../../shared/language-selector/language-selector.component';
@@ -9,7 +10,7 @@ import { LanguageSelectorComponent } from '../../shared/language-selector/langua
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LanguageSelectorComponent],
+  imports: [CommonModule, FormsModule, RouterLink, LanguageSelectorComponent, TranslateModule],
   templateUrl: './home.component.html',
 })
 export class HomeComponent implements OnInit {
@@ -45,6 +46,7 @@ export class HomeComponent implements OnInit {
     private catalog: CatalogService,
     private router: Router,
     public auth: AuthService,
+    private translate: TranslateService,
   ) {}
 
   ngOnInit() {
@@ -63,11 +65,11 @@ export class HomeComponent implements OnInit {
     this.dateError = '';
     const today = this.today;
     if (this.checkIn && this.checkIn < today) {
-      this.dateError = 'La fecha de check-in no puede ser anterior a hoy.';
+      this.dateError = this.translate.instant('HOME.DATE_ERROR_CHECKIN');
       return;
     }
     if (this.checkIn && this.checkOut && this.checkOut <= this.checkIn) {
-      this.dateError = 'La fecha de check-out debe ser posterior al check-in.';
+      this.dateError = this.translate.instant('HOME.DATE_ERROR_CHECKOUT');
       return;
     }
     this.router.navigate(['/search'], {

@@ -1,14 +1,16 @@
 <div class="space-y-6">
   <div>
-    <h1 class="text-2xl font-bold text-gray-900">Reservas</h1>
-    <p class="text-gray-500 text-sm">Gestiona todas las reservas de tu hotel</p>
+    <h1 class="text-2xl font-bold text-gray-900">{{ 'RESERVATIONS.TITLE' | translate }}</h1>
+    <p class="text-gray-500 text-sm">{{ 'RESERVATIONS.ADMIN_SUBTITLE' | translate }}</p>
   </div>
 
   <!-- Filters -->
   <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
       <div>
-        <label class="text-xs font-semibold text-gray-400 uppercase mb-1 block">Buscar</label>
+        <label class="text-xs font-semibold text-gray-400 uppercase mb-1 block">{{
+          'RESERVATIONS.FILTER_SEARCH' | translate
+        }}</label>
         <input
           [(ngModel)]="searchQuery"
           placeholder="Nombre, código..."
@@ -16,7 +18,9 @@
         />
       </div>
       <div>
-        <label class="text-xs font-semibold text-gray-400 uppercase mb-1 block">Estado</label>
+        <label class="text-xs font-semibold text-gray-400 uppercase mb-1 block">{{
+          'RESERVATIONS.FILTER_STATUS' | translate
+        }}</label>
         <select
           [(ngModel)]="estadoFilter"
           class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#1D4ED8] transition text-gray-800"
@@ -27,7 +31,9 @@
         </select>
       </div>
       <div>
-        <label class="text-xs font-semibold text-gray-400 uppercase mb-1 block">Habitación</label>
+        <label class="text-xs font-semibold text-gray-400 uppercase mb-1 block">{{
+          'RESERVATIONS.FILTER_ROOM' | translate
+        }}</label>
         <select
           [(ngModel)]="habitacionFilter"
           class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#1D4ED8] transition text-gray-800"
@@ -42,13 +48,13 @@
           (click)="load()"
           class="flex-1 bg-[#1D4ED8] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 transition"
         >
-          Filtrar
+          {{ 'RESERVATIONS.FILTER_BTN' | translate }}
         </button>
         <button
           (click)="resetFilters()"
           class="flex-1 border border-gray-200 text-gray-600 text-sm px-4 py-2 rounded-lg hover:bg-gray-50 transition"
         >
-          Limpiar
+          {{ 'RESERVATIONS.CLEAR_BTN' | translate }}
         </button>
       </div>
     </div>
@@ -57,92 +63,114 @@
 
   <!-- Table -->
   <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="w-full">
-        <thead>
-          <tr class="bg-gray-50 border-b border-gray-100">
-            <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
-              Código
-            </th>
-            <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
-              Huésped
-            </th>
-            <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
-              Habitación
-            </th>
-            <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
-              Check-in
-            </th>
-            <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">Total</th>
-            <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
-              Estado
-            </th>
-            <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3"></th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-50">
-          @for (r of reservations; track r.id) {
-            <tr class="hover:bg-gray-50 transition">
-              <td class="px-6 py-4 text-sm text-gray-500 font-mono">{{ r.codigo || '—' }}</td>
-              <td class="px-6 py-4">
-                <div class="font-medium text-gray-900 text-sm">
-                  {{ r.huesped_nombre || 'Huésped #' + r.usuario_id }}
-                </div>
-                <div class="text-gray-400 text-xs">{{ r.huesped_email }}</div>
-              </td>
-              <td class="px-6 py-4 text-sm text-gray-700">
-                {{ r.habitacion_nombre || 'Hab. #' + r.habitacion_id }}
-              </td>
-              <td class="px-6 py-4 text-sm text-gray-700">{{ r.fecha_checkin }}</td>
-              <td class="px-6 py-4 text-sm font-semibold text-[#1D4ED8]">
-                {{ r.monto_total | currency: 'COP' : 'symbol' : '1.0-0' }}
-              </td>
-              <td class="px-6 py-4">
-                <span
-                  class="text-xs px-2 py-0.5 rounded-full font-medium {{ estadoClass(r.estado) }}"
-                  >{{ r.estado }}</span
-                >
-              </td>
-              <td class="px-6 py-4">
-                <button
-                  (click)="viewDetail(r.id)"
-                  class="text-[#1D4ED8] text-sm font-medium hover:underline"
-                >
-                  Ver →
-                </button>
-              </td>
-            </tr>
-          }
-          @if (reservations.length === 0) {
-            <tr>
-              <td colspan="7" class="px-6 py-16 text-center text-gray-400 text-sm">
-                Sin resultados
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-    @if (total > pageSize) {
-      <div class="flex items-center justify-between px-6 py-4 border-t border-gray-100">
-        <span class="text-sm text-gray-400">Página {{ page }} de {{ totalPages() }}</span>
-        <div class="flex gap-2">
-          <button
-            (click)="prevPage()"
-            [disabled]="page === 1"
-            class="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40"
-          >
-            ← Ant.
-          </button>
-          <button
-            (click)="nextPage()"
-            [disabled]="page * pageSize >= total"
-            class="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40"
-          >
-            Sig. →
-          </button>
-        </div>
+    @if (loading) {
+      <div class="flex items-center justify-center py-20">
+        <svg class="animate-spin w-8 h-8 text-[#1D4ED8]" fill="none" viewBox="0 0 24 24">
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          />
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          />
+        </svg>
       </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-100">
+              <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
+                {{ 'RESERVATIONS.COL_CODE' | translate }}
+              </th>
+              <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
+                {{ 'RESERVATIONS.COL_GUEST' | translate }}
+              </th>
+              <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
+                {{ 'RESERVATIONS.COL_ROOM' | translate }}
+              </th>
+              <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
+                {{ 'RESERVATIONS.COL_CHECKIN' | translate }}
+              </th>
+              <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
+                {{ 'RESERVATIONS.COL_TOTAL' | translate }}
+              </th>
+              <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
+                {{ 'RESERVATIONS.COL_STATUS' | translate }}
+              </th>
+              <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            @for (r of reservations; track r.id) {
+              <tr class="hover:bg-gray-50 transition">
+                <td class="px-6 py-4 text-sm text-gray-500 font-mono">{{ r.codigo || '—' }}</td>
+                <td class="px-6 py-4">
+                  <div class="font-medium text-gray-900 text-sm">
+                    {{ r.huesped_nombre || 'Huésped #' + r.usuario_id }}
+                  </div>
+                  <div class="text-gray-400 text-xs">{{ r.huesped_email }}</div>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-700">
+                  {{ r.habitacion_nombre || 'Hab. #' + r.habitacion_id }}
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-700">{{ r.fecha_checkin }}</td>
+                <td class="px-6 py-4 text-sm font-semibold text-[#1D4ED8]">
+                  {{ r.monto_total | currency: 'COP' : 'symbol' : '1.0-0' }}
+                </td>
+                <td class="px-6 py-4">
+                  <span
+                    class="text-xs px-2 py-0.5 rounded-full font-medium {{ estadoClass(r.estado) }}"
+                    >{{ r.estado }}</span
+                  >
+                </td>
+                <td class="px-6 py-4">
+                  <button
+                    (click)="viewDetail(r.id)"
+                    class="text-[#1D4ED8] text-sm font-medium hover:underline"
+                  >
+                    Ver →
+                  </button>
+                </td>
+              </tr>
+            }
+            @if (reservations.length === 0) {
+              <tr>
+                <td colspan="7" class="px-6 py-16 text-center text-gray-400 text-sm">
+                  Sin resultados
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (total > pageSize) {
+        <div class="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+          <span class="text-sm text-gray-400">Página {{ page }} de {{ totalPages() }}</span>
+          <div class="flex gap-2">
+            <button
+              (click)="prevPage()"
+              [disabled]="page === 1"
+              class="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40"
+            >
+              ← Ant.
+            </button>
+            <button
+              (click)="nextPage()"
+              [disabled]="page * pageSize >= total"
+              class="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40"
+            >
+              Sig. →
+            </button>
+          </div>
+        </div>
+      }
     }
   </div>
 </div>

@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, of, tap } from 'rxjs';
 import { ApiService } from './api.service';
 import { Hotel, Room } from '../models/index';
 
@@ -11,6 +11,8 @@ export class HotelService {
   constructor(private api: ApiService) {}
 
   loadMyHotel(): Observable<Hotel> {
+    const cached = this._hotel();
+    if (cached) return of(cached);
     return this.api.get<Hotel>('/catalog/hotels/mine').pipe(tap((hotel) => this._hotel.set(hotel)));
   }
 

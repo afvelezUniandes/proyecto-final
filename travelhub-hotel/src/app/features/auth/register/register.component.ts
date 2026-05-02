@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { LanguageSelectorComponent } from '../../../shared/components/language-selector/language-selector.component';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -9,7 +10,7 @@ import { AuthService } from '../../../core/services/auth.service';
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LanguageSelectorComponent],
+  imports: [CommonModule, FormsModule, RouterLink, LanguageSelectorComponent, TranslateModule],
   templateUrl: './register.component.html',
 })
 export class RegisterComponent {

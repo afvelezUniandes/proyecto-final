@@ -2,6 +2,7 @@ import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { HotelAdminService } from '../../../core/services/hotel-admin.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Room, HotelDetail } from '../../../core/models';
@@ -10,7 +11,7 @@ import { map } from 'rxjs';
 @Component({
   selector: 'app-hotel-rooms',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
   templateUrl: './hotel-rooms.component.html',
 })
 export class HotelRoomsComponent implements OnInit {
@@ -44,15 +45,16 @@ export class HotelRoomsComponent implements OnInit {
   }
 
   loadRooms(hotelId: number) {
-    this.hotelAdmin.getRooms(hotelId).pipe(
-      map(rooms => rooms.filter(r => r.hotel_id === hotelId))
-    ).subscribe({
-      next: (rooms) => {
-        this.rooms.set(rooms);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+    this.hotelAdmin
+      .getRooms(hotelId)
+      .pipe(map((rooms) => rooms.filter((r) => r.hotel_id === hotelId)))
+      .subscribe({
+        next: (rooms) => {
+          this.rooms.set(rooms);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false),
+      });
   }
 
   openCreate() {
@@ -86,37 +88,41 @@ export class HotelRoomsComponent implements OnInit {
     this.saving = true;
 
     if (this.editing) {
-      this.hotelAdmin.updateRoom(this.editing.id, {
-        nombre: this.formNombre,
-        tipo: this.formTipo,
-        capacidad: this.formCapacidad,
-        precio_noche: this.formPrecio,
-        moneda: this.formMoneda,
-      }).subscribe({
-        next: () => {
-          this.saving = false;
-          this.showForm = false;
-          this.editing = null;
-          this.loadRooms(h.id);
-        },
-        error: () => this.saving = false,
-      });
+      this.hotelAdmin
+        .updateRoom(this.editing.id, {
+          nombre: this.formNombre,
+          tipo: this.formTipo,
+          capacidad: this.formCapacidad,
+          precio_noche: this.formPrecio,
+          moneda: this.formMoneda,
+        })
+        .subscribe({
+          next: () => {
+            this.saving = false;
+            this.showForm = false;
+            this.editing = null;
+            this.loadRooms(h.id);
+          },
+          error: () => (this.saving = false),
+        });
     } else {
-      this.hotelAdmin.createRoom({
-        hotel_id: h.id,
-        nombre: this.formNombre,
-        tipo: this.formTipo,
-        capacidad: this.formCapacidad,
-        precio_noche: this.formPrecio,
-        moneda: this.formMoneda,
-      }).subscribe({
-        next: () => {
-          this.saving = false;
-          this.showForm = false;
-          this.loadRooms(h.id);
-        },
-        error: () => this.saving = false,
-      });
+      this.hotelAdmin
+        .createRoom({
+          hotel_id: h.id,
+          nombre: this.formNombre,
+          tipo: this.formTipo,
+          capacidad: this.formCapacidad,
+          precio_noche: this.formPrecio,
+          moneda: this.formMoneda,
+        })
+        .subscribe({
+          next: () => {
+            this.saving = false;
+            this.showForm = false;
+            this.loadRooms(h.id);
+          },
+          error: () => (this.saving = false),
+        });
     }
   }
 

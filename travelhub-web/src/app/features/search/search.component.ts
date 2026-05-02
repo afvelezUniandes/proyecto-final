@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageSelectorComponent } from '../../shared/language-selector/language-selector.component';
 import { CatalogService } from '../../core/services/catalog.service';
 import { Hotel } from '../../core/models';
@@ -9,7 +10,7 @@ import { Hotel } from '../../core/models';
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LanguageSelectorComponent],
+  imports: [CommonModule, FormsModule, RouterLink, LanguageSelectorComponent, TranslateModule],
   templateUrl: './search.component.html',
 })
 export class SearchComponent implements OnInit {
@@ -56,6 +57,7 @@ export class SearchComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private catalog: CatalogService,
+    private translate: TranslateService,
   ) {}
 
   ngOnInit() {
@@ -75,11 +77,11 @@ export class SearchComponent implements OnInit {
     this.dateError = '';
     const today = this.today;
     if (this.checkIn && this.checkIn < today) {
-      this.dateError = 'La fecha de check-in no puede ser anterior a hoy.';
+      this.dateError = this.translate.instant('SEARCH.DATE_ERROR_CHECKIN');
       return;
     }
     if (this.checkIn && this.checkOut && this.checkOut <= this.checkIn) {
-      this.dateError = 'La fecha de check-out debe ser posterior al check-in.';
+      this.dateError = this.translate.instant('SEARCH.DATE_ERROR_CHECKOUT');
       return;
     }
     this.loading = true;
@@ -100,7 +102,7 @@ export class SearchComponent implements OnInit {
           this.applySort();
         },
         error: () => {
-          this.error = 'No se pudieron cargar los hoteles. Intenta nuevamente.';
+          this.error = this.translate.instant('SEARCH.ERR_LOAD');
           this.loading = false;
         },
       });

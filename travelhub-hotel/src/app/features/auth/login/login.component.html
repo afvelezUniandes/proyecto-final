@@ -12,19 +12,21 @@
           <span class="text-white font-bold text-lg">T</span>
         </div>
         <div>
-          <div class="font-bold text-travelGray-900">TravelHub</div>
-          <div class="text-xs text-travelGray-400">Portal de Hoteles</div>
+          <div class="font-bold text-travelGray-900">{{ 'NAV.BRAND' | translate }}</div>
+          <div class="text-xs text-travelGray-400">{{ 'NAV.PORTAL' | translate }}</div>
         </div>
       </div>
 
-      <h2 class="text-2xl font-bold text-travelGray-900 mb-1">Iniciar Sesión</h2>
-      <p class="text-travelGray-500 text-sm mb-8">Accede al panel de administración de tu hotel</p>
+      <h2 class="text-2xl font-bold text-travelGray-900 mb-1">
+        {{ 'AUTH.LOGIN_TITLE' | translate }}
+      </h2>
+      <p class="text-travelGray-500 text-sm mb-8">{{ 'AUTH.LOGIN_SUBTITLE' | translate }}</p>
 
       <form (ngSubmit)="onLogin()" class="space-y-5">
         <div>
-          <label class="block text-sm font-medium text-travelGray-700 mb-1.5"
-            >Correo del administrador</label
-          >
+          <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
+            'AUTH.EMAIL_LABEL' | translate
+          }}</label>
           <input
             [(ngModel)]="email"
             name="email"
@@ -36,7 +38,9 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-travelGray-700 mb-1.5">Contraseña</label>
+          <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
+            'AUTH.PASSWORD_LABEL' | translate
+          }}</label>
           <div class="relative">
             <input
               [(ngModel)]="password"
@@ -100,16 +104,13 @@
               />
             </svg>
           } @else {
-            Iniciar Sesión
+            {{ 'AUTH.LOGIN_BTN' | translate }}
           }
         </button>
       </form>
 
       <p class="text-center text-sm text-travelGray-500 mt-6">
-        ¿No tienes cuenta?
-        <a routerLink="/register" class="text-travelBlue font-medium hover:underline"
-          >Regístrate gratis</a
-        >
+        {{ 'AUTH.REGISTER_LINK' | translate }}
       </p>
     </div>
   </div>
@@ -123,15 +124,17 @@
       <div class="absolute bottom-20 left-10 w-80 h-80 rounded-full bg-white"></div>
     </div>
     <div class="relative z-10">
-      <h2 class="text-white text-4xl font-bold leading-tight mb-4">Haz crecer<br />tu negocio</h2>
+      <h2 class="text-white text-4xl font-bold leading-tight mb-4">
+        {{ 'AUTH.SIDE_GROW' | translate }}
+      </h2>
       <p class="text-white/80 mb-12">
-        Únete a la red de hoteles de TravelHub<br />y llega a miles de viajeros.
+        {{ 'AUTH.SIDE_GROW_SUB' | translate }}
       </p>
       <div class="space-y-4">
         @for (f of features; track f.title) {
           <div class="flex items-start gap-4 bg-white/10 rounded-2xl p-5">
             <div
-              class="w-10 h-10 bg-travelOrange rounded-xl flex items-center justify-center flex-shrink-0"
+              class="w-10 h-10 bg-travelOrange rounded-xl flex items-center justify-center shrink-0"
             >
               <span class="text-white text-lg">{{ f.icon }}</span>
             </div>

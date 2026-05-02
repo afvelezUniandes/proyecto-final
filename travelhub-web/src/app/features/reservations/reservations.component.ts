@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageSelectorComponent } from '../../shared/language-selector/language-selector.component';
 import { ReservationService } from '../../core/services/reservation.service';
 import { Reservation } from '../../core/models';
@@ -8,7 +9,7 @@ import { Reservation } from '../../core/models';
 @Component({
   selector: 'app-reservations',
   standalone: true,
-  imports: [CommonModule, RouterLink, LanguageSelectorComponent],
+  imports: [CommonModule, RouterLink, LanguageSelectorComponent, TranslateModule],
   templateUrl: './reservations.component.html',
 })
 export class ReservationsComponent implements OnInit {
@@ -18,7 +19,10 @@ export class ReservationsComponent implements OnInit {
   activeTab = 'todas';
   cancelingId: number | null = null;
 
-  constructor(private reservationService: ReservationService) {}
+  constructor(
+    private reservationService: ReservationService,
+    private translate: TranslateService,
+  ) {}
 
   ngOnInit() {
     this.load();
@@ -32,7 +36,7 @@ export class ReservationsComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        this.error = 'Error al cargar tus reservas.';
+        this.error = this.translate.instant('RESERVATIONS.ERR_LOAD');
         this.loading = false;
       },
     });

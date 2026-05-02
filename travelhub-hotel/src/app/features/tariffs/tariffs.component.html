@@ -1,7 +1,7 @@
 <div class="space-y-6">
   <div>
-    <h1 class="text-2xl font-bold text-gray-900">Tarifas</h1>
-    <p class="text-gray-500 text-sm">Actualiza los precios por noche de cada habitación</p>
+    <h1 class="text-2xl font-bold text-gray-900">{{ 'TARIFFS.TITLE' | translate }}</h1>
+    <p class="text-gray-500 text-sm">{{ 'TARIFFS.SUBTITLE' | translate }}</p>
   </div>
 
   @if (loading) {
@@ -22,9 +22,9 @@
     @if (rows.length === 0) {
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
         <div class="text-5xl mb-4">🛏️</div>
-        <p class="font-semibold text-gray-700 text-lg">No hay habitaciones creadas</p>
+        <p class="font-semibold text-gray-700 text-lg">{{ 'TARIFFS.EMPTY_TITLE' | translate }}</p>
         <p class="text-sm text-gray-400 mt-1 mb-6">
-          Primero debes crear las habitaciones de tu hotel para poder gestionar sus tarifas.
+          {{ 'TARIFFS.EMPTY_MSG' | translate }}
         </p>
         <a
           routerLink="/rooms"
@@ -40,7 +40,7 @@
           >
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
           </svg>
-          Crear habitaciones
+          {{ 'TARIFFS.CREATE_ROOMS_BTN' | translate }}
         </a>
       </div>
     } @else {
@@ -50,19 +50,19 @@
             <thead>
               <tr class="bg-gray-50 border-b border-gray-100">
                 <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
-                  Habitación
+                  {{ 'TARIFFS.COL_ROOM' | translate }}
                 </th>
                 <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
-                  Capacidad
+                  {{ 'TARIFFS.COL_CAPACITY' | translate }}
                 </th>
                 <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
-                  Precio actual
+                  {{ 'TARIFFS.COL_CURRENT' | translate }}
                 </th>
                 <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
-                  Nuevo precio (COP)
+                  {{ 'TARIFFS.COL_NEW' | translate }}
                 </th>
                 <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
-                  Acción
+                  {{ 'TARIFFS.COL_ACTION' | translate }}
                 </th>
               </tr>
             </thead>
@@ -73,12 +73,16 @@
                     <div class="font-medium text-gray-900 text-sm">{{ row.nombre }}</div>
                     <div class="text-xs text-gray-400 capitalize">{{ row.tipo }}</div>
                   </td>
-                  <td class="px-6 py-4 text-sm text-gray-700">{{ row.capacidad }} personas</td>
+                  <td class="px-6 py-4 text-sm text-gray-700">
+                    {{ row.capacidad }} {{ 'TARIFFS.PERSONS' | translate }}
+                  </td>
                   <td class="px-6 py-4">
                     <span class="text-[#1D4ED8] font-bold text-sm">{{
                       formatPrice(row.precio_noche)
                     }}</span>
-                    <span class="text-gray-400 text-xs ml-1">/ noche</span>
+                    <span class="text-gray-400 text-xs ml-1">{{
+                      'TARIFFS.PER_NIGHT' | translate
+                    }}</span>
                   </td>
                   <td class="px-6 py-4">
                     <input
@@ -102,10 +106,16 @@
                         [disabled]="row.saving"
                         class="bg-[#1D4ED8] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-60 transition"
                       >
-                        {{ row.saving ? 'Guardando...' : 'Actualizar precio' }}
+                        {{
+                          row.saving
+                            ? ('TARIFFS.SAVING' | translate)
+                            : ('TARIFFS.UPDATE_BTN' | translate)
+                        }}
                       </button>
                       @if (row.saved) {
-                        <span class="text-green-600 text-xs font-medium">✓ Guardado</span>
+                        <span class="text-green-600 text-xs font-medium">{{
+                          'TARIFFS.SAVED' | translate
+                        }}</span>
                       }
                     </div>
                   </td>

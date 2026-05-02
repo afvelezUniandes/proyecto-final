@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { of, switchMap, finalize } from 'rxjs';
 import { HotelService } from '../../core/services/hotel.service';
 import { RoomService } from '../../core/services/room.service';
@@ -17,7 +18,7 @@ interface TariffRow extends Room {
 @Component({
   selector: 'app-tariffs',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
   templateUrl: './tariffs.component.html',
 })
 export class TariffsComponent implements OnInit {

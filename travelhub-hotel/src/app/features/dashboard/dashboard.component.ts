@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { switchMap } from 'rxjs';
 import { HotelService } from '../../core/services/hotel.service';
 import { ReservationService } from '../../core/services/reservation.service';
@@ -9,7 +10,7 @@ import { HotelStats, HotelReservation, WeeklyOccupancy } from '../../core/models
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslateModule],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
