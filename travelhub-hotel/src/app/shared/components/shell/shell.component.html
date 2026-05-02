@@ -1,6 +1,6 @@
 <div class="flex h-screen bg-travelGray-50 overflow-hidden">
   <!-- Sidebar -->
-  <aside class="hidden lg:flex lg:flex-col w-56 bg-travelBlue-900 flex-shrink-0">
+  <aside class="hidden lg:flex lg:flex-col w-56 bg-travelBlue-900 shrink-0">
     <!-- Logo -->
     <div class="flex items-center gap-3 px-6 py-5 border-b border-white/10">
       <div class="w-8 h-8 bg-travelOrange rounded-lg flex items-center justify-center">
@@ -13,7 +13,7 @@
     </div>
 
     <!-- Nav -->
-    <nav class="flex-1 px-3 py-4 space-y-1">
+    <nav aria-label="Navegación principal" class="flex-1 px-3 py-4 space-y-1">
       @for (item of navItems; track item.path) {
         <a
           [routerLink]="item.path"
@@ -22,7 +22,7 @@
           [routerLinkActiveOptions]="{ exact: item.path === '/dashboard' }"
         >
           <svg
-            class="w-5 h-5 flex-shrink-0"
+            class="w-5 h-5 shrink-0"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -59,10 +59,12 @@
   <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
     <!-- Topbar -->
     <header
-      class="bg-white border-b border-travelGray-200 px-6 py-4 flex items-center justify-between flex-shrink-0"
+      class="bg-white border-b border-travelGray-200 px-6 py-4 flex items-center justify-between shrink-0"
     >
       <button
         (click)="sidebarOpen.set(!sidebarOpen())"
+        aria-label="Abrir menú de navegación"
+        [attr.aria-expanded]="sidebarOpen()"
         class="lg:hidden text-travelGray-500 hover:text-travelGray-700"
       >
         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

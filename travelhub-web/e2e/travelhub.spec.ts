@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 const TEST_USER = {
   nombre: 'Test Playwright',
   email: `test_pw_${crypto.randomUUID()}@example.com`,
-  password: 'TestPass123',
+  password: 'TestPass123!',
 };
 
 async function login(page: any) {

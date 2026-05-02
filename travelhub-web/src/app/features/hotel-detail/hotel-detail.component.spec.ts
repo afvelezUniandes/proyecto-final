@@ -4,6 +4,8 @@ import { ActivatedRoute } from '@angular/router';
 import { LOCALE_ID } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
+import { provideHttpClient } from '@angular/common/http';
+import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { HotelDetailComponent } from './hotel-detail.component';
@@ -106,6 +108,8 @@ async function createComponent(
     imports: [HotelDetailComponent],
     providers: [
       provideRouter([]),
+      provideHttpClient(),
+      provideTranslateService({ fallbackLang: 'es' }),
       { provide: LOCALE_ID, useValue: 'es' },
       { provide: CatalogService, useValue: mockCatalog },
       { provide: ReservationService, useValue: mockReservationService },
@@ -113,6 +117,17 @@ async function createComponent(
       { provide: ActivatedRoute, useValue: mockActivatedRoute },
     ],
   }).compileComponents();
+
+  const translateService = TestBed.inject(TranslateService);
+  translateService.setTranslation('es', {
+    HOTEL_DETAIL: {
+      NOT_FOUND: 'Hotel no encontrado.',
+      SELECT_HINT: 'Selecciona habitación y fechas.',
+      ROOM_UNAVAILABLE: 'La habitación seleccionada no está disponible para las fechas indicadas.',
+      RESERVE_ERROR: 'Error al crear la reserva.',
+    },
+  });
+  translateService.use('es');
 
   // Override router.navigate after compile
   const fixture = TestBed.createComponent(HotelDetailComponent);
@@ -160,6 +175,8 @@ describe('HotelDetailComponent', () => {
         imports: [HotelDetailComponent],
         providers: [
           provideRouter([]),
+          provideHttpClient(),
+          provideTranslateService({ fallbackLang: 'es' }),
           { provide: LOCALE_ID, useValue: 'es' },
           { provide: CatalogService, useValue: mockCatalog },
           { provide: ReservationService, useValue: { createReservation: vi.fn() } },
@@ -175,6 +192,9 @@ describe('HotelDetailComponent', () => {
           },
         ],
       }).compileComponents();
+      const translateSvc = TestBed.inject(TranslateService);
+      translateSvc.setTranslation('es', { HOTEL_DETAIL: { NOT_FOUND: 'Hotel no encontrado.' } });
+      translateSvc.use('es');
       const fixture = TestBed.createComponent(HotelDetailComponent);
       const component = fixture.componentInstance;
       (component as any).router = { navigate: navigateFn, url: '/hotel/1' };

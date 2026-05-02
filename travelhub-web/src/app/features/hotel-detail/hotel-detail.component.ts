@@ -170,7 +170,7 @@ export class HotelDetailComponent implements OnInit {
         },
         error: (e) => {
           this.reserveError =
-            e?.error?.error || this.translate.instant('HOTEL_DETAIL.ROOM_UNAVAILABLE');
+            e?.error?.error || this.translate.instant('HOTEL_DETAIL.RESERVE_ERROR');
           if (e?.status === 409) {
             this.isUnavailableError = true;
             this.rooms = this.rooms.map((r) =>

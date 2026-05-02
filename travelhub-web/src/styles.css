@@ -41,6 +41,37 @@
     background-color: theme(--color-travelGray-50);
     color: theme(--color-travelGray-900);
   }
+  :focus-visible {
+    outline: 3px solid theme(--color-travelBlue);
+    outline-offset: 2px;
+  }
+  .skip-link {
+    position: fixed;
+    top: -100%;
+    left: 0;
+    z-index: 9999;
+    padding: 0.5rem 1rem;
+    background: theme(--color-travelBlue);
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 0 0 0.5rem 0;
+    transition: top 0.1s;
+    &:focus {
+      top: 0;
+    }
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
 }
 
 @layer components {
@@ -62,10 +93,10 @@
   }
   .btn-orange {
     @apply inline-flex items-center justify-center font-semibold px-4 py-2 rounded-lg text-sm transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed;
-    background-color: theme(--color-travelOrange);
+    background-color: theme(--color-travelOrange-600);
     color: white;
     &:hover:not(:disabled) {
-      background-color: theme(--color-travelOrange-600);
+      background-color: theme(--color-travelOrange-700, #c2410c);
     }
   }
   .input-field {
