@@ -31,7 +31,7 @@ export class ProfileComponent {
       this.user.set(current);
       this.draft = { ...current };
     }
-    auth.fetchProfile();
+    auth.fetchProfile().subscribe();
     effect(() => {
       const u = auth.currentUser();
       if (u) {
@@ -64,7 +64,7 @@ export class ProfileComponent {
           this.editing.set(false);
           this.saveSuccess = true;
           this.saving = false;
-          this.auth.fetchProfile();
+          this.auth.fetchProfile().subscribe();
           setTimeout(() => (this.saveSuccess = false), 3000);
         },
         error: () => {

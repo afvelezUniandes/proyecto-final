@@ -5,7 +5,7 @@
   </div>
 
   <!-- Left: form -->
-  <div class="flex-1 flex items-center justify-center px-8 py-12 bg-white">
+  <main class="flex-1 flex items-center justify-center px-8 py-12 bg-white">
     <div class="w-full max-w-sm">
       <!-- Logo -->
       <div class="flex items-center gap-3 mb-8">
@@ -79,40 +79,53 @@
 
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
-                'AUTH.NAME_LABEL' | translate
-              }}</label>
+              <label
+                for="reg-nombre"
+                class="block text-sm font-medium text-travelGray-700 mb-1.5"
+                >{{ 'AUTH.NAME_LABEL' | translate }}</label
+              >
               <input
+                id="reg-nombre"
                 [(ngModel)]="nombre"
                 name="nombre"
                 type="text"
                 placeholder="Juan Pérez"
                 class="input-field"
+                required
+                aria-describedby="reg-error"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
+              <label for="reg-email" class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
                 'AUTH.EMAIL_LABEL' | translate
               }}</label>
               <input
+                id="reg-email"
                 [(ngModel)]="email"
                 name="email"
                 type="email"
                 placeholder="admin@mihotel.com"
                 class="input-field"
+                required
+                aria-describedby="reg-error"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
-                'AUTH.PASSWORD_LABEL' | translate
-              }}</label>
+              <label
+                for="reg-password"
+                class="block text-sm font-medium text-travelGray-700 mb-1.5"
+                >{{ 'AUTH.PASSWORD_LABEL' | translate }}</label
+              >
               <div class="relative">
                 <input
+                  id="reg-password"
                   [(ngModel)]="password"
                   name="password"
                   [type]="showPassword ? 'text' : 'password'"
                   placeholder="Mín. 8 caracteres, mayúscula, número y carácter especial"
                   class="input-field pr-10"
+                  required
+                  aria-describedby="reg-error"
                 />
                 <button
                   type="button"
@@ -146,20 +159,31 @@
               </div>
             </div>
             <div>
-              <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
-                'AUTH.CONFIRM_PASSWORD' | translate
-              }}</label>
+              <label
+                for="reg-confirm"
+                class="block text-sm font-medium text-travelGray-700 mb-1.5"
+                >{{ 'AUTH.CONFIRM_PASSWORD' | translate }}</label
+              >
               <input
+                id="reg-confirm"
                 [(ngModel)]="confirmPassword"
                 name="confirmPassword"
                 type="password"
                 placeholder="Repite tu contraseña"
                 class="input-field"
+                required
+                aria-describedby="reg-error"
               />
             </div>
 
             @if (error()) {
-              <p class="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-lg">{{ error() }}</p>
+              <p
+                id="reg-error"
+                role="alert"
+                class="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-lg"
+              >
+                {{ error() }}
+              </p>
             }
 
             <button (click)="nextStep()" class="btn-primary w-full justify-center flex">
@@ -186,10 +210,13 @@
 
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
-                'AUTH.HOTEL_NAME_LABEL' | translate
-              }}</label>
+              <label
+                for="hotel-nombre"
+                class="block text-sm font-medium text-travelGray-700 mb-1.5"
+                >{{ 'AUTH.HOTEL_NAME_LABEL' | translate }}</label
+              >
               <input
+                id="hotel-nombre"
                 [(ngModel)]="hotelNombre"
                 name="hotelNombre"
                 type="text"
@@ -199,20 +226,30 @@
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
-                  'AUTH.COUNTRY_LABEL' | translate
-                }}</label>
-                <select [(ngModel)]="hotelPais" name="hotelPais" class="input-field">
+                <label
+                  for="hotel-pais"
+                  class="block text-sm font-medium text-travelGray-700 mb-1.5"
+                  >{{ 'AUTH.COUNTRY_LABEL' | translate }}</label
+                >
+                <select
+                  id="hotel-pais"
+                  [(ngModel)]="hotelPais"
+                  name="hotelPais"
+                  class="input-field"
+                >
                   @for (pais of paises; track pais) {
                     <option [value]="pais">{{ pais }}</option>
                   }
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
-                  'AUTH.CITY_LABEL' | translate
-                }}</label>
+                <label
+                  for="hotel-ciudad"
+                  class="block text-sm font-medium text-travelGray-700 mb-1.5"
+                  >{{ 'AUTH.CITY_LABEL' | translate }}</label
+                >
                 <input
+                  id="hotel-ciudad"
                   [(ngModel)]="hotelCiudad"
                   name="hotelCiudad"
                   type="text"
@@ -222,10 +259,13 @@
               </div>
             </div>
             <div>
-              <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
-                'AUTH.ADDRESS_LABEL' | translate
-              }}</label>
+              <label
+                for="hotel-direccion"
+                class="block text-sm font-medium text-travelGray-700 mb-1.5"
+                >{{ 'AUTH.ADDRESS_LABEL' | translate }}</label
+              >
               <input
+                id="hotel-direccion"
                 [(ngModel)]="hotelDireccion"
                 name="hotelDireccion"
                 type="text"
@@ -235,10 +275,13 @@
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
-                  'AUTH.PHONE_LABEL' | translate
-                }}</label>
+                <label
+                  for="hotel-telefono"
+                  class="block text-sm font-medium text-travelGray-700 mb-1.5"
+                  >{{ 'AUTH.PHONE_LABEL' | translate }}</label
+                >
                 <input
+                  id="hotel-telefono"
                   [(ngModel)]="hotelTelefono"
                   name="hotelTelefono"
                   type="tel"
@@ -247,10 +290,17 @@
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
-                  'AUTH.STARS_LABEL' | translate
-                }}</label>
-                <select [(ngModel)]="hotelEstrellas" name="hotelEstrellas" class="input-field">
+                <label
+                  for="hotel-estrellas"
+                  class="block text-sm font-medium text-travelGray-700 mb-1.5"
+                  >{{ 'AUTH.STARS_LABEL' | translate }}</label
+                >
+                <select
+                  id="hotel-estrellas"
+                  [(ngModel)]="hotelEstrellas"
+                  name="hotelEstrellas"
+                  class="input-field"
+                >
                   <option [value]="1">⭐ 1 estrella</option>
                   <option [value]="2">⭐⭐ 2 estrellas</option>
                   <option [value]="3">⭐⭐⭐ 3 estrellas</option>
@@ -260,13 +310,14 @@
               </div>
             </div>
             <div>
-              <label class="block text-sm font-medium text-travelGray-700 mb-1.5"
+              <label for="hotel-email" class="block text-sm font-medium text-travelGray-700 mb-1.5"
                 >{{ 'AUTH.HOTEL_EMAIL_LABEL' | translate }}
                 <span class="text-travelGray-400 font-normal"
                   >({{ 'AUTH.OPTIONAL' | translate }})</span
                 ></label
               >
               <input
+                id="hotel-email"
                 [(ngModel)]="hotelEmail"
                 name="hotelEmail"
                 type="email"
@@ -276,13 +327,17 @@
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-travelGray-700 mb-1.5">
+              <label
+                for="hotel-descripcion"
+                class="block text-sm font-medium text-travelGray-700 mb-1.5"
+              >
                 {{ 'AUTH.HOTEL_DESC_LABEL' | translate }}
                 <span class="text-travelGray-400 font-normal"
                   >({{ 'AUTH.OPTIONAL' | translate }})</span
                 >
               </label>
               <textarea
+                id="hotel-descripcion"
                 [(ngModel)]="hotelDescripcion"
                 name="hotelDescripcion"
                 rows="3"
@@ -360,10 +415,11 @@
         }
       }
     </div>
-  </div>
+  </main>
 
   <!-- Right: features panel -->
   <div
+    aria-hidden="true"
     class="hidden lg:flex lg:w-1/2 bg-travelBlue flex-col justify-center px-16 py-12 relative overflow-hidden"
   >
     <div class="absolute inset-0 opacity-10">

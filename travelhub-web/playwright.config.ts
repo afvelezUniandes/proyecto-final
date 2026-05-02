@@ -6,6 +6,7 @@ export default defineConfig({
   testDir: './e2e',
   tsconfig: './tsconfig.playwright.json',
   timeout: 30000,
+  globalTeardown: './e2e/global-teardown.ts',
   use: {
     baseURL: process.env['PLAYWRIGHT_BASE_URL'] || 'http://localhost:4200',
     headless: true,

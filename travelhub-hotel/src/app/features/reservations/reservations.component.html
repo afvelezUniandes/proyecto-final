@@ -8,20 +8,22 @@
   <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
       <div>
-        <label class="text-xs font-semibold text-gray-400 uppercase mb-1 block">{{
+        <label for="res-search" class="text-xs font-semibold text-gray-400 uppercase mb-1 block">{{
           'RESERVATIONS.FILTER_SEARCH' | translate
         }}</label>
         <input
+          id="res-search"
           [(ngModel)]="searchQuery"
           placeholder="Nombre, código..."
           class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#1D4ED8] transition text-gray-800"
         />
       </div>
       <div>
-        <label class="text-xs font-semibold text-gray-400 uppercase mb-1 block">{{
+        <label for="res-status" class="text-xs font-semibold text-gray-400 uppercase mb-1 block">{{
           'RESERVATIONS.FILTER_STATUS' | translate
         }}</label>
         <select
+          id="res-status"
           [(ngModel)]="estadoFilter"
           class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#1D4ED8] transition text-gray-800"
         >
@@ -31,10 +33,11 @@
         </select>
       </div>
       <div>
-        <label class="text-xs font-semibold text-gray-400 uppercase mb-1 block">{{
+        <label for="res-room" class="text-xs font-semibold text-gray-400 uppercase mb-1 block">{{
           'RESERVATIONS.FILTER_ROOM' | translate
         }}</label>
         <select
+          id="res-room"
           [(ngModel)]="habitacionFilter"
           class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#1D4ED8] transition text-gray-800"
         >

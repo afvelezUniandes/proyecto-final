@@ -90,6 +90,7 @@
                       type="number"
                       min="1"
                       step="1"
+                      [attr.aria-label]="('TARIFFS.COL_NEW' | translate) + ' ' + row.nombre"
                       placeholder="Ej: 350000"
                       class="w-40 px-3 py-2 border rounded-lg text-sm text-gray-800 outline-none transition"
                       [class.border-red-400]="row.saveError"

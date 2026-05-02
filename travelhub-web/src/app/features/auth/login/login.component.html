@@ -4,8 +4,9 @@
     <app-language-selector theme="light" />
   </div>
 
-  <!-- Left: branding -->
+  <!-- Left: branding (decorative, hidden from screen readers) -->
   <div
+    aria-hidden="true"
     class="hidden lg:flex lg:w-1/2 bg-travelBlue flex-col justify-center px-16 py-12 relative overflow-hidden"
   >
     <div class="absolute inset-0 opacity-10">
@@ -56,7 +57,7 @@
   </div>
 
   <!-- Right: form -->
-  <div class="flex-1 flex items-center justify-center px-6 py-12 bg-white">
+  <main class="flex-1 flex items-center justify-center px-6 py-12 bg-white">
     <div class="w-full max-w-md">
       <!-- Logo mobile -->
       <div class="lg:hidden flex items-center gap-3 mb-8">
@@ -101,9 +102,9 @@
 
       <!-- LOGIN FORM -->
       @if (tab() === 'login') {
-        <form (ngSubmit)="onLogin()" class="space-y-5">
+        <form (ngSubmit)="onLogin()" class="space-y-5" aria-label="Formulario de inicio de sesión">
           <div>
-            <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
+            <label for="login-email" class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
               'AUTH.EMAIL_LABEL' | translate
             }}</label>
             <div class="relative">
@@ -112,6 +113,7 @@
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
+                aria-hidden="true"
               >
                 <path
                   stroke-linecap="round"
@@ -121,26 +123,32 @@
                 />
               </svg>
               <input
+                id="login-email"
                 [(ngModel)]="loginEmail"
                 name="email"
                 type="email"
                 [placeholder]="'AUTH.EMAIL_PLACEHOLDER' | translate"
                 class="input-field pl-10"
                 autocomplete="email"
+                required
+                aria-describedby="login-error"
               />
             </div>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
-              'AUTH.PASSWORD_LABEL' | translate
-            }}</label>
+            <label
+              for="login-password"
+              class="block text-sm font-medium text-travelGray-700 mb-1.5"
+              >{{ 'AUTH.PASSWORD_LABEL' | translate }}</label
+            >
             <div class="relative">
               <svg
                 class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-travelGray-400"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
+                aria-hidden="true"
               >
                 <path
                   stroke-linecap="round"
@@ -150,19 +158,29 @@
                 />
               </svg>
               <input
+                id="login-password"
                 [(ngModel)]="loginPassword"
                 name="password"
                 [type]="showPassword ? 'text' : 'password'"
                 [placeholder]="'AUTH.PASSWORD_PLACEHOLDER' | translate"
                 class="input-field pl-10 pr-10"
                 autocomplete="current-password"
+                required
+                aria-describedby="login-error"
               />
               <button
                 type="button"
                 (click)="showPassword = !showPassword"
+                [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
                 class="absolute right-3 top-1/2 -translate-y-1/2 text-travelGray-400 hover:text-travelGray-600"
               >
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
                   @if (showPassword) {
                     <path
                       stroke-linecap="round"
@@ -200,7 +218,13 @@
           </div>
 
           @if (loginError()) {
-            <p class="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-lg">{{ loginError() }}</p>
+            <p
+              id="login-error"
+              role="alert"
+              class="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-lg"
+            >
+              {{ loginError() }}
+            </p>
           }
 
           <button type="submit" [disabled]="loginLoading" class="btn-primary w-full">
@@ -238,65 +262,85 @@
 
       <!-- REGISTER FORM -->
       @if (tab() === 'register') {
-        <form (ngSubmit)="onRegister()" class="space-y-5">
+        <form (ngSubmit)="onRegister()" class="space-y-5" aria-label="Formulario de registro">
           <div>
-            <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
+            <label for="reg-nombre" class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
               'AUTH.NAME_LABEL' | translate
             }}</label>
             <input
+              id="reg-nombre"
               [(ngModel)]="registerNombre"
               name="nombre"
               type="text"
               [placeholder]="'AUTH.NAME_PLACEHOLDER' | translate"
               class="input-field"
               autocomplete="name"
+              required
+              aria-describedby="reg-error"
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
+            <label for="reg-email" class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
               'AUTH.EMAIL_LABEL' | translate
             }}</label>
             <input
+              id="reg-email"
               [(ngModel)]="registerEmail"
               name="email"
               type="email"
               [placeholder]="'AUTH.EMAIL_PLACEHOLDER' | translate"
               class="input-field"
               autocomplete="email"
+              required
+              aria-describedby="reg-error"
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
-              'AUTH.PASSWORD_LABEL' | translate
-            }}</label>
+            <label
+              for="reg-password"
+              class="block text-sm font-medium text-travelGray-700 mb-1.5"
+              >{{ 'AUTH.PASSWORD_LABEL' | translate }}</label
+            >
             <input
+              id="reg-password"
               [(ngModel)]="registerPassword"
               name="password"
               [type]="showRegisterPassword ? 'text' : 'password'"
               [placeholder]="'AUTH.PASSWORD_HINT' | translate"
               class="input-field"
               autocomplete="new-password"
+              required
+              aria-describedby="reg-error"
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
+            <label for="reg-confirm" class="block text-sm font-medium text-travelGray-700 mb-1.5">{{
               'AUTH.CONFIRM_PASSWORD_LABEL' | translate
             }}</label>
             <input
+              id="reg-confirm"
               [(ngModel)]="registerConfirm"
               name="confirm"
               [type]="showRegisterPassword ? 'text' : 'password'"
               [placeholder]="'AUTH.CONFIRM_PASSWORD_PLACEHOLDER' | translate"
               class="input-field"
               autocomplete="new-password"
+              required
+              aria-describedby="reg-error"
             />
           </div>
 
           @if (registerError()) {
-            <p class="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-lg">{{ registerError() }}</p>
+            <p
+              id="reg-error"
+              role="alert"
+              class="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-lg"
+            >
+              {{ registerError() }}
+            </p>
           }
           @if (registerSuccess()) {
-            <p class="text-green-700 text-sm bg-green-50 px-4 py-3 rounded-lg">
+            <p role="status" class="text-green-700 text-sm bg-green-50 px-4 py-3 rounded-lg">
               {{ registerSuccess() }}
             </p>
           }
@@ -338,5 +382,5 @@
         </a>
       </div>
     </div>
-  </div>
+  </main>
 </div>

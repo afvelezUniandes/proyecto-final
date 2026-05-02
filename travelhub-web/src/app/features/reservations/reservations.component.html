@@ -1,125 +1,136 @@
+<a href="#main-content" class="skip-link">Ir al contenido principal</a>
 <div class="min-h-screen bg-gray-50">
   <!-- Topbar -->
-  <nav class="bg-[#1D4ED8] px-6 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <div class="w-8 h-8 bg-[#F97316] rounded-lg flex items-center justify-center">
-        <span class="text-white font-bold">T</span>
+  <header>
+    <nav
+      aria-label="Navegación principal"
+      class="bg-[#1D4ED8] px-6 py-3 flex items-center justify-between"
+    >
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-[#F97316] rounded-lg flex items-center justify-center">
+          <span class="text-white font-bold">T</span>
+        </div>
+        <a routerLink="/home" class="text-white font-bold text-lg">TravelHub</a>
       </div>
-      <a routerLink="/home" class="text-white font-bold text-lg">TravelHub</a>
-    </div>
-    <div class="flex items-center gap-4">
-      <a routerLink="/home" class="text-white/90 text-sm hover:text-white">{{
-        'NAV.HOME' | translate
-      }}</a>
-      <a
-        routerLink="/reservations"
-        class="text-white text-sm font-semibold border-b border-white/50"
-        >{{ 'NAV.RESERVATIONS' | translate }}</a
-      >
-      <app-language-selector />
-    </div>
-  </nav>
-
-  <div class="max-w-4xl mx-auto px-6 py-8">
-    <h1 class="text-2xl font-bold text-gray-900 mb-6">{{ 'RESERVATIONS.TITLE' | translate }}</h1>
-
-    <!-- Tabs -->
-    <div class="flex gap-2 mb-6 flex-wrap">
-      @for (tab of ['todas', 'confirmada', 'completada', 'cancelada']; track tab) {
-        <button
-          (click)="activeTab = $any(tab)"
-          [class.bg-[#1D4ED8]]="activeTab === tab"
-          [class.text-white]="activeTab === tab"
-          [class.border-[#1D4ED8]]="activeTab === tab"
-          class="px-4 py-2 rounded-full text-sm border border-gray-200 text-gray-600 hover:border-[#1D4ED8] hover:text-[#1D4ED8] transition capitalize"
+      <div class="flex items-center gap-4">
+        <a routerLink="/home" class="text-white/90 text-sm hover:text-white">{{
+          'NAV.HOME' | translate
+        }}</a>
+        <a
+          routerLink="/reservations"
+          class="text-white text-sm font-semibold border-b border-white/50"
+          >{{ 'NAV.RESERVATIONS' | translate }}</a
         >
-          {{ tab }}
-        </button>
+        <app-language-selector />
+      </div>
+    </nav>
+  </header>
+
+  <main id="main-content">
+    <div class="max-w-4xl mx-auto px-6 py-8">
+      <h1 class="text-2xl font-bold text-gray-900 mb-6">{{ 'RESERVATIONS.TITLE' | translate }}</h1>
+
+      <!-- Tabs -->
+      <div class="flex gap-2 mb-6 flex-wrap">
+        @for (tab of ['todas', 'confirmada', 'completada', 'cancelada']; track tab) {
+          <button
+            (click)="activeTab = $any(tab)"
+            [class.bg-[#1D4ED8]]="activeTab === tab"
+            [class.text-white]="activeTab === tab"
+            [class.border-[#1D4ED8]]="activeTab === tab"
+            class="px-4 py-2 rounded-full text-sm border border-gray-200 text-gray-600 hover:border-[#1D4ED8] hover:text-[#1D4ED8] transition capitalize"
+          >
+            {{ tab }}
+          </button>
+        }
+      </div>
+
+      @if (loading) {
+        <div class="flex justify-center py-24">
+          <div
+            class="w-10 h-10 border-4 border-[#1D4ED8] border-t-transparent rounded-full animate-spin"
+          ></div>
+        </div>
       }
-    </div>
 
-    @if (loading) {
-      <div class="flex justify-center py-24">
-        <div
-          class="w-10 h-10 border-4 border-[#1D4ED8] border-t-transparent rounded-full animate-spin"
-        ></div>
-      </div>
-    }
+      @if (error && !loading) {
+        <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">
+          {{ error }}
+        </div>
+      }
 
-    @if (error && !loading) {
-      <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">
-        {{ error }}
-      </div>
-    }
-
-    @if (!loading && !error) {
-      <div class="space-y-4">
-        @for (r of filtered(); track r.id) {
-          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <div class="flex items-start justify-between gap-4">
-              <div class="flex-1">
-                <div class="flex items-center gap-3 mb-1">
-                  <h3 class="font-bold text-gray-900">
-                    {{ 'RESERVATIONS.BOOKING_PREFIX' | translate }}{{ r.id }}
-                  </h3>
-                  <span
-                    class="text-xs px-2 py-0.5 rounded-full font-medium {{ estadoClass(r.estado) }}"
-                  >
-                    {{ 'RESERVATION.STATUS.' + r.estado | translate }}
-                  </span>
-                </div>
-                <p class="text-gray-500 text-sm">
-                  {{ formatDate(r.fecha_checkin || '') }} →
-                  {{ formatDate(r.fecha_checkout || '') }}
-                </p>
-                @if (r.codigo) {
-                  <p class="text-gray-400 text-xs mt-1">{{ r.codigo }}</p>
-                }
-                @if (r.monto_total) {
-                  <p class="text-[#1D4ED8] font-semibold text-sm mt-2">
-                    {{ formatPrice(r.monto_total) }}
+      @if (!loading && !error) {
+        <div class="space-y-4">
+          @for (r of filtered(); track r.id) {
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-1">
+                    <h3 class="font-bold text-gray-900">
+                      {{ 'RESERVATIONS.BOOKING_PREFIX' | translate }}{{ r.id }}
+                    </h3>
+                    <span
+                      class="text-xs px-2 py-0.5 rounded-full font-medium {{
+                        estadoClass(r.estado)
+                      }}"
+                    >
+                      {{ 'RESERVATION.STATUS.' + r.estado | translate }}
+                    </span>
+                  </div>
+                  <p class="text-gray-500 text-sm">
+                    {{ formatDate(r.fecha_checkin || '') }} →
+                    {{ formatDate(r.fecha_checkout || '') }}
                   </p>
-                }
-              </div>
-              <div class="flex flex-col gap-2">
-                <a
-                  [routerLink]="['/reservations', r.id]"
-                  class="text-[#1D4ED8] border border-[#1D4ED8]/30 text-xs px-3 py-1.5 rounded-lg hover:bg-blue-50 transition text-center"
-                >
-                  Ver {{ 'COMMON.DETAIL' | translate }}
-                </a>
-                @if (
-                  r.estado.toLowerCase() !== 'cancelada' && r.estado.toLowerCase() !== 'completada'
-                ) {
-                  <button
-                    (click)="cancel(r.id)"
-                    [disabled]="cancelingId === r.id"
-                    class="text-red-600 border border-red-200 text-xs px-3 py-1.5 rounded-lg hover:bg-red-50 disabled:opacity-50 transition"
+                  @if (r.codigo) {
+                    <p class="text-gray-400 text-xs mt-1">{{ r.codigo }}</p>
+                  }
+                  @if (r.monto_total) {
+                    <p class="text-[#1D4ED8] font-semibold text-sm mt-2">
+                      {{ formatPrice(r.monto_total) }}
+                    </p>
+                  }
+                </div>
+                <div class="flex flex-col gap-2">
+                  <a
+                    [routerLink]="['/reservations', r.id]"
+                    class="text-[#1D4ED8] border border-[#1D4ED8]/30 text-xs px-3 py-1.5 rounded-lg hover:bg-blue-50 transition text-center"
                   >
-                    {{
-                      cancelingId === r.id
-                        ? ('RESERVATIONS.CANCELLING' | translate)
-                        : ('RESERVATIONS.CANCEL_BTN' | translate)
-                    }}
-                  </button>
-                }
+                    Ver {{ 'COMMON.DETAIL' | translate }}
+                  </a>
+                  @if (
+                    r.estado.toLowerCase() !== 'cancelada' &&
+                    r.estado.toLowerCase() !== 'completada'
+                  ) {
+                    <button
+                      (click)="cancel(r.id)"
+                      [disabled]="cancelingId === r.id"
+                      class="text-red-600 border border-red-200 text-xs px-3 py-1.5 rounded-lg hover:bg-red-50 disabled:opacity-50 transition"
+                    >
+                      {{
+                        cancelingId === r.id
+                          ? ('RESERVATIONS.CANCELLING' | translate)
+                          : ('RESERVATIONS.CANCEL_BTN' | translate)
+                      }}
+                    </button>
+                  }
+                </div>
               </div>
             </div>
-          </div>
-        }
-        @if (filtered().length === 0) {
-          <div class="text-center py-24 text-gray-400">
-            <div class="text-6xl mb-4">📋</div>
-            <p class="text-lg font-medium">{{ 'RESERVATIONS.EMPTY_TITLE' | translate }}</p>
-            <p class="text-sm">{{ 'RESERVATIONS.EMPTY_CTA' | translate }}</p>
-            <a
-              routerLink="/home"
-              class="mt-4 inline-block bg-[#1D4ED8] text-white text-sm px-6 py-2 rounded-xl hover:bg-blue-700 transition"
-              >{{ 'RESERVATIONS.SEARCH_CTA' | translate }}</a
-            >
-          </div>
-        }
-      </div>
-    }
-  </div>
+          }
+          @if (filtered().length === 0) {
+            <div class="text-center py-24 text-gray-400">
+              <div class="text-6xl mb-4">📋</div>
+              <p class="text-lg font-medium">{{ 'RESERVATIONS.EMPTY_TITLE' | translate }}</p>
+              <p class="text-sm">{{ 'RESERVATIONS.EMPTY_CTA' | translate }}</p>
+              <a
+                routerLink="/home"
+                class="mt-4 inline-block bg-[#1D4ED8] text-white text-sm px-6 py-2 rounded-xl hover:bg-blue-700 transition"
+                >{{ 'RESERVATIONS.SEARCH_CTA' | translate }}</a
+              >
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </main>
 </div>

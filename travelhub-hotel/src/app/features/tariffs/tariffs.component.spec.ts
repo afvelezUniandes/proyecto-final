@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { RouterTestingModule } from '@angular/router/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideTranslateService } from '@ngx-translate/core';
 import { TariffsComponent } from './tariffs.component';
 import { HotelService } from '../../core/services/hotel.service';
 import { RoomService } from '../../core/services/room.service';
@@ -77,6 +79,8 @@ async function createComponent(
     providers: [
       { provide: HotelService, useValue: mockHotelService },
       { provide: RoomService, useValue: mockRoomService },
+      provideHttpClient(),
+      provideTranslateService({ fallbackLang: 'es' }),
     ],
   }).compileComponents();
 

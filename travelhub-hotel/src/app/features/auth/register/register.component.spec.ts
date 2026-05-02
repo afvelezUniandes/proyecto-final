@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideTranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import { RegisterComponent } from './register.component';
 import { ApiService } from '../../../core/services/api.service';
@@ -20,6 +22,8 @@ async function createComponent() {
       { provide: ApiService, useValue: mockApiService },
       { provide: AuthService, useValue: mockAuthService },
       provideRouter([]),
+      provideHttpClient(),
+      provideTranslateService({ fallbackLang: 'es' }),
     ],
   }).compileComponents();
 

@@ -135,7 +135,8 @@
     "RESERVE_NOW": "Reservar ahora",
     "RESERVING": "Reservando...",
     "NOT_FOUND": "Hotel no encontrado.",
-    "BACK_TO_SEARCH": "← Volver a búsqueda"
+    "BACK_TO_SEARCH": "← Volver a búsqueda",
+    "RESERVE_ERROR": "Error al crear la reserva."
   },
   "RESERVATIONS": {
     "TITLE": "Mis Reservas",
