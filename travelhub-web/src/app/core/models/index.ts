@@ -59,6 +59,8 @@ export interface CreateReservationRequest {
   num_huespedes: number;
   monto_total: number;
   moneda?: string;
+  nombre_hotel?: string;
+  tipo_habitacion?: string;
 }
 
 export interface OccupiedRoomsResponse {

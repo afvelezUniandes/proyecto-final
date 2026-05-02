@@ -11,18 +11,70 @@ import requests as http_requests
 bp = Blueprint('reservations', __name__)
 
 DATABASE_URL = os.getenv('RESERVATION_DATABASE_URL', 'postgresql://user:password@localhost:5432/travelhub')
-NOTIFICATION_SERVICE_URL = os.getenv('NOTIFICATION_SERVICE_URL', 'http://localhost:5003')
+NOTIFICATION_SERVICE_URL = os.getenv('NOTIFICATION_SERVICE_URL', 'http://localhost:5004')
+AUTH_SERVICE_URL = os.getenv('AUTH_SERVICE_URL', 'http://localhost:5000')
+CATALOG_SERVICE_URL = os.getenv('CATALOG_SERVICE_URL', 'http://localhost:5001')
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 
 
-def _notify(user_id: int, tipo: str, titulo: str, mensaje: str):
+def _get_user_email(user_id: int) -> str | None:
+    """Obtiene el email del usuario desde auth-service. Falla silenciosamente."""
+    try:
+        resp = http_requests.get(
+            f'{AUTH_SERVICE_URL}/profile',
+            headers={'X-User-Id': str(user_id)},
+            timeout=3,
+        )
+        if resp.status_code == 200:
+            return resp.json().get('email')
+    except Exception:
+        pass
+    return None
+
+
+def _get_hotel_room_info(hotel_id: int, habitacion_id: int) -> tuple[str, str]:
+    """Obtiene nombre del hotel y tipo de habitación. Devuelve strings vacíos si falla."""
+    nombre_hotel = ''
+    tipo_habitacion = ''
+    try:
+        resp = http_requests.get(f'{CATALOG_SERVICE_URL}/hotels/{hotel_id}', timeout=3)
+        if resp.status_code == 200:
+            nombre_hotel = resp.json().get('nombre', '')
+    except Exception:
+        pass
+    try:
+        resp = http_requests.get(
+            f'{CATALOG_SERVICE_URL}/rooms',
+            params={'hotel_id': hotel_id},
+            timeout=3,
+        )
+        if resp.status_code == 200:
+            rooms = resp.json() if isinstance(resp.json(), list) else resp.json().get('rooms', [])
+            for r in rooms:
+                if r.get('id') == habitacion_id:
+                    tipo_habitacion = r.get('tipo') or r.get('nombre', '')
+                    break
+    except Exception:
+        pass
+    return nombre_hotel, tipo_habitacion
+
+
+def _notify(user_id: int, tipo: str, titulo: str, mensaje: str, extra: dict | None = None):
     """Envía notificación al notification-service. Falla silenciosamente."""
     try:
+        payload = {
+            'user_id': user_id,
+            'tipo': tipo,
+            'titulo': titulo,
+            'mensaje': mensaje,
+        }
+        if extra:
+            payload.update(extra)
         http_requests.post(
             f'{NOTIFICATION_SERVICE_URL}/notifications',
-            json={'user_id': user_id, 'tipo': tipo, 'titulo': titulo, 'mensaje': mensaje},
-            timeout=3
+            json=payload,
+            timeout=3,
         )
     except Exception:
         pass
@@ -169,11 +221,25 @@ def create_reservation():
         session.add(pago)
         session.commit()
 
+        email = _get_user_email(user_id)
+        nombre_hotel = data.get('nombre_hotel', '')
+        tipo_habitacion = data.get('tipo_habitacion', '')
         _notify(
             user_id=user_id,
             tipo='reserva_creada',
             titulo='Reserva confirmada',
-            mensaje=f'Tu reserva {reserva.codigo} ha sido confirmada. Check-in: {checkin}, Check-out: {checkout}.'
+            mensaje=f'Tu reserva {reserva.codigo} ha sido confirmada. Check-in: {checkin}, Check-out: {checkout}.',
+            extra={
+                'email': email,
+                'codigo': reserva.codigo,
+                'nombre_hotel': nombre_hotel,
+                'tipo_habitacion': tipo_habitacion,
+                'fecha_checkin': str(checkin),
+                'fecha_checkout': str(checkout),
+                'num_huespedes': data['num_huespedes'],
+                'monto_total': str(data['monto_total']),
+                'moneda': data.get('moneda', 'COP'),
+            },
         )
 
         return jsonify(reserva_to_dict(reserva)), 201
@@ -306,11 +372,23 @@ def cancel_reservation(reserva_id):
         reserva.estado = 'cancelada'
         session.commit()
 
+        email = _get_user_email(user_id)
+        nombre_hotel, tipo_habitacion = _get_hotel_room_info(reserva.hotel_id, reserva.habitacion_id)
         _notify(
             user_id=user_id,
             tipo='reserva_cancelada',
             titulo='Reserva cancelada',
-            mensaje=f'Tu reserva {reserva.codigo} ha sido cancelada exitosamente.'
+            mensaje=f'Tu reserva {reserva.codigo} ha sido cancelada exitosamente.',
+            extra={
+                'email': email,
+                'codigo': reserva.codigo,
+                'nombre_hotel': nombre_hotel,
+                'tipo_habitacion': tipo_habitacion,
+                'fecha_checkin': str(reserva.fecha_checkin),
+                'fecha_checkout': str(reserva.fecha_checkout),
+                'monto_total': str(reserva.monto_total),
+                'moneda': reserva.moneda or 'COP',
+            },
         )
 
         return jsonify(reserva_to_dict(reserva)), 200

@@ -41,6 +41,20 @@ services:
     environment:
       RESERVATION_DATABASE_URL: postgresql://travelhub_user:travelhub_pass@postgres:5432/travelhub
       JWT_SECRET: mi_secreto_super_seguro_jwt_2024
+      NOTIFICATION_SERVICE_URL: http://notification-service:5004
+      AUTH_SERVICE_URL: http://auth-service:5000
+      CATALOG_SERVICE_URL: http://catalog-service:5001
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  notification-service:
+    environment:
+      NOTIFICATION_DATABASE_URL: postgresql://travelhub_user:travelhub_pass@postgres:5432/travelhub
+      JWT_SECRET: mi_secreto_super_seguro_jwt_2024
+      PORT: "5004"
+      SENDGRID_API_KEY: ""
+      SENDGRID_FROM_EMAIL: noreply@travelhub.com
     depends_on:
       postgres:
         condition: service_healthy

@@ -161,6 +161,8 @@ export class HotelDetailComponent implements OnInit {
         num_huespedes: this.adultos,
         monto_total: this.total(),
         moneda: 'COP',
+        nombre_hotel: this.hotel.nombre,
+        tipo_habitacion: this.selectedRoom()?.tipo ?? '',
       })
       .subscribe({
         next: (reservation) => {

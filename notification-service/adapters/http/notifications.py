@@ -1,8 +1,10 @@
 from flask import Blueprint, request, jsonify
 from adapters.orm.models import Notificacion
+from adapters.email.sender import send_reservation_created, send_reservation_cancelled
 from config import engine, JWT_SECRET
 from sqlalchemy.orm import Session
 import jwt
+import threading
 
 bp = Blueprint('notifications', __name__)
 
@@ -27,7 +29,52 @@ def _notif_dict(n: Notificacion) -> dict:
         'mensaje': n.mensaje,
         'leida': n.leida,
         'fecha_creacion': n.fecha_creacion.isoformat() if n.fecha_creacion else None,
+        'email_enviado': n.email_enviado,
+        'email_error': n.email_error,
     }
+
+
+def _send_email_async(notif_id: int, tipo: str, extra: dict):
+    """Envía el email en un hilo separado y actualiza el estado en BD."""
+    to_email = extra.get('email')
+    if not to_email:
+        return
+
+    if tipo == 'reserva_creada':
+        ok, err = send_reservation_created(
+            to_email=to_email,
+            codigo=extra.get('codigo', ''),
+            nombre_hotel=extra.get('nombre_hotel', ''),
+            tipo_habitacion=extra.get('tipo_habitacion', ''),
+            fecha_checkin=extra.get('fecha_checkin', ''),
+            fecha_checkout=extra.get('fecha_checkout', ''),
+            num_huespedes=extra.get('num_huespedes', 1),
+            monto_total=extra.get('monto_total', ''),
+            moneda=extra.get('moneda', 'COP'),
+        )
+    elif tipo == 'reserva_cancelada':
+        ok, err = send_reservation_cancelled(
+            to_email=to_email,
+            codigo=extra.get('codigo', ''),
+            nombre_hotel=extra.get('nombre_hotel', ''),
+            tipo_habitacion=extra.get('tipo_habitacion', ''),
+            fecha_checkin=extra.get('fecha_checkin', ''),
+            fecha_checkout=extra.get('fecha_checkout', ''),
+            monto_total=extra.get('monto_total', ''),
+            moneda=extra.get('moneda', 'COP'),
+        )
+    else:
+        return
+
+    try:
+        with Session(engine) as session:
+            n = session.get(Notificacion, notif_id)
+            if n:
+                n.email_enviado = ok
+                n.email_error = err
+                session.commit()
+    except Exception:
+        pass
 
 
 # ── GET /notifications ─────────────────────────────────────────────
@@ -65,6 +112,24 @@ def create_notification():
         session.add(n)
         session.commit()
         session.refresh(n)
+        notif_id = n.id
+        tipo = n.tipo
+
+    # Disparar envío de email de forma asíncrona (no bloquea la respuesta)
+    extra = {k: data.get(k) for k in (
+        'email', 'codigo', 'nombre_hotel', 'tipo_habitacion',
+        'fecha_checkin', 'fecha_checkout', 'num_huespedes',
+        'monto_total', 'moneda',
+    )}
+    if extra.get('email') and tipo in ('reserva_creada', 'reserva_cancelada'):
+        threading.Thread(
+            target=_send_email_async,
+            args=(notif_id, tipo, extra),
+            daemon=True,
+        ).start()
+
+    with Session(engine) as session:
+        n = session.get(Notificacion, notif_id)
         return jsonify(_notif_dict(n)), 201
 
 

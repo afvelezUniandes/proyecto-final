@@ -47,6 +47,24 @@ services:
     environment:
       RESERVATION_DATABASE_URL: postgresql://${RDS_USER}:${RDS_PASS}@${RDS_HOST}:5432/postgres
       JWT_SECRET: ${JWT_SECRET}
+      RESERVATION_DATABASE_URL: postgresql://postgres:ogvynJXnQk7zLG4K@travelhub-db.cipyouuaqkqn.us-east-1.rds.amazonaws.com:5432/postgres
+      JWT_SECRET: tu-clave-jwt-secreta-debe-ser-mas-larga-y-compleja-en-produccion-2026
+      NOTIFICATION_SERVICE_URL: http://notification-service:5004
+      AUTH_SERVICE_URL: http://auth-service:5000
+      CATALOG_SERVICE_URL: http://catalog-service:5001
+    networks:
+      - travelhub-net
+
+  notification-service:
+    build: ./notification-service
+    ports:
+      - "5004:5004"
+    environment:
+      NOTIFICATION_DATABASE_URL: postgresql://postgres:ogvynJXnQk7zLG4K@travelhub-db.cipyouuaqkqn.us-east-1.rds.amazonaws.com:5432/postgres
+      JWT_SECRET: tu-clave-jwt-secreta-debe-ser-mas-larga-y-compleja-en-produccion-2026
+      PORT: "5004"
+      SENDGRID_API_KEY: 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
+      SENDGRID_FROM_EMAIL: af.velezv1@uniandes.edu.co
     networks:
       - travelhub-net
 

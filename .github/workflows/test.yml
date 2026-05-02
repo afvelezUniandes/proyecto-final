@@ -26,6 +26,8 @@ jobs:
             path: ./catalog-service
           - name: Reservation Service
             path: ./reservation-service
+          - name: Notification Service
+            path: ./notification-service
 
     steps:
       - name: Checkout code
