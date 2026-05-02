@@ -288,6 +288,8 @@ describe('HotelDetailComponent', () => {
         num_huespedes: 1,
         monto_total: 1000000,
         moneda: 'COP',
+        nombre_hotel: 'Hotel Caribe',
+        tipo_habitacion: 'suite',
       });
     });
 
