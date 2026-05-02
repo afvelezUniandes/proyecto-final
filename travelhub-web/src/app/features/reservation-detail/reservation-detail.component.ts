@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { of } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 import { LanguageSelectorComponent } from '../../shared/language-selector/language-selector.component';
 import { ReservationService } from '../../core/services/reservation.service';
 import { CatalogService } from '../../core/services/catalog.service';
@@ -10,7 +11,7 @@ import { Reservation, Hotel } from '../../core/models';
 @Component({
   selector: 'app-reservation-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, LanguageSelectorComponent],
+  imports: [CommonModule, RouterLink, LanguageSelectorComponent, TranslateModule],
   templateUrl: './reservation-detail.component.html',
 })
 export class ReservationDetailComponent implements OnInit {

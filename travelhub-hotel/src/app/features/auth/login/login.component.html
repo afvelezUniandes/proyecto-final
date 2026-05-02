@@ -5,50 +5,65 @@
   </div>
 
   <!-- Left: form -->
-  <div class="flex-1 flex items-center justify-center px-8 py-12 bg-white">
+  <main class="flex-1 flex items-center justify-center px-8 py-12 bg-white">
     <div class="w-full max-w-sm">
       <div class="flex items-center gap-3 mb-10">
         <div class="w-10 h-10 bg-travelOrange rounded-xl flex items-center justify-center">
           <span class="text-white font-bold text-lg">T</span>
         </div>
         <div>
-          <div class="font-bold text-travelGray-900">TravelHub</div>
-          <div class="text-xs text-travelGray-400">Portal de Hoteles</div>
+          <div class="font-bold text-travelGray-900">{{ 'NAV.BRAND' | translate }}</div>
+          <div class="text-xs text-travelGray-400">{{ 'NAV.PORTAL' | translate }}</div>
         </div>
       </div>
 
-      <h2 class="text-2xl font-bold text-travelGray-900 mb-1">Iniciar Sesión</h2>
-      <p class="text-travelGray-500 text-sm mb-8">Accede al panel de administración de tu hotel</p>
+      <h2 class="text-2xl font-bold text-travelGray-900 mb-1">
+        {{ 'AUTH.LOGIN_TITLE' | translate }}
+      </h2>
+      <p class="text-travelGray-500 text-sm mb-8">{{ 'AUTH.LOGIN_SUBTITLE' | translate }}</p>
 
-      <form (ngSubmit)="onLogin()" class="space-y-5">
+      <form (ngSubmit)="onLogin()" class="space-y-5" aria-label="Formulario de inicio de sesión">
         <div>
-          <label class="block text-sm font-medium text-travelGray-700 mb-1.5"
-            >Correo del administrador</label
+          <label
+            for="hotel-login-email"
+            class="block text-sm font-medium text-travelGray-700 mb-1.5"
+            >{{ 'AUTH.EMAIL_LABEL' | translate }}</label
           >
           <input
+            id="hotel-login-email"
             [(ngModel)]="email"
             name="email"
             type="email"
             placeholder="admin@mihotel.com"
             class="input-field"
             autocomplete="email"
+            required
+            aria-describedby="hotel-login-error"
           />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-travelGray-700 mb-1.5">Contraseña</label>
+          <label
+            for="hotel-login-password"
+            class="block text-sm font-medium text-travelGray-700 mb-1.5"
+            >{{ 'AUTH.PASSWORD_LABEL' | translate }}</label
+          >
           <div class="relative">
             <input
+              id="hotel-login-password"
               [(ngModel)]="password"
               name="password"
               [type]="showPassword ? 'text' : 'password'"
               placeholder="••••••••"
               class="input-field pr-10"
               autocomplete="current-password"
+              required
+              aria-describedby="hotel-login-error"
             />
             <button
               type="button"
               (click)="showPassword = !showPassword"
+              [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
               class="absolute right-3 top-1/2 -translate-y-1/2 text-travelGray-400 hover:text-travelGray-600"
             >
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -79,7 +94,13 @@
         </div>
 
         @if (error()) {
-          <p class="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-lg">{{ error() }}</p>
+          <p
+            id="hotel-login-error"
+            role="alert"
+            class="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-lg"
+          >
+            {{ error() }}
+          </p>
         }
 
         <button type="submit" [disabled]="loading" class="btn-primary w-full justify-center flex">
@@ -100,22 +121,27 @@
               />
             </svg>
           } @else {
-            Iniciar Sesión
+            {{ 'AUTH.LOGIN_BTN' | translate }}
           }
         </button>
       </form>
 
       <p class="text-center text-sm text-travelGray-500 mt-6">
-        ¿No tienes cuenta?
-        <a routerLink="/register" class="text-travelBlue font-medium hover:underline"
-          >Regístrate gratis</a
+        {{ 'AUTH.REGISTER_LINK' | translate }}
+        <button
+          type="button"
+          routerLink="/hotel/register"
+          class="text-travelBlue font-semibold hover:underline bg-transparent border-0 cursor-pointer p-0 ml-1"
         >
+          Registrar hotel
+        </button>
       </p>
     </div>
-  </div>
+  </main>
 
   <!-- Right: features panel -->
   <div
+    aria-hidden="true"
     class="hidden lg:flex lg:w-1/2 bg-travelBlue flex-col justify-center px-16 py-12 relative overflow-hidden"
   >
     <div class="absolute inset-0 opacity-10">
@@ -123,15 +149,17 @@
       <div class="absolute bottom-20 left-10 w-80 h-80 rounded-full bg-white"></div>
     </div>
     <div class="relative z-10">
-      <h2 class="text-white text-4xl font-bold leading-tight mb-4">Haz crecer<br />tu negocio</h2>
+      <h2 class="text-white text-4xl font-bold leading-tight mb-4">
+        {{ 'AUTH.SIDE_GROW' | translate }}
+      </h2>
       <p class="text-white/80 mb-12">
-        Únete a la red de hoteles de TravelHub<br />y llega a miles de viajeros.
+        {{ 'AUTH.SIDE_GROW_SUB' | translate }}
       </p>
       <div class="space-y-4">
         @for (f of features; track f.title) {
           <div class="flex items-start gap-4 bg-white/10 rounded-2xl p-5">
             <div
-              class="w-10 h-10 bg-travelOrange rounded-xl flex items-center justify-center flex-shrink-0"
+              class="w-10 h-10 bg-travelOrange rounded-xl flex items-center justify-center shrink-0"
             >
               <span class="text-white text-lg">{{ f.icon }}</span>
             </div>

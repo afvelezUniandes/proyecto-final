@@ -1,233 +1,256 @@
+<a href="#main-content" class="skip-link">Ir al contenido principal</a>
 <div class="min-h-screen bg-gray-50">
   <!-- Topbar -->
-  <nav class="bg-[#1D4ED8] px-6 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <div class="w-8 h-8 bg-[#F97316] rounded-lg flex items-center justify-center">
-        <span class="text-white font-bold">T</span>
-      </div>
-      <a routerLink="/home" class="text-white font-bold text-lg">TravelHub</a>
-    </div>
-    <div class="flex items-center gap-4">
-      <a routerLink="/home" class="text-white/90 text-sm hover:text-white">Inicio</a>
-      <a routerLink="/reservations" class="text-white/90 text-sm hover:text-white">Mis Reservas</a>
-      <app-language-selector />
-    </div>
-  </nav>
-
-  <!-- Inline search bar -->
-  <div class="bg-[#1D4ED8] px-6 py-4">
-    <div class="max-w-5xl mx-auto">
-      <div class="bg-white rounded-xl p-3 shadow flex flex-col sm:flex-row gap-3 items-end">
-        <div class="flex-1 flex flex-col gap-0.5 min-w-0">
-          <label class="text-xs font-semibold text-gray-400 uppercase px-1">Ciudad</label>
-          <input
-            [(ngModel)]="ciudad"
-            placeholder="Bogotá, Colombia"
-            class="flex-1 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
-          />
+  <header>
+    <nav
+      aria-label="Navegación principal"
+      class="bg-[#1D4ED8] px-6 py-3 flex items-center justify-between"
+    >
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-[#F97316] rounded-lg flex items-center justify-center">
+          <span class="text-white font-bold">T</span>
         </div>
-        <div class="flex-1 flex flex-col gap-0.5 min-w-0">
-          <label class="text-xs font-semibold text-gray-400 uppercase px-1">Check-in</label>
-          <input
-            [(ngModel)]="checkIn"
-            type="date"
-            [min]="today"
-            class="flex-1 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
-          />
-        </div>
-        <div class="flex-1 flex flex-col gap-0.5 min-w-0">
-          <label class="text-xs font-semibold text-gray-400 uppercase px-1">Check-out</label>
-          <input
-            [(ngModel)]="checkOut"
-            type="date"
-            [min]="minCheckOut"
-            class="flex-1 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
-          />
-        </div>
-        <div class="flex flex-col gap-0.5">
-          <label class="text-xs font-semibold text-gray-400 uppercase px-1">Huéspedes</label>
-          <input
-            [(ngModel)]="huespedes"
-            type="number"
-            min="1"
-            max="20"
-            placeholder="Huéspedes"
-            class="w-28 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
-          />
-        </div>
-        <button
-          (click)="loadHotels()"
-          class="bg-[#F97316] text-white text-sm font-semibold px-6 py-2 rounded-lg hover:bg-orange-600 transition whitespace-nowrap"
-        >
-          🔍 Buscar
-        </button>
+        <a routerLink="/home" class="text-white font-bold text-lg">TravelHub</a>
       </div>
-      @if (dateError) {
-        <p class="text-red-200 text-xs mt-2 px-1">⚠️ {{ dateError }}</p>
-      }
-    </div>
-  </div>
-
-  <div class="max-w-5xl mx-auto px-6 py-8">
-    <!-- Sort chips -->
-    <div class="flex items-center gap-3 mb-6 flex-wrap">
-      <span class="text-sm text-gray-500 font-medium">Ordenar por:</span>
-      @for (opt of sortOptions; track opt.key) {
-        <button
-          (click)="setSortBy($any(opt.key))"
-          [class.bg-[#1D4ED8]]="sortBy === opt.key"
-          [class.text-white]="sortBy === opt.key"
-          [class.border-[#1D4ED8]]="sortBy === opt.key"
-          class="px-4 py-1.5 rounded-full text-sm border border-gray-300 text-gray-600 hover:border-[#1D4ED8] hover:text-[#1D4ED8] transition"
-        >
-          {{ opt.label }}
-        </button>
-      }
-      @if (ciudad) {
-        <span class="ml-auto text-sm text-gray-500">
-          {{ total }} resultado(s)
-          @if (ciudad) {
-            en <strong>{{ ciudad }}</strong>
-          }
-          @if (checkIn && checkOut) {
-            · {{ checkIn }} → {{ checkOut }}
-          }
-          @if (huespedes > 0) {
-            · {{ huespedes }} huésped(es)
-          }
-        </span>
-      }
-    </div>
-
-    <!-- Loading -->
-    @if (loading) {
-      <div class="flex justify-center py-24">
-        <div
-          class="w-10 h-10 border-4 border-[#1D4ED8] border-t-transparent rounded-full animate-spin"
-        ></div>
+      <div class="flex items-center gap-4">
+        <a routerLink="/home" class="text-white/90 text-sm hover:text-white">{{
+          'NAV.HOME' | translate
+        }}</a>
+        <a routerLink="/reservations" class="text-white/90 text-sm hover:text-white">{{
+          'NAV.MY_RESERVATIONS' | translate
+        }}</a>
+        <app-language-selector />
       </div>
-    }
+    </nav>
+  </header>
 
-    <!-- Error -->
-    @if (error && !loading) {
-      <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">
-        {{ error }}
-      </div>
-    }
-
-    <!-- Results grid -->
-    @if (!loading && !error) {
-      <div class="grid gap-4">
-        @for (hotel of hotels; track hotel.id) {
-          <div
-            class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col sm:flex-row hover:shadow-md transition-shadow"
-          >
-            <!-- Image -->
-            <img
-              [src]="
-                hotel.image_url ||
-                'https://travelhub-images-proyecto.s3.us-east-1.amazonaws.com/hotels/hotel-foto-1.jpg'
-              "
-              [alt]="hotel.nombre"
-              class="sm:w-48 h-40 sm:h-auto object-cover flex-shrink-0"
+  <main id="main-content">
+    <!-- Inline search bar -->
+    <div class="bg-[#1D4ED8] px-6 py-4">
+      <div class="max-w-5xl mx-auto">
+        <div class="bg-white rounded-xl p-3 shadow flex flex-col sm:flex-row gap-3 items-end">
+          <div class="flex-1 flex flex-col gap-0.5 min-w-0">
+            <label for="search-city" class="text-xs font-semibold text-gray-600 uppercase px-1">{{
+              'SEARCH.CITY' | translate
+            }}</label>
+            <input
+              id="search-city"
+              [(ngModel)]="ciudad"
+              placeholder="Bogotá, Colombia"
+              class="flex-1 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
             />
-            <!-- Info -->
-            <div class="p-5 flex-1 flex flex-col justify-between">
-              <div>
-                <div class="flex items-start justify-between gap-2">
-                  <h3 class="font-bold text-gray-900 text-lg">{{ hotel.nombre }}</h3>
-                  <div class="text-right flex-shrink-0">
-                    @if (
-                      hotel.precio_noche_max && hotel.precio_noche_max > (hotel.precio_noche || 0)
-                    ) {
-                      <div class="text-[#1D4ED8] font-bold text-base leading-tight">
-                        desde {{ formatPrice(hotel.precio_noche || 0) }}
-                      </div>
-                      <div class="text-[#1D4ED8] text-sm font-semibold leading-tight">
-                        hasta {{ formatPrice(hotel.precio_noche_max) }}
-                      </div>
-                    } @else {
-                      <div class="text-[#1D4ED8] font-bold text-xl">
-                        {{ formatPrice(hotel.precio_noche || 0) }}
-                      </div>
-                    }
-                    <div class="text-gray-400 text-xs">por noche</div>
+          </div>
+          <div class="flex-1 flex flex-col gap-0.5 min-w-0">
+            <label for="search-checkin" class="text-xs font-semibold text-gray-600 uppercase px-1"
+              >Check-in</label
+            >
+            <input
+              id="search-checkin"
+              [(ngModel)]="checkIn"
+              type="date"
+              [min]="today"
+              class="flex-1 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
+            />
+          </div>
+          <div class="flex-1 flex flex-col gap-0.5 min-w-0">
+            <label for="search-checkout" class="text-xs font-semibold text-gray-600 uppercase px-1"
+              >Check-out</label
+            >
+            <input
+              id="search-checkout"
+              [(ngModel)]="checkOut"
+              type="date"
+              [min]="minCheckOut"
+              class="flex-1 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
+            />
+          </div>
+          <div class="flex flex-col gap-0.5">
+            <label for="search-guests" class="text-xs font-semibold text-gray-600 uppercase px-1">{{
+              'SEARCH.GUESTS' | translate
+            }}</label>
+            <input
+              id="search-guests"
+              [(ngModel)]="huespedes"
+              type="number"
+              min="1"
+              max="20"
+              [placeholder]="'SEARCH.GUESTS' | translate"
+              class="w-28 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
+            />
+          </div>
+          <button
+            (click)="loadHotels()"
+            class="bg-[#F97316] text-white text-sm font-semibold px-6 py-2 rounded-lg hover:bg-orange-600 transition whitespace-nowrap"
+          >
+            <span aria-hidden="true">🔍</span> {{ 'SEARCH.SEARCH_BTN' | translate }}
+          </button>
+        </div>
+        @if (dateError) {
+          <p class="text-red-200 text-xs mt-2 px-1">⚠️ {{ dateError }}</p>
+        }
+      </div>
+    </div>
+
+    <div class="max-w-5xl mx-auto px-6 py-8">
+      <!-- Sort chips -->
+      <div class="flex items-center gap-3 mb-6 flex-wrap">
+        <span class="text-sm text-gray-500 font-medium">Ordenar por:</span>
+        @for (opt of sortOptions; track opt.key) {
+          <button
+            (click)="setSortBy($any(opt.key))"
+            [class.bg-[#1D4ED8]]="sortBy === opt.key"
+            [class.text-white]="sortBy === opt.key"
+            [class.border-[#1D4ED8]]="sortBy === opt.key"
+            class="px-4 py-1.5 rounded-full text-sm border border-gray-300 text-gray-600 hover:border-[#1D4ED8] hover:text-[#1D4ED8] transition"
+          >
+            {{ opt.label }}
+          </button>
+        }
+        @if (ciudad) {
+          <span class="ml-auto text-sm text-gray-500">
+            {{ total }} {{ 'SEARCH.RESULTS' | translate }}
+            @if (ciudad) {
+              {{ 'SEARCH.IN' | translate }} <strong>{{ ciudad }}</strong>
+            }
+            @if (checkIn && checkOut) {
+              · {{ checkIn }} → {{ checkOut }}
+            }
+            @if (huespedes > 0) {
+              · {{ huespedes }} {{ 'SEARCH.GUEST_UNIT' | translate }}
+            }
+          </span>
+        }
+      </div>
+
+      <!-- Loading -->
+      @if (loading) {
+        <div class="flex justify-center py-24">
+          <div
+            class="w-10 h-10 border-4 border-[#1D4ED8] border-t-transparent rounded-full animate-spin"
+          ></div>
+        </div>
+      }
+
+      <!-- Error -->
+      @if (error && !loading) {
+        <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">
+          {{ error }}
+        </div>
+      }
+
+      <!-- Results grid -->
+      @if (!loading && !error) {
+        <div class="grid gap-4">
+          @for (hotel of hotels; track hotel.id) {
+            <div
+              class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col sm:flex-row hover:shadow-md transition-shadow"
+            >
+              <!-- Image -->
+              <img
+                [src]="
+                  hotel.image_url ||
+                  'https://travelhub-images-proyecto.s3.us-east-1.amazonaws.com/hotels/hotel-foto-1.jpg'
+                "
+                [alt]="hotel.nombre"
+                class="sm:w-48 h-40 sm:h-auto object-cover shrink-0"
+              />
+              <!-- Info -->
+              <div class="p-5 flex-1 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-start justify-between gap-2">
+                    <h3 class="font-bold text-gray-900 text-lg">{{ hotel.nombre }}</h3>
+                    <div class="text-right shrink-0">
+                      @if (
+                        hotel.precio_noche_max && hotel.precio_noche_max > (hotel.precio_noche || 0)
+                      ) {
+                        <div class="text-[#1D4ED8] font-bold text-base leading-tight">
+                          desde {{ formatPrice(hotel.precio_noche || 0) }}
+                        </div>
+                        <div class="text-[#1D4ED8] text-sm font-semibold leading-tight">
+                          hasta {{ formatPrice(hotel.precio_noche_max) }}
+                        </div>
+                      } @else {
+                        <div class="text-[#1D4ED8] font-bold text-xl">
+                          {{ formatPrice(hotel.precio_noche || 0) }}
+                        </div>
+                      }
+                      <div class="text-gray-400 text-xs">{{ 'SEARCH.PER_NIGHT' | translate }}</div>
+                    </div>
                   </div>
-                </div>
-                <p class="text-gray-500 text-sm mt-1">📍 {{ hotel.ciudad }}</p>
-                <div class="flex items-center gap-1 mt-1">
-                  @for (s of stars(hotel.estrellas || 0); track $index) {
-                    <span class="text-yellow-400 text-sm">{{ s }}</span>
+                  <p class="text-gray-500 text-sm mt-1">📍 {{ hotel.ciudad }}</p>
+                  <div class="flex items-center gap-1 mt-1">
+                    @for (s of stars(hotel.estrellas || 0); track $index) {
+                      <span class="text-yellow-400 text-sm">{{ s }}</span>
+                    }
+                    <span class="text-gray-400 text-xs ml-1"
+                      >{{ hotel.estrellas || 0 }} {{ 'SEARCH.STARS' | translate }}</span
+                    >
+                  </div>
+                  @if (hotel.descripcion) {
+                    <p class="text-gray-600 text-sm mt-2 line-clamp-2">{{ hotel.descripcion }}</p>
                   }
-                  <span class="text-gray-400 text-xs ml-1"
-                    >{{ hotel.estrellas || 0 }} estrellas</span
+                </div>
+                <div class="mt-4 flex items-center justify-between">
+                  <div class="flex flex-wrap gap-2">
+                    @if (hotel.tiene_piscina) {
+                      <span class="chip-blue"
+                        >🏊 {{ 'HOTEL_DETAIL.AMENITY_POOL' | translate }}</span
+                      >
+                    }
+                    @if (hotel.tiene_gimnasio) {
+                      <span class="chip-blue">💪 {{ 'HOTEL_DETAIL.AMENITY_GYM' | translate }}</span>
+                    }
+                    @if (hotel.tiene_spa) {
+                      <span class="chip-blue">🧖 {{ 'HOTEL_DETAIL.AMENITY_SPA' | translate }}</span>
+                    }
+                    @if (hotel.permite_mascotas) {
+                      <span class="chip-blue"
+                        >🐾 {{ 'HOTEL_DETAIL.AMENITY_PETS' | translate }}</span
+                      >
+                    }
+                  </div>
+                  <button
+                    (click)="goToDetail(hotel.id)"
+                    class="bg-[#1D4ED8] text-white text-sm font-semibold px-5 py-2 rounded-xl hover:bg-blue-700 transition"
                   >
+                    Ver {{ 'COMMON.DETAIL' | translate }} →
+                  </button>
                 </div>
-                @if (hotel.descripcion) {
-                  <p class="text-gray-600 text-sm mt-2 line-clamp-2">{{ hotel.descripcion }}</p>
-                }
-              </div>
-              <div class="mt-4 flex items-center justify-between">
-                <div class="flex flex-wrap gap-2">
-                  @if (hotel.tiene_piscina) {
-                    <span class="chip-blue">🏊 Piscina</span>
-                  }
-                  @if (hotel.tiene_gimnasio) {
-                    <span class="chip-blue">💪 Gimnasio</span>
-                  }
-                  @if (hotel.tiene_spa) {
-                    <span class="chip-blue">🧖 Spa</span>
-                  }
-                  @if (hotel.permite_mascotas) {
-                    <span class="chip-blue">🐾 Mascotas</span>
-                  }
-                </div>
-                <button
-                  (click)="goToDetail(hotel.id)"
-                  class="bg-[#1D4ED8] text-white text-sm font-semibold px-5 py-2 rounded-xl hover:bg-blue-700 transition"
-                >
-                  Ver Detalle →
-                </button>
               </div>
             </div>
-          </div>
-        }
-        @if (hotels.length === 0) {
-          <div class="text-center py-24 text-gray-400">
-            <div class="text-6xl mb-4">🔍</div>
-            <p class="text-lg font-medium text-gray-600">Sin resultados disponibles</p>
-            <p class="text-sm mt-1">
-              No encontramos hospedajes que cumplan los criterios de búsqueda.
-              @if (huespedes > 1) {
-                Prueba reduciendo el número de huéspedes o cambiando las fechas.
-              } @else {
-                Intenta con otra ciudad o ajusta los filtros.
-              }
-            </p>
-          </div>
-        }
-      </div>
-    }
+          }
+          @if (hotels.length === 0) {
+            <div class="text-center py-24 text-gray-400">
+              <div class="text-6xl mb-4">🔍</div>
+              <p class="text-lg font-medium text-gray-600">{{ 'SEARCH.NO_RESULTS' | translate }}</p>
+              <p class="text-sm mt-1">
+                {{ 'SEARCH.NO_RESULTS_DESC' | translate }}
+              </p>
+            </div>
+          }
+        </div>
+      }
 
-    <!-- Pagination -->
-    @if (!loading && total > pageSize) {
-      <div class="flex items-center justify-center gap-4 mt-8">
-        <button
-          (click)="prevPage()"
-          [disabled]="page === 1"
-          class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-40"
-        >
-          ← Anterior
-        </button>
-        <span class="text-sm text-gray-500">Página {{ page }}</span>
-        <button
-          (click)="nextPage()"
-          [disabled]="page * pageSize >= total"
-          class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-40"
-        >
-          Siguiente →
-        </button>
-      </div>
-    }
-  </div>
+      <!-- Pagination -->
+      @if (!loading && total > pageSize) {
+        <div class="flex items-center justify-center gap-4 mt-8">
+          <button
+            (click)="prevPage()"
+            [disabled]="page === 1"
+            class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+          >
+            ← {{ 'COMMON.PREV' | translate }}
+          </button>
+          <span class="text-sm text-gray-500">{{ 'COMMON.PAGE' | translate }} {{ page }}</span>
+          <button
+            (click)="nextPage()"
+            [disabled]="page * pageSize >= total"
+            class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+          >
+            {{ 'COMMON.NEXT' | translate }} →
+          </button>
+        </div>
+      }
+    </div>
+  </main>
 </div>

@@ -5,146 +5,244 @@
         <div class="w-10 h-10 bg-[#F97316] rounded-xl flex items-center justify-center">
           <span class="text-white font-bold text-lg">T</span>
         </div>
-        <span class="text-[#1D4ED8] font-bold text-xl">TravelHub</span>
-        <span class="text-gray-400 text-sm ml-1">Portal Hoteles</span>
+        <span class="text-[#1D4ED8] font-bold text-xl">{{
+          'HOTEL_ADMIN.NAV_BRAND' | translate
+        }}</span>
+        <span class="text-gray-400 text-sm ml-1">{{ 'HOTEL_ADMIN.NAV_PORTAL' | translate }}</span>
       </div>
 
       @if (step() === 'login') {
-        <h2 class="text-2xl font-bold text-gray-900 mb-2">Iniciar Sesión</h2>
-        <p class="text-gray-500 mb-8">Accede al panel de administración de tu hotel</p>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">
+          {{ 'HOTEL_ADMIN.LOGIN_TITLE' | translate }}
+        </h2>
+        <p class="text-gray-500 mb-8">{{ 'HOTEL_ADMIN.LOGIN_SUBTITLE' | translate }}</p>
 
         <form (ngSubmit)="onLogin()" class="space-y-5">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">Correo electrónico</label>
-            <input [(ngModel)]="loginEmail" name="email" type="email" placeholder="hotel@ejemplo.com"
-              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition" autocomplete="email"/>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">{{
+              'AUTH.EMAIL_LABEL' | translate
+            }}</label>
+            <input
+              [(ngModel)]="loginEmail"
+              name="email"
+              type="email"
+              [placeholder]="'HOTEL_ADMIN.EMAIL_PLACEHOLDER' | translate"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"
+              autocomplete="email"
+            />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">Contraseña</label>
-            <input [(ngModel)]="loginPassword" name="password" type="password" placeholder="••••••••"
-              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition" autocomplete="current-password"/>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">{{
+              'AUTH.PASSWORD_LABEL' | translate
+            }}</label>
+            <input
+              [(ngModel)]="loginPassword"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"
+              autocomplete="current-password"
+            />
           </div>
           @if (loginError()) {
             <p class="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-lg">{{ loginError() }}</p>
           }
-          <button type="submit" [disabled]="loginLoading"
-            class="w-full bg-[#1D4ED8] text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition disabled:opacity-50">
-            {{ loginLoading ? 'Ingresando...' : 'Iniciar Sesión' }}
+          <button
+            type="submit"
+            [disabled]="loginLoading"
+            class="w-full bg-[#1D4ED8] text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition disabled:opacity-50"
+          >
+            {{
+              loginLoading
+                ? ('HOTEL_ADMIN.LOGGING_IN' | translate)
+                : ('HOTEL_ADMIN.LOGIN_BTN' | translate)
+            }}
           </button>
         </form>
 
         <p class="text-center text-sm text-gray-500 mt-6">
-          ¿No tienes cuenta?
-          <button (click)="goToRegister()" class="text-[#1D4ED8] font-semibold hover:underline ml-1">Registrar hotel</button>
+          {{ 'HOTEL_ADMIN.REGISTER_LINK' | translate }}
+          <button
+            type="button"
+            (click)="goToRegister()"
+            class="text-[#1D4ED8] font-semibold hover:underline bg-transparent border-0 cursor-pointer p-0 ml-1"
+          >
+            Registrar hotel
+          </button>
         </p>
       }
 
       @if (step() === 'register-user') {
         <div class="flex rounded-xl bg-gray-100 p-1 mb-8">
-          <div class="flex-1 py-2.5 text-sm font-semibold rounded-lg bg-white text-[#1D4ED8] shadow-sm text-center">
-            Tu cuenta
+          <div
+            class="flex-1 py-2.5 text-sm font-semibold rounded-lg bg-white text-[#1D4ED8] shadow-sm text-center"
+          >
+            {{ 'HOTEL_ADMIN.REG_STEP_ACCOUNT' | translate }}
           </div>
           <div class="flex-1 py-2.5 text-sm font-medium text-gray-400 text-center">
-            Tu hotel
+            {{ 'HOTEL_ADMIN.REG_STEP_HOTEL' | translate }}
           </div>
         </div>
 
-        <h2 class="text-2xl font-bold text-gray-900 mb-1">Crea tu cuenta</h2>
-        <p class="text-gray-500 text-sm mb-6">Datos del administrador del hotel</p>
+        <h2 class="text-2xl font-bold text-gray-900 mb-1">
+          {{ 'HOTEL_ADMIN.REG_ACCOUNT_TITLE' | translate }}
+        </h2>
+        <p class="text-gray-500 text-sm mb-6">
+          {{ 'HOTEL_ADMIN.REG_ACCOUNT_SUBTITLE' | translate }}
+        </p>
 
         <form (ngSubmit)="goToStep2()" class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
-            <input [(ngModel)]="regNombre" name="nombre" placeholder="Juan Perez"
-              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"/>
+            <input
+              [(ngModel)]="regNombre"
+              name="nombre"
+              placeholder="Juan Perez"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"
+            />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
-            <input [(ngModel)]="regEmail" name="email" type="email" placeholder="correo@ejemplo.com"
-              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"/>
+            <input
+              [(ngModel)]="regEmail"
+              name="email"
+              type="email"
+              placeholder="correo@ejemplo.com"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"
+            />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
-            <input [(ngModel)]="regPassword" name="password" type="password" placeholder="Mínimo 6 caracteres"
-              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"/>
+            <input
+              [(ngModel)]="regPassword"
+              name="password"
+              type="password"
+              placeholder="Mínimo 6 caracteres"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"
+            />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Confirmar contraseña</label>
-            <input [(ngModel)]="regConfirm" name="confirm" type="password" placeholder="Repite tu contraseña"
-              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"/>
+            <input
+              [(ngModel)]="regConfirm"
+              name="confirm"
+              type="password"
+              placeholder="Repite tu contraseña"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"
+            />
           </div>
           @if (regError()) {
             <p class="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-lg">{{ regError() }}</p>
           }
-          <button type="submit"
-            class="w-full bg-[#1D4ED8] text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition">
-            Continuar &gt;
+          <button
+            type="submit"
+            class="w-full bg-[#1D4ED8] text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition"
+          >
+            {{ 'HOTEL_ADMIN.CONTINUE_BTN' | translate }}
           </button>
         </form>
 
         <p class="text-center text-sm text-gray-500 mt-6">
-          ¿Ya tienes cuenta?
-          <button (click)="goToLogin()" class="text-[#1D4ED8] font-semibold hover:underline ml-1">Inicia sesión</button>
+          {{ 'HOTEL_ADMIN.HAVE_ACCOUNT' | translate }}
         </p>
       }
 
       @if (step() === 'register-hotel') {
         <div class="flex rounded-xl bg-gray-100 p-1 mb-8">
           <div class="flex-1 py-2.5 text-sm font-medium text-gray-400 text-center">
-            Tu cuenta
+            {{ 'HOTEL_ADMIN.REG_STEP_ACCOUNT' | translate }}
           </div>
-          <div class="flex-1 py-2.5 text-sm font-semibold rounded-lg bg-white text-[#1D4ED8] shadow-sm text-center">
-            Tu hotel
+          <div
+            class="flex-1 py-2.5 text-sm font-semibold rounded-lg bg-white text-[#1D4ED8] shadow-sm text-center"
+          >
+            {{ 'HOTEL_ADMIN.REG_STEP_HOTEL' | translate }}
           </div>
         </div>
 
-        <h2 class="text-2xl font-bold text-gray-900 mb-1">Registra tu hotel</h2>
-        <p class="text-gray-500 text-sm mb-6">Información del establecimiento</p>
+        <h2 class="text-2xl font-bold text-gray-900 mb-1">
+          {{ 'HOTEL_ADMIN.REG_HOTEL_TITLE' | translate }}
+        </h2>
+        <p class="text-gray-500 text-sm mb-6">{{ 'HOTEL_ADMIN.REG_HOTEL_SUBTITLE' | translate }}</p>
 
         <form (ngSubmit)="onRegister()" class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del hotel</label>
-            <input [(ngModel)]="regHotelNombre" name="hotelNombre" placeholder="Hotel Paradise"
-              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"/>
+            <input
+              [(ngModel)]="regHotelNombre"
+              name="hotelNombre"
+              placeholder="Hotel Paradise"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"
+            />
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">País</label>
-              <input [(ngModel)]="regPais" name="pais" placeholder="Colombia"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"/>
+              <input
+                [(ngModel)]="regPais"
+                name="pais"
+                placeholder="Colombia"
+                class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"
+              />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
-              <input [(ngModel)]="regCiudad" name="ciudad" placeholder="Bogotá"
-                class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"/>
+              <input
+                [(ngModel)]="regCiudad"
+                name="ciudad"
+                placeholder="Bogotá"
+                class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"
+              />
             </div>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
-            <input [(ngModel)]="regDireccion" name="direccion" placeholder="Cra 7 # 12-15"
-              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"/>
+            <input
+              [(ngModel)]="regDireccion"
+              name="direccion"
+              placeholder="Cra 7 # 12-15"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition"
+            />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción (opcional)</label>
-            <textarea [(ngModel)]="regDescripcion" name="descripcion" placeholder="Descripción del hotel" rows="2"
-              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition resize-none"></textarea>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Descripción (opcional)</label
+            >
+            <textarea
+              [(ngModel)]="regDescripcion"
+              name="descripcion"
+              placeholder="Descripción del hotel"
+              rows="2"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#1D4ED8] transition resize-none"
+            ></textarea>
           </div>
 
           @if (regError()) {
             <p class="text-red-600 text-sm bg-red-50 px-4 py-3 rounded-lg">{{ regError() }}</p>
           }
           @if (regSuccess()) {
-            <p class="text-green-700 text-sm bg-green-50 px-4 py-3 rounded-lg">{{ regSuccess() }}</p>
+            <p class="text-green-700 text-sm bg-green-50 px-4 py-3 rounded-lg">
+              {{ regSuccess() }}
+            </p>
           }
 
           <div class="flex gap-3">
-            <button type="button" (click)="goBackToStep1()"
-              class="flex-1 border border-gray-200 text-gray-600 font-semibold py-3 rounded-xl hover:border-gray-300 transition">
-              &lt; Atrás
+            <button
+              type="button"
+              (click)="goBackToStep1()"
+              class="flex-1 border border-gray-200 text-gray-600 font-semibold py-3 rounded-xl hover:border-gray-300 transition"
+            >
+              {{ 'HOTEL_ADMIN.BACK_BTN' | translate }}
             </button>
-            <button type="submit" [disabled]="regLoading"
-              class="flex-1 bg-[#1D4ED8] text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition disabled:opacity-50">
-              {{ regLoading ? 'Registrando...' : 'Crear cuenta' }}
+            <button
+              type="submit"
+              [disabled]="regLoading"
+              class="flex-1 bg-[#1D4ED8] text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition disabled:opacity-50"
+            >
+              {{
+                regLoading
+                  ? ('HOTEL_ADMIN.CREATING' | translate)
+                  : ('HOTEL_ADMIN.CREATE_ACCOUNT_BTN' | translate)
+              }}
             </button>
           </div>
         </form>
@@ -158,35 +256,61 @@
     </div>
   </div>
 
-  <div class="hidden lg:flex lg:w-1/2 bg-[#1D4ED8] flex-col justify-center px-16 py-12 relative overflow-hidden">
+  <div
+    class="hidden lg:flex lg:w-1/2 bg-[#1D4ED8] flex-col justify-center px-16 py-12 relative overflow-hidden"
+  >
     <div class="absolute inset-0 opacity-10">
       <div class="absolute top-20 right-20 w-64 h-64 rounded-full bg-white"></div>
       <div class="absolute bottom-20 left-10 w-96 h-96 rounded-full bg-white"></div>
     </div>
     <div class="relative z-10">
       @if (step() === 'login') {
-        <h1 class="text-white text-4xl font-bold leading-tight mb-4">
-          Haz crecer<br/>tu negocio
-        </h1>
+        <h1 class="text-white text-4xl font-bold leading-tight mb-4">Haz crecer<br />tu negocio</h1>
         <p class="text-white/80 text-lg mb-10">
           Únete a la red de hoteles de TravelHub y llega a miles de viajeros.
         </p>
         <div class="space-y-5">
           <div class="flex items-start gap-4">
-            <div class="w-10 h-10 bg-[#F97316] rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            <div
+              class="w-10 h-10 bg-[#F97316] rounded-xl flex items-center justify-center shrink-0"
+            >
+              <svg
+                class="w-5 h-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
               </svg>
             </div>
             <div>
               <p class="text-white font-semibold">Dashboard en tiempo real</p>
-              <p class="text-white/60 text-sm">Visualiza reservas, ocupación e ingresos al instante.</p>
+              <p class="text-white/60 text-sm">
+                Visualiza reservas, ocupación e ingresos al instante.
+              </p>
             </div>
           </div>
           <div class="flex items-start gap-4">
-            <div class="w-10 h-10 bg-[#F97316] rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            <div
+              class="w-10 h-10 bg-[#F97316] rounded-xl flex items-center justify-center shrink-0"
+            >
+              <svg
+                class="w-5 h-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
             <div>
@@ -195,9 +319,21 @@
             </div>
           </div>
           <div class="flex items-start gap-4">
-            <div class="w-10 h-10 bg-[#F97316] rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            <div
+              class="w-10 h-10 bg-[#F97316] rounded-xl flex items-center justify-center shrink-0"
+            >
+              <svg
+                class="w-5 h-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
               </svg>
             </div>
             <div>
@@ -207,17 +343,23 @@
           </div>
         </div>
       } @else {
-        <h1 class="text-white text-4xl font-bold leading-tight mb-4">
-          Únete a<br/>TravelHub
-        </h1>
+        <h1 class="text-white text-4xl font-bold leading-tight mb-4">Únete a<br />TravelHub</h1>
         <p class="text-white/80 text-lg mb-10">
           Empieza a gestionar tu hotel de manera profesional hoy mismo.
         </p>
         <div class="space-y-5">
           <div class="flex items-start gap-4">
-            <div class="w-10 h-10 bg-[#F97316] rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            <div
+              class="w-10 h-10 bg-[#F97316] rounded-xl flex items-center justify-center shrink-0"
+            >
+              <svg
+                class="w-5 h-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
             <div>
@@ -226,25 +368,53 @@
             </div>
           </div>
           <div class="flex items-start gap-4">
-            <div class="w-10 h-10 bg-[#F97316] rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            <div
+              class="w-10 h-10 bg-[#F97316] rounded-xl flex items-center justify-center shrink-0"
+            >
+              <svg
+                class="w-5 h-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
               </svg>
             </div>
             <div>
               <p class="text-white font-semibold">Dashboard intuitivo</p>
-              <p class="text-white/60 text-sm">Visualiza reservas, ocupación e ingresos en tiempo real.</p>
+              <p class="text-white/60 text-sm">
+                Visualiza reservas, ocupación e ingresos en tiempo real.
+              </p>
             </div>
           </div>
           <div class="flex items-start gap-4">
-            <div class="w-10 h-10 bg-[#F97316] rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            <div
+              class="w-10 h-10 bg-[#F97316] rounded-xl flex items-center justify-center shrink-0"
+            >
+              <svg
+                class="w-5 h-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
               </svg>
             </div>
             <div>
               <p class="text-white font-semibold">Notificaciones por correo</p>
-              <p class="text-white/60 text-sm">Recibe alertas de nuevas reservas directamente en tu bandeja.</p>
+              <p class="text-white/60 text-sm">
+                Recibe alertas de nuevas reservas directamente en tu bandeja.
+              </p>
             </div>
           </div>
         </div>

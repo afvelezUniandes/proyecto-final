@@ -1,18 +1,13 @@
 version: "3.8"
 
-x-rds-url: &rds-host "travelhub-db.cipyouuaqkqn.us-east-1.rds.amazonaws.com"
-x-rds-user: &rds-user "postgres"
-x-rds-pass: &rds-pass "ogvynJXnQk7zLG4K"
-x-jwt-secret: &jwt-secret "tu-clave-jwt-secreta-debe-ser-mas-larga-y-compleja-en-produccion-2026"
-
 services:
   auth-service:
     build: ./auth-service
     ports:
       - "5010:5000"
     environment:
-      AUTH_DATABASE_URL: postgresql://postgres:ogvynJXnQk7zLG4K@travelhub-db.cipyouuaqkqn.us-east-1.rds.amazonaws.com:5432/postgres
-      JWT_SECRET: tu-clave-jwt-secreta-debe-ser-mas-larga-y-compleja-en-produccion-2026
+      AUTH_DATABASE_URL: postgresql://${RDS_USER}:${RDS_PASS}@${RDS_HOST}:5432/postgres
+      JWT_SECRET: ${JWT_SECRET}
       CATALOG_SERVICE_URL: http://catalog-service:5001
     networks:
       - travelhub-net
@@ -22,10 +17,10 @@ services:
     ports:
       - "5001:5001"
     environment:
-      CATALOG_DATABASE_URL: postgresql://postgres:ogvynJXnQk7zLG4K@travelhub-db.cipyouuaqkqn.us-east-1.rds.amazonaws.com:5432/postgres
+      CATALOG_DATABASE_URL: postgresql://${RDS_USER}:${RDS_PASS}@${RDS_HOST}:5432/postgres
       CACHE_TTL: 300
-      S3_BUCKET: travelhub-images-proyecto
-      S3_REGION: us-east-1
+      S3_BUCKET: ${S3_BUCKET}
+      S3_REGION: ${S3_REGION}
     networks:
       - travelhub-net
 
@@ -37,7 +32,7 @@ services:
       AUTH_SERVICE_URL: http://auth-service:5000
       CATALOG_SERVICE_URL: http://catalog-service:5001
       RESERVATION_SERVICE_URL: http://reservation-service:5002
-      JWT_SECRET: tu-clave-jwt-secreta-debe-ser-mas-larga-y-compleja-en-produccion-2026
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       - auth-service
       - catalog-service
@@ -50,8 +45,24 @@ services:
     ports:
       - "5002:5002"
     environment:
-      RESERVATION_DATABASE_URL: postgresql://postgres:ogvynJXnQk7zLG4K@travelhub-db.cipyouuaqkqn.us-east-1.rds.amazonaws.com:5432/postgres
+      RESERVATION_DATABASE_URL: postgresql://${RDS_USER}:${RDS_PASS}@${RDS_HOST}:5432/postgres
+      JWT_SECRET: ${JWT_SECRET}
+      NOTIFICATION_SERVICE_URL: http://notification-service:5004
+      AUTH_SERVICE_URL: http://auth-service:5000
+      CATALOG_SERVICE_URL: http://catalog-service:5001
+    networks:
+      - travelhub-net
+
+  notification-service:
+    build: ./notification-service
+    ports:
+      - "5004:5004"
+    environment:
+      NOTIFICATION_DATABASE_URL: postgresql://postgres:ogvynJXnQk7zLG4K@travelhub-db.cipyouuaqkqn.us-east-1.rds.amazonaws.com:5432/postgres
       JWT_SECRET: tu-clave-jwt-secreta-debe-ser-mas-larga-y-compleja-en-produccion-2026
+      PORT: "5004"
+      SENDGRID_API_KEY: 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
+      SENDGRID_FROM_EMAIL: af.velezv1@uniandes.edu.co
     networks:
       - travelhub-net
 

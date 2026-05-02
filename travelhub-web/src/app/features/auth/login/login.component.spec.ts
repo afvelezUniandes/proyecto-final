@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import { LoginComponent } from './login.component';
 import { AuthService } from '../../../core/services/auth.service';
@@ -9,14 +11,35 @@ const mockAuthService = {
   register: () => of({ message: 'ok' }),
 };
 
+const esTranslations = {
+  AUTH: {
+    ERR_EMPTY_FIELDS: 'Por favor completa todos los campos.',
+    ERR_INVALID_EMAIL: 'Ingresa un correo electrónico válido.',
+    ERR_WEAK_PASSWORD:
+      'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial.',
+    ERR_PASSWORD_MISMATCH: 'Las contraseñas no coinciden.',
+    ERR_EMAIL_TAKEN: 'Este correo ya está registrado.',
+    ERR_REGISTER: 'Error al registrar. Intenta de nuevo.',
+    ERR_WRONG_CREDENTIALS: 'Credenciales incorrectas.',
+    ERR_CONNECT: 'Error al conectar. Intenta de nuevo.',
+    SUCCESS_REGISTER: '¡Cuenta creada! Ahora inicia sesión.',
+  },
+};
+
 async function createComponent() {
   await TestBed.configureTestingModule({
     imports: [LoginComponent],
     providers: [
       { provide: AuthService, useValue: mockAuthService },
       provideRouter([]),
+      provideHttpClient(),
+      provideTranslateService({ fallbackLang: 'es' }),
     ],
   }).compileComponents();
+
+  const translateService = TestBed.inject(TranslateService);
+  translateService.setTranslation('es', esTranslations);
+  translateService.use('es');
 
   const fixture = TestBed.createComponent(LoginComponent);
   const component = fixture.componentInstance;
@@ -124,7 +147,9 @@ describe('LoginComponent', () => {
 
   describe('onRegister - flujo completo', () => {
     it('llama a auth.register con los datos correctos al pasar todas las validaciones', async () => {
-      const registerSpy = vi.spyOn(mockAuthService, 'register').mockReturnValue(of({ message: 'ok' }));
+      const registerSpy = vi
+        .spyOn(mockAuthService, 'register')
+        .mockReturnValue(of({ message: 'ok' }));
       const { component } = await createComponent();
       component.registerNombre = 'Juan Test';
       component.registerEmail = 'juan@test.com';

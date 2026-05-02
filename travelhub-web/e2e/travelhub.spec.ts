@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 const TEST_USER = {
   nombre: 'Test Playwright',
   email: `test_pw_${crypto.randomUUID()}@example.com`,
-  password: 'TestPass123',
+  password: 'TestPass123!',
 };
 
 async function login(page: any) {
@@ -84,7 +84,26 @@ test.describe.serial('TravelHub E2E', () => {
   test('6 - Flujo completo: login y crear reserva', async ({ page }) => {
     await login(page);
 
-    await page.goto('/hotel/1?checkIn=2026-07-10&checkOut=2026-07-12&huespedes=2');
+    // Usar fechas dinámicas para evitar colisión con reservas previas
+    const base = new Date();
+    base.setFullYear(base.getFullYear() + 2);
+    const offset = Math.floor(Math.random() * 300);
+    base.setDate(base.getDate() + offset);
+    const checkIn = base.toISOString().split('T')[0];
+    const checkOut = new Date(base.getTime() + 2 * 86400000).toISOString().split('T')[0];
+
+    // Buscar un hotel disponible dinámicamente en lugar de hardcodear hotel/1
+    await page.goto(`/search?checkIn=${checkIn}&checkOut=${checkOut}&huespedes=2`);
+    await page.waitForTimeout(4000);
+
+    const hotelLink = page.locator('a[href*="/hotel/"]').first();
+    const linkCount = await hotelLink.count();
+    if (linkCount > 0) {
+      const href = await hotelLink.getAttribute('href');
+      await page.goto(`${href}?checkIn=${checkIn}&checkOut=${checkOut}&huespedes=2`);
+    } else {
+      await page.goto(`/hotel/1?checkIn=${checkIn}&checkOut=${checkOut}&huespedes=2`);
+    }
     await page.waitForTimeout(6000);
 
     const reserveBtn = page.locator('button', { hasText: /reservar/i });

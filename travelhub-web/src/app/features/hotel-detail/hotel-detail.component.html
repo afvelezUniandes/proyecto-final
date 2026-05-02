@@ -1,256 +1,306 @@
+<a href="#main-content" class="skip-link">{{ 'COMMON.SKIP_TO_CONTENT' | translate }}</a>
 <div class="min-h-screen bg-gray-50">
   <!-- Topbar -->
-  <nav class="bg-[#1D4ED8] px-6 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <div class="w-8 h-8 bg-[#F97316] rounded-lg flex items-center justify-center">
-        <span class="text-white font-bold">T</span>
-      </div>
-      <a routerLink="/home" class="text-white font-bold text-lg">TravelHub</a>
-    </div>
-    <div class="flex items-center gap-4">
-      <a routerLink="/home" class="text-white/90 text-sm hover:text-white">Inicio</a>
-      <a routerLink="/reservations" class="text-white/90 text-sm hover:text-white">Mis Reservas</a>
-      <app-language-selector />
-    </div>
-  </nav>
-
-  @if (loading) {
-    <div class="flex justify-center py-32">
-      <div
-        class="w-10 h-10 border-4 border-[#1D4ED8] border-t-transparent rounded-full animate-spin"
-      ></div>
-    </div>
-  }
-
-  @if (error) {
-    <div class="max-w-4xl mx-auto px-6 py-8">
-      <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4">{{ error }}</div>
-      <a routerLink="/search" class="mt-4 inline-block text-[#1D4ED8] text-sm"
-        >← Volver a búsqueda</a
-      >
-    </div>
-  }
-
-  @if (!loading && hotel) {
-    <div class="max-w-6xl mx-auto px-6 py-8">
-      <!-- Breadcrumb -->
-      <div class="text-sm text-gray-400 mb-6">
-        <a routerLink="/home" class="hover:text-[#1D4ED8]">Inicio</a>
-        <span class="mx-2">›</span>
-        <a [routerLink]="['/search']" [queryParams]="searchParams" class="hover:text-[#1D4ED8]"
-          >Búsqueda</a
+  <header>
+    <nav
+      aria-label="{{ 'NAV.ARIA_LABEL' | translate }}"
+      class="bg-[#1D4ED8] px-6 py-3 flex items-center justify-between"
+    >
+      <div class="flex items-center gap-3">
+        <div
+          class="w-8 h-8 bg-[#F97316] rounded-lg flex items-center justify-center"
+          aria-hidden="true"
         >
-        <span class="mx-2">›</span>
-        <span class="text-gray-700">{{ hotel.nombre }}</span>
+          <span class="text-white font-bold">T</span>
+        </div>
+        <a routerLink="/home" class="text-white font-bold text-lg">TravelHub</a>
       </div>
+      <div class="flex items-center gap-4">
+        <a routerLink="/home" class="text-white/90 text-sm hover:text-white">{{
+          'NAV.HOME' | translate
+        }}</a>
+        <a routerLink="/reservations" class="text-white/90 text-sm hover:text-white">{{
+          'NAV.RESERVATIONS' | translate
+        }}</a>
+        <app-language-selector />
+      </div>
+    </nav>
+  </header>
 
-      <div class="grid lg:grid-cols-3 gap-8">
-        <!-- Left: Hotel info -->
-        <div class="lg:col-span-2 space-y-6">
-          <!-- Hero image -->
-          <img
-            [src]="
-              hotel.image_url ||
-              'https://travelhub-images-proyecto.s3.us-east-1.amazonaws.com/hotels/hotel-foto-1.jpg'
-            "
-            [alt]="hotel.nombre"
-            class="w-full h-64 object-cover rounded-2xl"
-          />
+  <main id="main-content">
+    @if (loading) {
+      <div class="flex justify-center py-32">
+        <div
+          class="w-10 h-10 border-4 border-[#1D4ED8] border-t-transparent rounded-full animate-spin"
+        ></div>
+      </div>
+    }
 
-          <!-- Name + stars -->
-          <div>
-            <div class="flex items-start justify-between">
-              <h1 class="text-2xl font-bold text-gray-900">{{ hotel.nombre }}</h1>
-              <div class="flex items-center gap-1">
-                @for (s of stars(hotel.estrellas || 0); track $index) {
-                  <span class="text-yellow-400">{{ s }}</span>
-                }
-              </div>
-            </div>
-            <p class="text-gray-500 mt-1">📍 {{ hotel.ciudad }}</p>
-            @if (hotel.direccion) {
-              <p class="text-gray-400 text-xs mt-1">{{ hotel.direccion }}</p>
-            }
-            @if (hotel.descripcion) {
-              <p class="text-gray-700 text-sm mt-4 leading-relaxed">{{ hotel.descripcion }}</p>
-            }
-          </div>
+    @if (error) {
+      <div class="max-w-4xl mx-auto px-6 py-8">
+        <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4">{{ error }}</div>
+        <a routerLink="/search" class="mt-4 inline-block text-[#1D4ED8] text-sm">{{
+          'HOTEL_DETAIL.BACK_TO_SEARCH' | translate
+        }}</a>
+      </div>
+    }
 
-          <!-- Amenities -->
-          <div>
-            <h3 class="text-sm font-semibold text-gray-700 uppercase mb-3">Amenidades</h3>
-            <div class="flex flex-wrap gap-3">
-              @for (amenity of amenities; track amenity.label) {
-                <span class="chip-blue">{{ amenity.icon }} {{ amenity.label }}</span>
-              }
-            </div>
-          </div>
-
-          <!-- Rooms -->
-          <div>
-            <h3 class="text-sm font-semibold text-gray-700 uppercase mb-3">
-              Habitaciones disponibles
-            </h3>
-            <div class="grid sm:grid-cols-2 gap-4">
-              @for (room of rooms; track room.id) {
-                <div
-                  (click)="room.disponible && (selectedRoomId = room.id)"
-                  [class.ring-2]="selectedRoomId === room.id"
-                  [class.ring-[#1D4ED8]]="selectedRoomId === room.id"
-                  [class.opacity-50]="!room.disponible"
-                  [class.cursor-not-allowed]="!room.disponible"
-                  [class.cursor-pointer]="room.disponible"
-                  [class.hover:border-[#1D4ED8]]="room.disponible"
-                  class="bg-white border border-gray-200 rounded-xl p-4 transition relative"
-                >
-                  @if (!room.disponible) {
-                    <div class="absolute top-3 right-3">
-                      <span
-                        class="bg-red-100 text-red-600 text-xs font-semibold px-2 py-0.5 rounded-full"
-                        >No disponible</span
-                      >
-                    </div>
-                  }
-                  <div class="flex items-center justify-between pr-24">
-                    <div>
-                      <span class="font-semibold text-gray-900 text-sm">{{ room.nombre }}</span>
-                      <span class="text-gray-400 text-xs ml-1">— {{ room.tipo }}</span>
-                    </div>
-                    @if (selectedRoomId === room.id) {
-                      <span class="text-[#1D4ED8] text-xs font-medium">✓ Seleccionada</span>
-                    }
-                  </div>
-                  <p class="text-[#1D4ED8] font-bold mt-1">
-                    {{ formatPrice(room.precio_noche) }}
-                    <span class="text-gray-400 text-xs font-normal">/ noche</span>
-                  </p>
-                  <p class="text-gray-500 text-xs mt-1">
-                    👤 Capacidad: {{ room.capacidad }} personas
-                  </p>
-                  @if (room.descripcion) {
-                    <p class="text-gray-500 text-xs mt-1 line-clamp-2">{{ room.descripcion }}</p>
-                  }
-                </div>
-              }
-            </div>
-          </div>
+    @if (!loading && hotel) {
+      <div class="max-w-6xl mx-auto px-6 py-8">
+        <!-- Breadcrumb -->
+        <div class="text-sm text-gray-400 mb-6">
+          <a routerLink="/home" class="hover:text-[#1D4ED8]">{{
+            'HOTEL_DETAIL.BREADCRUMB_HOME' | translate
+          }}</a>
+          <span class="mx-2">›</span>
+          <a [routerLink]="['/search']" [queryParams]="searchParams" class="hover:text-[#1D4ED8]">{{
+            'HOTEL_DETAIL.BREADCRUMB_SEARCH' | translate
+          }}</a>
+          <span class="mx-2">›</span>
+          <span class="text-gray-700">{{ hotel.nombre }}</span>
         </div>
 
-        <!-- Right: Booking widget -->
-        <div class="lg:col-span-1">
-          <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sticky top-6">
-            <h3 class="font-bold text-gray-900 text-lg mb-1">Reservar</h3>
-            <p class="text-gray-400 text-sm mb-5">Resumen de tu selección</p>
+        <div class="grid lg:grid-cols-3 gap-8">
+          <!-- Left: Hotel info -->
+          <div class="lg:col-span-2 space-y-6">
+            <!-- Hero image -->
+            <img
+              [src]="
+                hotel.image_url ||
+                'https://travelhub-images-proyecto.s3.us-east-1.amazonaws.com/hotels/hotel-foto-1.jpg'
+              "
+              [alt]="hotel.nombre"
+              class="w-full h-64 object-cover rounded-2xl"
+            />
 
-            @if (reserveSuccess) {
-              <div
-                class="bg-green-50 border border-green-200 text-green-700 rounded-xl p-4 text-sm text-center"
-              >
-                <div class="text-3xl mb-2">🎉</div>
-                <p class="font-semibold mb-1">¡Reserva confirmada!</p>
-                @if (reservationCode) {
-                  <p class="text-xs text-gray-500 mb-1">Código de reserva</p>
-                  <p class="font-mono font-bold text-gray-900 text-base tracking-wider mb-3">
-                    {{ reservationCode }}
-                  </p>
-                }
-                <a
-                  routerLink="/reservations"
-                  class="inline-block bg-[#1D4ED8] text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-                  >Ver mis reservas</a
-                >
-              </div>
-            } @else {
-              <div class="space-y-3">
-                <!-- Dates summary (read-only, from search) -->
-                <div class="bg-gray-50 rounded-xl p-4 space-y-2">
-                  <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-gray-400 uppercase">Check-in</span>
-                    <span class="text-sm font-medium text-gray-800">
-                      {{ checkIn ? (checkIn | date: 'dd MMM yyyy') : '—' }}
-                    </span>
-                  </div>
-                  <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-gray-400 uppercase">Check-out</span>
-                    <span class="text-sm font-medium text-gray-800">
-                      {{ checkOut ? (checkOut | date: 'dd MMM yyyy') : '—' }}
-                    </span>
-                  </div>
-                  <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-gray-400 uppercase">Huéspedes</span>
-                    <span class="text-sm font-medium text-gray-800">{{ adultos }} adulto(s)</span>
-                  </div>
-                  @if (nights() > 0) {
-                    <div class="flex justify-between items-center pt-1 border-t border-gray-200">
-                      <span class="text-xs font-semibold text-gray-400 uppercase">Duración</span>
-                      <span class="text-sm font-medium text-gray-800">{{ nights() }} noche(s)</span>
-                    </div>
+            <!-- Name + stars -->
+            <div>
+              <div class="flex items-start justify-between">
+                <h1 class="text-2xl font-bold text-gray-900">{{ hotel.nombre }}</h1>
+                <div class="flex items-center gap-1">
+                  @for (s of stars(hotel.estrellas || 0); track $index) {
+                    <span class="text-yellow-400">{{ s }}</span>
                   }
                 </div>
+              </div>
+              <p class="text-gray-500 mt-1">📍 {{ hotel.ciudad }}</p>
+              @if (hotel.direccion) {
+                <p class="text-gray-400 text-xs mt-1">{{ hotel.direccion }}</p>
+              }
+              @if (hotel.descripcion) {
+                <p class="text-gray-700 text-sm mt-4 leading-relaxed">{{ hotel.descripcion }}</p>
+              }
+            </div>
 
-                <!-- Room selector -->
-                <div>
-                  <label class="text-xs font-semibold text-gray-500 uppercase">Habitación</label>
-                  <select
-                    [(ngModel)]="selectedRoomId"
-                    class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-800 outline-none focus:border-[#1D4ED8] transition"
+            <!-- Amenidades -->
+            <div>
+              <h3 class="text-sm font-semibold text-gray-700 uppercase mb-3">
+                {{ 'HOTEL_DETAIL.AMENITIES' | translate }}
+              </h3>
+              <div class="flex flex-wrap gap-3">
+                @for (amenity of amenities; track amenity.label) {
+                  <span class="chip-blue">{{ amenity.icon }} {{ amenity.label }}</span>
+                }
+              </div>
+            </div>
+
+            <!-- Rooms -->
+            <div>
+              <h3 class="text-sm font-semibold text-gray-700 uppercase mb-3">
+                {{ 'HOTEL_DETAIL.ROOMS_AVAILABLE' | translate }}
+              </h3>
+              <div class="grid sm:grid-cols-2 gap-4">
+                @for (room of rooms; track room.id) {
+                  <div
+                    (click)="room.disponible && (selectedRoomId = room.id)"
+                    [class.ring-2]="selectedRoomId === room.id"
+                    [class.ring-[#1D4ED8]]="selectedRoomId === room.id"
+                    [class.opacity-50]="!room.disponible"
+                    [class.cursor-not-allowed]="!room.disponible"
+                    [class.cursor-pointer]="room.disponible"
+                    [class.hover:border-[#1D4ED8]]="room.disponible"
+                    class="bg-white border border-gray-200 rounded-xl p-4 transition relative"
                   >
-                    @for (room of rooms; track room.id) {
-                      <option [ngValue]="room.id" [disabled]="!room.disponible">
-                        {{ room.nombre }} ({{ room.tipo }}) —
-                        {{ formatPrice(room.precio_noche) }}/noche
-                        {{ room.disponible ? '' : '(no disponible)' }}
-                      </option>
+                    @if (!room.disponible) {
+                      <div class="absolute top-3 right-3">
+                        <span
+                          class="bg-red-100 text-red-600 text-xs font-semibold px-2 py-0.5 rounded-full"
+                          >{{ 'HOTEL_DETAIL.NOT_AVAILABLE' | translate }}</span
+                        >
+                      </div>
                     }
-                  </select>
-                </div>
-
-                <!-- Price breakdown -->
-                @if (selectedRoom()) {
-                  <div class="bg-blue-50 rounded-xl p-4 text-sm">
-                    <div class="flex justify-between text-gray-600 mb-1">
-                      <span
-                        >{{ formatPrice(selectedRoom()!.precio_noche) }} ×
-                        {{ nights() || 1 }} noche(s)</span
-                      >
+                    <div class="flex items-center justify-between pr-24">
+                      <div>
+                        <span class="font-semibold text-gray-900 text-sm">{{ room.nombre }}</span>
+                        <span class="text-gray-400 text-xs ml-1">— {{ room.tipo }}</span>
+                      </div>
+                      @if (selectedRoomId === room.id) {
+                        <span class="text-[#1D4ED8] text-xs font-medium">{{
+                          'HOTEL_DETAIL.SELECTED' | translate
+                        }}</span>
+                      }
                     </div>
-                    <div
-                      class="flex justify-between font-bold text-gray-900 pt-2 border-t border-blue-100"
-                    >
-                      <span>Total</span>
-                      <span class="text-[#1D4ED8] text-lg">{{
-                        formatPrice(total() || selectedRoom()!.precio_noche)
+                    <p class="text-[#1D4ED8] font-bold mt-1">
+                      {{ formatPrice(room.precio_noche) }}
+                      <span class="text-gray-400 text-xs font-normal">{{
+                        'HOTEL_DETAIL.PER_NIGHT' | translate
                       }}</span>
-                    </div>
-                  </div>
-                }
-
-                @if (reserveError) {
-                  <div class="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <p class="text-red-600 text-xs">{{ reserveError }}</p>
-                    @if (isUnavailableError) {
-                      <a
-                        [routerLink]="['/search']"
-                        [queryParams]="searchParams"
-                        class="text-[#1D4ED8] text-xs underline mt-1 inline-block"
-                        >Buscar habitaciones alternativas →</a
-                      >
+                    </p>
+                    <p class="text-gray-500 text-xs mt-1">
+                      👤 {{ 'HOTEL_DETAIL.CAPACITY' | translate }} {{ room.capacidad }}
+                      {{ 'HOTEL_DETAIL.PERSONS' | translate }}
+                    </p>
+                    @if (room.descripcion) {
+                      <p class="text-gray-500 text-xs mt-1 line-clamp-2">{{ room.descripcion }}</p>
                     }
                   </div>
                 }
-
-                <button
-                  (click)="reserve()"
-                  [disabled]="reserving || !selectedRoomId"
-                  class="w-full bg-[#F97316] text-white font-semibold py-3 rounded-xl hover:bg-orange-600 disabled:opacity-60 transition active:scale-95"
-                >
-                  {{ reserving ? 'Reservando...' : '🔒 Reservar ahora' }}
-                </button>
               </div>
-            }
+            </div>
+          </div>
+
+          <!-- Right: Booking widget -->
+          <div class="lg:col-span-1">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sticky top-6">
+              <h3 class="font-bold text-gray-900 text-lg mb-1">
+                {{ 'HOTEL_DETAIL.RESERVE_BTN' | translate }}
+              </h3>
+              <p class="text-gray-400 text-sm mb-5">
+                {{ 'HOTEL_DETAIL.BOOKING_SUMMARY' | translate }}
+              </p>
+
+              @if (reserveSuccess) {
+                <div
+                  class="bg-green-50 border border-green-200 text-green-700 rounded-xl p-4 text-sm text-center"
+                >
+                  <div class="text-3xl mb-2">🎉</div>
+                  <p class="font-semibold mb-1">
+                    {{ 'HOTEL_DETAIL.BOOKING_CONFIRMED' | translate }}
+                  </p>
+                  @if (reservationCode) {
+                    <p class="text-xs text-gray-500 mb-1">
+                      {{ 'HOTEL_DETAIL.BOOKING_CODE' | translate }}
+                    </p>
+                    <p class="font-mono font-bold text-gray-900 text-base tracking-wider mb-3">
+                      {{ reservationCode }}
+                    </p>
+                  }
+                  <a
+                    routerLink="/reservations"
+                    class="inline-block bg-[#1D4ED8] text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                    >{{ 'HOTEL_DETAIL.SEE_RESERVATIONS' | translate }}</a
+                  >
+                </div>
+              } @else {
+                <div class="space-y-3">
+                  <!-- Dates summary (read-only, from search) -->
+                  <div class="bg-gray-50 rounded-xl p-4 space-y-2">
+                    <div class="flex justify-between items-center">
+                      <span class="text-xs font-semibold text-gray-400 uppercase">{{
+                        'HOTEL_DETAIL.CHECKIN_LABEL' | translate
+                      }}</span>
+                      <span class="text-sm font-medium text-gray-800">
+                        {{ checkIn ? (checkIn | date: 'dd MMM yyyy') : '—' }}
+                      </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-xs font-semibold text-gray-400 uppercase">{{
+                        'HOTEL_DETAIL.CHECKOUT_LABEL' | translate
+                      }}</span>
+                      <span class="text-sm font-medium text-gray-800">
+                        {{ checkOut ? (checkOut | date: 'dd MMM yyyy') : '—' }}
+                      </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-xs font-semibold text-gray-400 uppercase">{{
+                        'HOTEL_DETAIL.GUESTS_LABEL' | translate
+                      }}</span>
+                      <span class="text-sm font-medium text-gray-800"
+                        >{{ adultos }} {{ 'HOTEL_DETAIL.ADULTS' | translate }}</span
+                      >
+                    </div>
+                    @if (nights() > 0) {
+                      <div class="flex justify-between items-center pt-1 border-t border-gray-200">
+                        <span class="text-xs font-semibold text-gray-400 uppercase">{{
+                          'HOTEL_DETAIL.DURATION' | translate
+                        }}</span>
+                        <span class="text-sm font-medium text-gray-800"
+                          >{{ nights() }} {{ 'HOTEL_DETAIL.NIGHTS' | translate }}</span
+                        >
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Room selector -->
+                  <div>
+                    <label class="text-xs font-semibold text-gray-500 uppercase">{{
+                      'HOTEL_DETAIL.ROOM_LABEL' | translate
+                    }}</label>
+                    <select
+                      [(ngModel)]="selectedRoomId"
+                      class="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-800 outline-none focus:border-[#1D4ED8] transition"
+                    >
+                      @for (room of rooms; track room.id) {
+                        <option [ngValue]="room.id" [disabled]="!room.disponible">
+                          {{ room.nombre }} ({{ room.tipo }}) —
+                          {{ formatPrice(room.precio_noche) }}/noche
+                          {{ room.disponible ? '' : '(no disponible)' }}
+                        </option>
+                      }
+                    </select>
+                  </div>
+
+                  <!-- Price breakdown -->
+                  @if (selectedRoom()) {
+                    <div class="bg-blue-50 rounded-xl p-4 text-sm">
+                      <div class="flex justify-between text-gray-600 mb-1">
+                        <span
+                          >{{ formatPrice(selectedRoom()!.precio_noche) }} ×
+                          {{ nights() || 1 }} noche(s)</span
+                        >
+                      </div>
+                      <div
+                        class="flex justify-between font-bold text-gray-900 pt-2 border-t border-blue-100"
+                      >
+                        <span>{{ 'HOTEL_DETAIL.TOTAL_LABEL' | translate }}</span>
+                        <span class="text-[#1D4ED8] text-lg">{{
+                          formatPrice(total() || selectedRoom()!.precio_noche)
+                        }}</span>
+                      </div>
+                    </div>
+                  }
+
+                  @if (reserveError) {
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                      <p class="text-red-600 text-xs">{{ reserveError }}</p>
+                      @if (isUnavailableError) {
+                        <a
+                          [routerLink]="['/search']"
+                          [queryParams]="searchParams"
+                          class="text-[#1D4ED8] text-xs underline mt-1 inline-block"
+                          >{{ 'HOTEL_DETAIL.SEARCH_ALTERNATIVES' | translate }}</a
+                        >
+                      }
+                    </div>
+                  }
+
+                  <button
+                    (click)="reserve()"
+                    [disabled]="reserving || !selectedRoomId"
+                    class="w-full bg-[#F97316] text-white font-semibold py-3 rounded-xl hover:bg-orange-600 disabled:opacity-60 transition active:scale-95"
+                  >
+                    {{
+                      reserving
+                        ? ('HOTEL_DETAIL.RESERVING' | translate)
+                        : '🔒 ' + ('HOTEL_DETAIL.RESERVE_NOW' | translate)
+                    }}
+                  </button>
+                </div>
+              }
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  }
+    }
+  </main>
 </div>

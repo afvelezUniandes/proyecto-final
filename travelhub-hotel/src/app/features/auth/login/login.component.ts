@@ -2,13 +2,14 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { LanguageSelectorComponent } from '../../../shared/components/language-selector/language-selector.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LanguageSelectorComponent],
+  imports: [CommonModule, FormsModule, RouterLink, LanguageSelectorComponent, TranslateModule],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
@@ -18,25 +19,30 @@ export class LoginComponent {
   error = signal<string | null>(null);
   showPassword = false;
 
-  features = [
-    {
-      icon: '📊',
-      title: 'Dashboard en tiempo real',
-      desc: 'Ocupación, ingresos y reservas al instante',
-    },
-    {
-      icon: '💰',
-      title: 'Gestión de tarifas flexible',
-      desc: 'Actualiza precios por temporada y demanda',
-    },
-    {
-      icon: '📋',
-      title: 'Control total de reservas',
-      desc: 'Filtra, busca y gestiona cada reserva',
-    },
-  ];
+  get features() {
+    return [
+      {
+        icon: '📊',
+        title: this.translate.instant('AUTH.SIDE_DASHBOARD'),
+        desc: this.translate.instant('AUTH.SIDE_DASHBOARD_SUB'),
+      },
+      {
+        icon: '💰',
+        title: this.translate.instant('AUTH.SIDE_TARIFFS'),
+        desc: this.translate.instant('AUTH.SIDE_TARIFFS_SUB'),
+      },
+      {
+        icon: '📋',
+        title: this.translate.instant('AUTH.SIDE_CONTROL'),
+        desc: this.translate.instant('AUTH.SIDE_CONTROL_SUB'),
+      },
+    ];
+  }
 
-  constructor(private auth: AuthService) {}
+  constructor(
+    private auth: AuthService,
+    private translate: TranslateService,
+  ) {}
 
   onLogin() {
     this.error.set(null);

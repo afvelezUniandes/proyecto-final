@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { switchMap } from 'rxjs';
 import { HotelService } from '../../core/services/hotel.service';
 import { ReservationService } from '../../core/services/reservation.service';
@@ -9,7 +10,7 @@ import { HotelReservation } from '../../core/models';
 @Component({
   selector: 'app-reservation-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, TranslateModule],
   templateUrl: './reservation-detail.component.html',
 })
 export class ReservationDetailComponent implements OnInit {

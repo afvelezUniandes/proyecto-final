@@ -24,4 +24,5 @@ if __name__ == '__main__':
             conn.execute(text('CREATE SCHEMA IF NOT EXISTS notifications'))
             conn.commit()
         Base.metadata.create_all(engine)
-    app.run(host='0.0.0.0', port=5003, debug=False)
+    from config import PORT
+    app.run(host='0.0.0.0', port=PORT, debug=False)

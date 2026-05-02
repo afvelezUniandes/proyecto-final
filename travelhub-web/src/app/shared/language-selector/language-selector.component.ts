@@ -1,7 +1,8 @@
-import { Component, signal, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, computed, input, HostListener, inject } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
+import { LangService } from '../../core/services/lang.service';
 
-type Lang = 'es' | 'en';
+export type Lang = 'es' | 'en';
 type Theme = 'dark' | 'light';
 
 const LANGS: Record<Lang, { flag: string; label: string }> = {
@@ -16,34 +17,54 @@ const LANGS: Record<Lang, { flag: string; label: string }> = {
   template: `
     <div class="relative">
       <button
-        (click)="open.set(!open())"
+        (click)="open = !open"
         [class]="btnClass()"
+        aria-haspopup="listbox"
+        [attr.aria-expanded]="open"
+        [attr.aria-label]="'Idioma: ' + langs[current()].label"
       >
-        <span>{{ langs[current()].flag }}</span>
+        <span aria-hidden="true">{{ langs[current()].flag }}</span>
         <span>{{ langs[current()].label }}</span>
-        <svg class="w-3 h-3 transition-transform" [class.rotate-180]="open()" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+        <svg
+          class="w-3 h-3 transition-transform"
+          [class.rotate-180]="open"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.5"
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
 
-      @if (open()) {
-        <div class="fixed inset-0 z-10" (click)="open.set(false)"></div>
-        <div class="absolute right-0 mt-1 z-20 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden min-w-[128px]">
+      @if (open) {
+        <div class="fixed inset-0 z-10" (click)="open = false"></div>
+        <ul
+          role="listbox"
+          class="absolute right-0 mt-1 z-20 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden min-w-32 list-none p-0 m-0"
+        >
           @for (entry of langEntries; track entry.key) {
-            <button
-              (click)="select(entry.key)"
-              class="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-              [class.font-semibold]="current() === entry.key"
-              [class.text-blue-700]="current() === entry.key"
-            >
-              <span>{{ entry.flag }}</span>
-              <span>{{ entry.full }}</span>
-              @if (current() === entry.key) {
-                <span class="ml-auto text-blue-600">✓</span>
-              }
-            </button>
+            <li role="option" [attr.aria-selected]="current() === entry.key">
+              <button
+                (click)="select(entry.key)"
+                class="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                [class.font-semibold]="current() === entry.key"
+                [class.text-blue-700]="current() === entry.key"
+              >
+                <span aria-hidden="true">{{ entry.flag }}</span>
+                <span>{{ entry.full }}</span>
+                @if (current() === entry.key) {
+                  <span class="ml-auto text-blue-600" aria-hidden="true">✓</span>
+                }
+              </button>
+            </li>
           }
-        </div>
+        </ul>
       }
     </div>
   `,
@@ -51,16 +72,26 @@ const LANGS: Record<Lang, { flag: string; label: string }> = {
 export class LanguageSelectorComponent {
   theme = input<Theme>('dark');
   langs = LANGS;
-  current = signal<Lang>('es');
-  open = signal(false);
+  open = false;
+  private doc = inject(DOCUMENT);
 
   langEntries = [
     { key: 'es' as Lang, flag: '🇪🇸', full: 'Español' },
     { key: 'en' as Lang, flag: '🇺🇸', full: 'English' },
   ];
 
+  constructor(public langService: LangService) {}
+
+  current = computed(() => this.langService.currentLang());
+
+  @HostListener('document:keydown.escape')
+  onEscape() {
+    this.open = false;
+  }
+
   btnClass(): string {
-    const base = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border';
+    const base =
+      'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border';
     if (this.theme() === 'light') {
       return `${base} text-gray-600 border-gray-300 hover:bg-gray-100 hover:text-gray-800`;
     }
@@ -68,7 +99,8 @@ export class LanguageSelectorComponent {
   }
 
   select(lang: Lang) {
-    this.current.set(lang);
-    this.open.set(false);
+    this.langService.setLang(lang);
+    this.doc.documentElement.lang = lang;
+    this.open = false;
   }
 }

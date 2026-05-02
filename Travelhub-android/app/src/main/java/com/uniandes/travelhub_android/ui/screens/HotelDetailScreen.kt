@@ -25,8 +25,11 @@ import androidx.compose.ui.text.font.FontWeight
 import com.uniandes.travelhub_android.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 import com.uniandes.travelhub_android.data.ApiClient
 import com.uniandes.travelhub_android.data.CreateReservationRequest
+import com.uniandes.travelhub_android.data.Hotel
 import com.uniandes.travelhub_android.data.Room
 import com.uniandes.travelhub_android.data.TokenStore
 import com.uniandes.travelhub_android.ui.theme.*
@@ -52,6 +55,7 @@ fun HotelDetailScreen(
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    var hotel by remember { mutableStateOf<Hotel?>(null) }
     var rooms by remember { mutableStateOf<List<Room>>(emptyList()) }
     var occupiedIds by remember { mutableStateOf<Set<Int>>(emptySet()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -69,6 +73,9 @@ fun HotelDetailScreen(
     LaunchedEffect(hotelId) {
         scope.launch {
             try {
+                // Cargar hotel
+                val hotelResp = ApiClient.api.getHotel(hotelId)
+                if (hotelResp.isSuccessful) hotel = hotelResp.body()
                 // Cargar habitaciones
                 val roomsResp = ApiClient.api.getRooms(hotelId)
                 if (roomsResp.isSuccessful) {
@@ -200,22 +207,23 @@ fun HotelDetailScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(220.dp)
-                        .background(hotelColor),
+                        .height(220.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            Icons.Default.Hotel,
-                            contentDescription = null,
-                            tint = TravelBlue,
-                            modifier = Modifier.size(80.dp)
+                    if (!hotel?.image_url.isNullOrBlank()) {
+                        AsyncImage(
+                            model = hotel!!.image_url,
+                            contentDescription = hotel?.nombre,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
                         )
-                        Text(
-                            text = "Hotel #$hotelId",
-                            color = TravelBlue,
-                            fontWeight = FontWeight.Medium
-                        )
+                    } else {
+                        Box(
+                            modifier = Modifier.fillMaxSize().background(hotelColor),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.Hotel, null, tint = TravelBlue, modifier = Modifier.size(80.dp))
+                        }
                     }
                     // Botones atrás y favorito
                     Row(
@@ -242,23 +250,6 @@ fun HotelDetailScreen(
                             Icon(Icons.Default.FavoriteBorder, contentDescription = stringResource(R.string.hotel_favorite), tint = Color(0xFF111827))
                         }
                     }
-
-                    // Paginación de imágenes (dots)
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(bottom = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        repeat(5) { i ->
-                            Box(
-                                modifier = Modifier
-                                    .size(if (i == 0) 10.dp else 8.dp)
-                                    .clip(CircleShape)
-                                    .background(if (i == 0) TravelBlue else Color.White.copy(alpha = 0.6f))
-                            )
-                        }
-                    }
                 }
             }
 
@@ -280,18 +271,23 @@ fun HotelDetailScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Hotel #$hotelId",
+                                    text = hotel?.nombre ?: "Cargando...",
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF111827)
                                 )
-                                Row(modifier = Modifier.padding(top = 4.dp)) {
-                                    repeat(5) { Text("★", color = Color(0xFFF59E0B), fontSize = 14.sp) }
-                                    Text(" ${stringResource(R.string.hotel_stars_label, 5)}", fontSize = 13.sp, color = TravelOrange, fontWeight = FontWeight.Medium)
+                                val estrellas = hotel?.estrellas ?: 0
+                                if (estrellas > 0) {
+                                    Row(modifier = Modifier.padding(top = 4.dp)) {
+                                        repeat(estrellas) { Text("★", color = Color(0xFFF59E0B), fontSize = 14.sp) }
+                                        Text(" ${stringResource(R.string.hotel_stars_label, estrellas)}", fontSize = 13.sp, color = TravelOrange, fontWeight = FontWeight.Medium)
+                                    }
                                 }
-                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
-                                    Icon(Icons.Default.LocationOn, null, tint = TravelRed, modifier = Modifier.size(14.dp))
-                                    Text(" Centro, Bogotá, Colombia", fontSize = 13.sp, color = TravelGray)
+                                if (!hotel?.ciudad.isNullOrBlank()) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
+                                        Icon(Icons.Default.LocationOn, null, tint = TravelRed, modifier = Modifier.size(14.dp))
+                                        Text(" ${hotel?.ciudad}, ${hotel?.pais}", fontSize = 13.sp, color = TravelGray)
+                                    }
                                 }
                             }
                             Column(horizontalAlignment = Alignment.End) {
@@ -325,19 +321,15 @@ fun HotelDetailScreen(
                         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = TravelGrayLight)
 
                         // Descripción
-                        Text(stringResource(R.string.hotel_description_sec), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = stringResource(R.string.hotel_description_text),
-                            fontSize = 14.sp,
-                            color = TravelGray,
-                            lineHeight = 22.sp
-                        )
-                        TextButton(
-                            onClick = {},
-                            contentPadding = PaddingValues(0.dp)
-                        ) {
-                            Text(stringResource(R.string.hotel_read_more), color = TravelBlue, fontSize = 13.sp)
+                        if (!hotel?.descripcion.isNullOrBlank()) {
+                            Text(stringResource(R.string.hotel_description_sec), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827))
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = hotel!!.descripcion!!,
+                                fontSize = 14.sp,
+                                color = TravelGray,
+                                lineHeight = 22.sp
+                            )
                         }
                     }
                 }

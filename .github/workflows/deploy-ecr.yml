@@ -21,6 +21,7 @@ jobs:
       catalog: ${{ steps.filter.outputs.catalog }}
       gateway: ${{ steps.filter.outputs.gateway }}
       reservation: ${{ steps.filter.outputs.reservation }}
+      notification: ${{ steps.filter.outputs.notification }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,6 +39,8 @@ jobs:
               - 'client-gateway/**'
             reservation:
               - 'reservation-service/**'
+            notification:
+              - 'notification-service/**'
 
   # Build y push para auth-service
   build-auth:
@@ -167,15 +170,52 @@ jobs:
           echo "Tag: reservation-latest"
           echo "Full URI: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:reservation-latest"
 
-  # Deploy a ECS (solo en main)
+  # Build y push para notification-service
+  build-notification:
+    name: Build Notification Service
+    needs: detect-changes
+    if: needs.detect-changes.outputs.notification == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:notification-latest ./notification-service
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:notification-latest
+
+      - name: Image info
+        run: |
+          echo "✅ Notification service image pushed successfully!"
+          echo "Tag: notification-latest"
+          echo "Full URI: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:notification-latest"
   deploy-ecs:
     name: Deploy to ECS
-    needs: [build-auth, build-catalog, build-gateway, build-reservation]
+    needs:
+      [
+        build-auth,
+        build-catalog,
+        build-gateway,
+        build-reservation,
+        build-notification,
+      ]
     runs-on: ubuntu-latest
     if: |
       always() &&
       !contains(needs.*.result, 'failure') &&
-      (needs.build-auth.result == 'success' || needs.build-catalog.result == 'success' || needs.build-gateway.result == 'success' || needs.build-reservation.result == 'success')
+      (needs.build-auth.result == 'success' || needs.build-catalog.result == 'success' || needs.build-gateway.result == 'success' || needs.build-reservation.result == 'success' || needs.build-notification.result == 'success')
 
     steps:
       - name: Configure AWS credentials
@@ -212,6 +252,7 @@ jobs:
         build-catalog,
         build-gateway,
         build-reservation,
+        build-notification,
         deploy-ecs,
       ]
     runs-on: ubuntu-latest
@@ -246,6 +287,12 @@ jobs:
             echo "- ✅ Reservation Service" >> $GITHUB_STEP_SUMMARY
           else
             echo "- ⏭️ Reservation Service (no changes)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.detect-changes.outputs.notification }}" == "true" ]; then
+            echo "- ✅ Notification Service" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ⏭️ Notification Service (no changes)" >> $GITHUB_STEP_SUMMARY
           fi
 
           echo "" >> $GITHUB_STEP_SUMMARY
