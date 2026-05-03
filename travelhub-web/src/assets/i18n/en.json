@@ -140,6 +140,8 @@
   "RESERVATIONS": {
     "TITLE": "My Reservations",
     "FILTER_ALL": "All",
+    "FILTER_ACTIVE": "Active",
+    "FILTER_PAST": "Past",
     "FILTER_CONFIRMED": "Confirmed",
     "FILTER_COMPLETED": "Completed",
     "FILTER_CANCELLED": "Cancelled",
