@@ -38,6 +38,7 @@ export interface HotelReservation {
   fecha_checkout: string;
   num_huespedes: number;
   fecha_creacion: string;
+  fecha_cancelacion?: string;
   monto_total: number;
   moneda: string;
   estado: 'confirmada' | 'cancelada' | 'completada';

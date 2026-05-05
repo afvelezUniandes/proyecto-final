@@ -109,6 +109,7 @@ def reserva_to_dict(r):
         'fecha_checkout': str(r.fecha_checkout),
         'num_huespedes': r.num_huespedes,
         'fecha_creacion': str(r.fecha_creacion),
+        'fecha_cancelacion': str(r.fecha_cancelacion) if r.fecha_cancelacion else None,
         'codigo': r.codigo,
         'monto_total': float(r.monto_total),
         'moneda': r.moneda,
@@ -279,7 +280,29 @@ def hotel_cancel_reservation(reserva_id):
             return jsonify({'error': 'Only confirmed reservations can be cancelled'}), 400
 
         reserva.estado = 'cancelada'
+        reserva.fecha_cancelacion = datetime.datetime.now()
         session.commit()
+        return jsonify(reserva_to_dict(reserva)), 200
+    finally:
+        session.close()
+
+
+# ──────────────────────────────────────────────
+# GET /reservations/hotel/<hotel_id>/reservations/<reserva_id>  — detalle de una reserva del hotel
+# ──────────────────────────────────────────────
+@bp.route('/reservations/hotel/<int:hotel_id>/reservations/<int:reserva_id>', methods=['GET'])
+def get_hotel_reservation_detail(hotel_id, reserva_id):
+    hotel_id_header = request.headers.get('X-Hotel-Id')
+    if not hotel_id_header:
+        return jsonify({'error': 'Unauthorized'}), 401
+    session = Session()
+    try:
+        reserva = session.query(Reserva).filter(
+            Reserva.id == reserva_id,
+            Reserva.hotel_id == hotel_id
+        ).first()
+        if not reserva:
+            return jsonify({'error': 'Reservation not found'}), 404
         return jsonify(reserva_to_dict(reserva)), 200
     finally:
         session.close()
@@ -370,6 +393,7 @@ def cancel_reservation(reserva_id):
             return jsonify({'error': 'Only confirmed reservations can be cancelled'}), 400
 
         reserva.estado = 'cancelada'
+        reserva.fecha_cancelacion = datetime.datetime.now()
         session.commit()
 
         email = _get_user_email(user_id)
