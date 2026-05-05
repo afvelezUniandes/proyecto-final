@@ -20,6 +20,7 @@ class MockReserva:
     fecha_checkout = datetime.date(2026, 3, 20)
     num_huespedes = 2
     fecha_creacion = datetime.datetime(2026, 3, 1, 12, 0, 0)
+    fecha_cancelacion = None
     codigo = 'TH-2026-0001'
     monto_total = 2250000.00
     moneda = 'COP'
