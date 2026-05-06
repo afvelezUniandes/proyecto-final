@@ -25,6 +25,12 @@ export interface HotelStatsResponse extends HotelStats {
 export class ReservationService {
   constructor(private api: ApiService) {}
 
+  getReservationById(hotelId: number, reservationId: number): Observable<HotelReservation> {
+    return this.api.get<HotelReservation>(
+      `/reservations/hotel/${hotelId}/reservations/${reservationId}`,
+    );
+  }
+
   getReservations(
     hotelId: number,
     filters: HotelReservationFilters = {},

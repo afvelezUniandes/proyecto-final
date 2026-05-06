@@ -221,6 +221,7 @@
     "TOTAL_LABEL": "Total",
     "ADDITIONAL": "Información adicional",
     "CREATED": "Reserva creada",
+    "CANCELLED_DATE": "Fecha de cancelación",
     "PAYMENT": "Resumen de pago",
     "CURRENCY_LABEL": "Moneda",
     "NOT_FOUND": "Reserva no encontrada.",

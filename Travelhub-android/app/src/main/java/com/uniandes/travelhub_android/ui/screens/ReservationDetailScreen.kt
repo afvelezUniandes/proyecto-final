@@ -140,6 +140,7 @@ fun ReservationDetailScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color.White)
+                            .statusBarsPadding()
                             .padding(horizontal = 8.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -226,11 +227,11 @@ fun ReservationDetailScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column {
                                     Text(
-                                        "Hotel #${data.hotel_id}",
+                                        data.nombre_hotel?.takeIf { it.isNotBlank() } ?: "Hotel #${data.hotel_id}",
                                         fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827)
                                     )
                                     Text(
-                                        "Habitación #${data.habitacion_id}",
+                                        data.tipo_habitacion?.takeIf { it.isNotBlank() } ?: "Habitación #${data.habitacion_id}",
                                         fontSize = 13.sp, color = TravelGray
                                     )
                                 }

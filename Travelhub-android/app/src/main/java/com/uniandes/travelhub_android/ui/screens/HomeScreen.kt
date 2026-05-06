@@ -428,7 +428,7 @@ private fun CityAutocompleteField(
             trailingIcon = {
                 if (value.isNotBlank()) {
                     IconButton(onClick = { onValueChange("") }) {
-                        Icon(Icons.Default.Close, null, tint = TravelGray, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cd_clear_city), tint = TravelGray, modifier = Modifier.size(16.dp))
                     }
                 } else {
                     Icon(Icons.Default.Search, null, tint = TravelGray, modifier = Modifier.size(18.dp))
@@ -498,7 +498,7 @@ private fun GuestStepper(
                     .background(if (value > min) TravelBlue.copy(alpha = 0.12f) else TravelGrayLight)
             ) {
                 Icon(
-                    Icons.Default.Remove, null,
+                    Icons.Default.Remove, contentDescription = stringResource(R.string.cd_decrement_guests, label),
                     tint = if (value > min) TravelBlue else TravelGray,
                     modifier = Modifier.size(16.dp)
                 )
@@ -518,7 +518,7 @@ private fun GuestStepper(
                     .clip(CircleShape)
                     .background(TravelBlue.copy(alpha = 0.12f))
             ) {
-                Icon(Icons.Default.Add, null, tint = TravelBlue, modifier = Modifier.size(16.dp))
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_increment_guests, label), tint = TravelBlue, modifier = Modifier.size(16.dp))
             }
         }
     }
@@ -589,7 +589,7 @@ fun HotelCard(hotel: Hotel, onClick: () -> Unit) {
                         ) {
                             Icon(
                                 Icons.Default.FavoriteBorder,
-                                contentDescription = null,
+                                contentDescription = stringResource(R.string.cd_favorite_hotel),
                                 tint = TravelGray,
                                 modifier = Modifier.size(18.dp)
                             )

@@ -402,6 +402,63 @@ def get_hotel_stats(hotel_id):
         return jsonify({'error': 'Reservation service unavailable'}), 503
 
 
+@app.route('/reservations/hotel/<int:hotel_id>/reservations/<int:reserva_id>', methods=['GET'])
+@verify_token
+def get_hotel_reservation_detail(hotel_id, reserva_id):
+    """Devuelve el detalle enriquecido de una reserva específica del hotel."""
+    try:
+        headers = {'X-Hotel-Id': str(hotel_id)}
+        resp = requests.get(
+            f'{RESERVATION_SERVICE_URL}/reservations/hotel/{hotel_id}/reservations/{reserva_id}',
+            headers=headers, timeout=5
+        )
+        if resp.status_code != 200:
+            return jsonify(resp.json()), resp.status_code
+
+        r = resp.json()
+
+        # Enrich with room data
+        room = {}
+        try:
+            room_resp = requests.get(f'{CATALOG_SERVICE_URL}/rooms/{r["habitacion_id"]}', timeout=3)
+            if room_resp.status_code == 200:
+                room = room_resp.json()
+        except Exception:
+            pass
+
+        # Enrich with user data
+        user = {}
+        try:
+            u_resp = requests.get(f'{AUTH_SERVICE_URL}/users/{r["usuario_id"]}', timeout=3)
+            if u_resp.status_code == 200:
+                user = u_resp.json()
+        except Exception:
+            pass
+
+        noches = 0
+        try:
+            ci = datetime.date.fromisoformat(r['fecha_checkin'])
+            co = datetime.date.fromisoformat(r['fecha_checkout'])
+            noches = (co - ci).days
+        except Exception:
+            pass
+
+        enriched = {
+            **r,
+            'habitacion_nombre': room.get('nombre') or room.get('tipo') or f"Hab. {r.get('habitacion_id')}",
+            'precio_noche': room.get('precio_noche', 0),
+            'noches': noches,
+            'huesped_nombre': user.get('nombre', f"Huésped #{r.get('usuario_id')}"),
+            'huesped_email': user.get('email', ''),
+            'huesped_telefono': user.get('telefono', ''),
+            'huesped_pais': user.get('pais', ''),
+            'huesped_idioma': user.get('idioma_preferido', 'es'),
+        }
+        return jsonify(enriched), 200
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Reservation service unavailable'}), 503
+
+
 @app.route('/reservations/hotel/<int:hotel_id>/reservations/<int:reserva_id>/cancel', methods=['PATCH'])
 @verify_token
 def hotel_cancel_reservation(hotel_id, reserva_id):

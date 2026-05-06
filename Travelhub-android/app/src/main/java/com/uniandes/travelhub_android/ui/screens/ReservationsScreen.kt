@@ -76,14 +76,20 @@ fun ReservationsScreen(
 
     LaunchedEffect(Unit) { loadReservations() }
 
-    val filtered = when (selectedTab) {
-        TAB_ACTIVE    -> reservations.filter { it.estado == "confirmada" }
-        TAB_PAST      -> reservations.filter { it.estado == "completada" }
-        TAB_CANCELLED_KEY -> reservations.filter { it.estado == "cancelada" }
-        else          -> reservations
+    val today = remember {
+        java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
     }
-    val proximas    = filtered.filter { it.estado == "confirmada" }
-    val completadas = filtered.filter { it.estado == "completada" }
+    fun isActive(r: ReservationApi) = r.estado == "confirmada" && r.fecha_checkout >= today
+    fun isPast(r: ReservationApi) = r.estado == "completada" || (r.estado == "confirmada" && r.fecha_checkout < today)
+
+    val filtered = when (selectedTab) {
+        TAB_ACTIVE        -> reservations.filter { isActive(it) }
+        TAB_PAST          -> reservations.filter { isPast(it) }
+        TAB_CANCELLED_KEY -> reservations.filter { it.estado == "cancelada" }
+        else              -> reservations
+    }
+    val proximas    = filtered.filter { isActive(it) }
+    val completadas = filtered.filter { isPast(it) }
     val canceladas  = filtered.filter { it.estado == "cancelada" }
 
     Scaffold(
@@ -260,7 +266,7 @@ fun ReservationCard(reservation: ReservationApi, onClick: () -> Unit) {
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        "Hotel #${reservation.hotel_id}",
+                        reservation.nombre_hotel?.takeIf { it.isNotBlank() } ?: "Hotel #${reservation.hotel_id}",
                         fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF111827)
                     )
                     Box(

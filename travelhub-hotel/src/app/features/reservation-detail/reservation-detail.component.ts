@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -14,11 +14,11 @@ import { HotelReservation } from '../../core/models';
   templateUrl: './reservation-detail.component.html',
 })
 export class ReservationDetailComponent implements OnInit {
-  detail: HotelReservation | null = null;
-  notFound = false;
-  markCanceledSuccess = false;
-  cancelError = '';
-  canceling = false;
+  detail = signal<HotelReservation | null>(null);
+  notFound = signal(false);
+  markCanceledSuccess = signal(false);
+  cancelError = signal('');
+  canceling = signal(false);
   private hotelId = 0;
 
   constructor(
@@ -34,19 +34,14 @@ export class ReservationDetailComponent implements OnInit {
       .pipe(
         switchMap((h) => {
           this.hotelId = h.id;
-          return this.reservationService.getReservations(h.id);
+          return this.reservationService.getReservationById(h.id, id);
         }),
       )
       .subscribe({
-        next: (reservations) => {
-          const found = reservations.find((r) => r.id === id);
-          if (found) {
-            this.detail = found;
-          } else {
-            this.notFound = true;
-          }
+        next: (reservation) => {
+          this.detail.set(reservation);
         },
-        error: () => (this.notFound = true),
+        error: () => this.notFound.set(true),
       });
   }
 
@@ -76,18 +71,23 @@ export class ReservationDetailComponent implements OnInit {
   }
 
   marcarCancelada() {
-    if (!this.detail || !confirm('¿Deseas cancelar esta reserva?')) return;
-    this.canceling = true;
-    this.cancelError = '';
-    this.reservationService.cancelReservation(this.hotelId, this.detail.id).subscribe({
+    const d = this.detail();
+    if (!d || !confirm('¿Deseas cancelar esta reserva?')) return;
+    this.canceling.set(true);
+    this.cancelError.set('');
+    this.reservationService.cancelReservation(this.hotelId, d.id).subscribe({
       next: (updated) => {
-        this.detail = { ...this.detail!, estado: updated.estado };
-        this.markCanceledSuccess = true;
-        this.canceling = false;
+        this.detail.set({
+          ...d,
+          estado: updated.estado,
+          fecha_cancelacion: updated.fecha_cancelacion,
+        });
+        this.markCanceledSuccess.set(true);
+        this.canceling.set(false);
       },
       error: (e) => {
-        this.cancelError = e?.error?.error || 'Error al cancelar la reserva.';
-        this.canceling = false;
+        this.cancelError.set(e?.error?.error || 'Error al cancelar la reserva.');
+        this.canceling.set(false);
       },
     });
   }

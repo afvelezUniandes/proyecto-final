@@ -99,21 +99,37 @@ def generate_codigo():
     return f"TH-{year}-{suffix}"
 
 
-def reserva_to_dict(r):
+def reserva_to_dict(r, nombre_hotel: str = '', tipo_habitacion: str = ''):
     return {
         'id': r.id,
         'usuario_id': r.usuario_id,
         'habitacion_id': r.habitacion_id,
         'hotel_id': r.hotel_id,
+        'nombre_hotel': nombre_hotel,
+        'tipo_habitacion': tipo_habitacion,
         'fecha_checkin': str(r.fecha_checkin),
         'fecha_checkout': str(r.fecha_checkout),
         'num_huespedes': r.num_huespedes,
         'fecha_creacion': str(r.fecha_creacion),
+        'fecha_cancelacion': str(r.fecha_cancelacion) if r.fecha_cancelacion else None,
         'codigo': r.codigo,
         'monto_total': float(r.monto_total),
         'moneda': r.moneda,
         'estado': r.estado,
     }
+
+
+def _get_hotel_names_batch(hotel_ids: list[int]) -> dict[int, str]:
+    """Obtiene nombres de hoteles en batch. Devuelve dict {hotel_id: nombre}."""
+    nombres: dict[int, str] = {}
+    for hotel_id in set(hotel_ids):
+        try:
+            resp = http_requests.get(f'{CATALOG_SERVICE_URL}/hotels/{hotel_id}', timeout=3)
+            if resp.status_code == 200:
+                nombres[hotel_id] = resp.json().get('nombre', '')
+        except Exception:
+            pass
+    return nombres
 
 
 # ──────────────────────────────────────────────
@@ -132,7 +148,11 @@ def get_reservations():
         if estado:
             query = query.filter(Reserva.estado == estado)
         reservas = query.order_by(Reserva.fecha_creacion.desc()).all()
-        return jsonify([reserva_to_dict(r) for r in reservas]), 200
+
+        hotel_ids = [r.hotel_id for r in reservas]
+        nombres = _get_hotel_names_batch(hotel_ids)
+
+        return jsonify([reserva_to_dict(r, nombres.get(r.hotel_id, '')) for r in reservas]), 200
     finally:
         session.close()
 
@@ -154,7 +174,8 @@ def get_reservation(reserva_id):
         ).first()
         if not reserva:
             return jsonify({'error': 'Reservation not found'}), 404
-        return jsonify(reserva_to_dict(reserva)), 200
+        nombre_hotel, tipo_habitacion = _get_hotel_room_info(reserva.hotel_id, reserva.habitacion_id)
+        return jsonify(reserva_to_dict(reserva, nombre_hotel, tipo_habitacion)), 200
     finally:
         session.close()
 
@@ -279,7 +300,29 @@ def hotel_cancel_reservation(reserva_id):
             return jsonify({'error': 'Only confirmed reservations can be cancelled'}), 400
 
         reserva.estado = 'cancelada'
+        reserva.fecha_cancelacion = datetime.datetime.now()
         session.commit()
+        return jsonify(reserva_to_dict(reserva)), 200
+    finally:
+        session.close()
+
+
+# ──────────────────────────────────────────────
+# GET /reservations/hotel/<hotel_id>/reservations/<reserva_id>  — detalle de una reserva del hotel
+# ──────────────────────────────────────────────
+@bp.route('/reservations/hotel/<int:hotel_id>/reservations/<int:reserva_id>', methods=['GET'])
+def get_hotel_reservation_detail(hotel_id, reserva_id):
+    hotel_id_header = request.headers.get('X-Hotel-Id')
+    if not hotel_id_header:
+        return jsonify({'error': 'Unauthorized'}), 401
+    session = Session()
+    try:
+        reserva = session.query(Reserva).filter(
+            Reserva.id == reserva_id,
+            Reserva.hotel_id == hotel_id
+        ).first()
+        if not reserva:
+            return jsonify({'error': 'Reservation not found'}), 404
         return jsonify(reserva_to_dict(reserva)), 200
     finally:
         session.close()
@@ -370,6 +413,7 @@ def cancel_reservation(reserva_id):
             return jsonify({'error': 'Only confirmed reservations can be cancelled'}), 400
 
         reserva.estado = 'cancelada'
+        reserva.fecha_cancelacion = datetime.datetime.now()
         session.commit()
 
         email = _get_user_email(user_id)

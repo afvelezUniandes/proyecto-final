@@ -4,7 +4,10 @@ import { RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageSelectorComponent } from '../../shared/language-selector/language-selector.component';
 import { ReservationService } from '../../core/services/reservation.service';
+import { CatalogService } from '../../core/services/catalog.service';
 import { Reservation } from '../../core/models';
+
+type TabKey = 'todas' | 'confirmada' | 'completada' | 'cancelada';
 
 @Component({
   selector: 'app-reservations',
@@ -14,13 +17,16 @@ import { Reservation } from '../../core/models';
 })
 export class ReservationsComponent implements OnInit {
   reservations: Reservation[] = [];
+  hotelNames: Record<number, string> = {};
   loading = true;
   error = '';
-  activeTab = 'todas';
+  activeTab: TabKey = 'todas';
+  tabs: TabKey[] = ['todas', 'confirmada', 'completada', 'cancelada'];
   cancelingId: number | null = null;
 
   constructor(
     private reservationService: ReservationService,
+    private catalog: CatalogService,
     private translate: TranslateService,
   ) {}
 
@@ -32,7 +38,13 @@ export class ReservationsComponent implements OnInit {
     this.loading = true;
     this.reservationService.getReservations().subscribe({
       next: (r) => {
-        this.reservations = r;
+        // Orden: más recientes primero (por fecha_checkin como referencia visible)
+        this.reservations = [...r].sort((a, b) => {
+          const da = new Date(a.fecha_checkin || a.fecha_creacion || 0).getTime();
+          const db = new Date(b.fecha_checkin || b.fecha_creacion || 0).getTime();
+          return db - da;
+        });
+        this.loadHotelNames();
         this.loading = false;
       },
       error: () => {
@@ -42,9 +54,40 @@ export class ReservationsComponent implements OnInit {
     });
   }
 
+  private loadHotelNames() {
+    const ids = Array.from(
+      new Set(
+        this.reservations
+          .map((r) => r.hotel_id)
+          .filter((id): id is number => typeof id === 'number'),
+      ),
+    );
+    ids.forEach((id) => {
+      if (this.hotelNames[id]) return;
+      this.catalog.getHotel(id).subscribe({
+        next: (h) => (this.hotelNames[id] = h.nombre),
+        error: () => (this.hotelNames[id] = ''),
+      });
+    });
+  }
+
+  hotelName(r: Reservation): string {
+    return r.hotel_id ? this.hotelNames[r.hotel_id] || '' : '';
+  }
+
   filtered(): Reservation[] {
     if (this.activeTab === 'todas') return this.reservations;
-    return this.reservations.filter((r) => r.estado?.toLowerCase() === this.activeTab);
+    return this.reservations.filter((r) => (r.estado || '').toLowerCase() === this.activeTab);
+  }
+
+  tabLabel(tab: TabKey): string {
+    const map: Record<TabKey, string> = {
+      todas: 'RESERVATIONS.FILTER_ALL',
+      confirmada: 'RESERVATIONS.FILTER_CONFIRMED',
+      completada: 'RESERVATIONS.FILTER_COMPLETED',
+      cancelada: 'RESERVATIONS.FILTER_CANCELLED',
+    };
+    return map[tab];
   }
 
   cancel(id: number) {

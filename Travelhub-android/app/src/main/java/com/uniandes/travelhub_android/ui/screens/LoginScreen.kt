@@ -72,6 +72,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit = {}) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .verticalScroll(rememberScrollState())
     ) {
         // Header azul con logo
@@ -79,7 +80,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit = {}) {
             modifier = Modifier
                 .fillMaxWidth()
                 .background(TravelBlue)
-                .padding(top = 64.dp, bottom = 40.dp),
+                .padding(top = 32.dp, bottom = 40.dp),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -185,7 +186,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit = {}) {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
                                 imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                contentDescription = null,
+                                contentDescription = if (passwordVisible) stringResource(R.string.cd_password_hide) else stringResource(R.string.cd_password_show),
                                 tint = TravelGray
                             )
                         }

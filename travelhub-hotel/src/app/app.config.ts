@@ -20,7 +20,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withInterceptors([jwtInterceptor])),
-    provideTranslateService({ defaultLanguage: 'es' }),
+    provideTranslateService({ fallbackLang: 'es' }),
     provideTranslateHttpLoader({ prefix: '/assets/i18n/', suffix: '.json' }),
     {
       provide: APP_INITIALIZER,

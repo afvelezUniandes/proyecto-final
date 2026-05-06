@@ -21,6 +21,7 @@ class Reserva(Base):
     fecha_checkout = Column(Date, nullable=False)
     num_huespedes = Column(SmallInteger, nullable=False, default=1)
     fecha_creacion = Column(TIMESTAMP, server_default=text('NOW()'))
+    fecha_cancelacion = Column(TIMESTAMP, nullable=True)
     codigo = Column(String(20), unique=True, nullable=False)
     monto_total = Column(Numeric(10, 2), nullable=False)
     moneda = Column(String(3), default='COP')
