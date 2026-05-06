@@ -186,7 +186,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit = {}) {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
                                 imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                contentDescription = null,
+                                contentDescription = if (passwordVisible) stringResource(R.string.cd_password_hide) else stringResource(R.string.cd_password_show),
                                 tint = TravelGray
                             )
                         }

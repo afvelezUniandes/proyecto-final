@@ -164,7 +164,7 @@ fun RegisterScreen(
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                                 Icon(
                                     if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    null, tint = TravelGray
+                                    if (passwordVisible) stringResource(R.string.cd_password_hide) else stringResource(R.string.cd_password_show), tint = TravelGray
                                 )
                             }
                         },
@@ -191,7 +191,7 @@ fun RegisterScreen(
                             IconButton(onClick = { confirmVisible = !confirmVisible }) {
                                 Icon(
                                     if (confirmVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    null, tint = TravelGray
+                                    if (confirmVisible) stringResource(R.string.cd_password_hide) else stringResource(R.string.cd_password_show), tint = TravelGray
                                 )
                             }
                         },

@@ -317,7 +317,7 @@ fun ProfileScreen(
                             IconButton(onClick = { showPassword = !showPassword }) {
                                 Icon(
                                     if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    null, tint = TravelGray
+                                    if (showPassword) stringResource(R.string.cd_password_hide) else stringResource(R.string.cd_password_show), tint = TravelGray
                                 )
                             }
                         },

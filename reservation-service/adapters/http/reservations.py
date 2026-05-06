@@ -99,13 +99,14 @@ def generate_codigo():
     return f"TH-{year}-{suffix}"
 
 
-def reserva_to_dict(r, nombre_hotel: str = ''):
+def reserva_to_dict(r, nombre_hotel: str = '', tipo_habitacion: str = ''):
     return {
         'id': r.id,
         'usuario_id': r.usuario_id,
         'habitacion_id': r.habitacion_id,
         'hotel_id': r.hotel_id,
         'nombre_hotel': nombre_hotel,
+        'tipo_habitacion': tipo_habitacion,
         'fecha_checkin': str(r.fecha_checkin),
         'fecha_checkout': str(r.fecha_checkout),
         'num_huespedes': r.num_huespedes,
@@ -173,8 +174,8 @@ def get_reservation(reserva_id):
         ).first()
         if not reserva:
             return jsonify({'error': 'Reservation not found'}), 404
-        nombres = _get_hotel_names_batch([reserva.hotel_id])
-        return jsonify(reserva_to_dict(reserva, nombres.get(reserva.hotel_id, ''))), 200
+        nombre_hotel, tipo_habitacion = _get_hotel_room_info(reserva.hotel_id, reserva.habitacion_id)
+        return jsonify(reserva_to_dict(reserva, nombre_hotel, tipo_habitacion)), 200
     finally:
         session.close()
 

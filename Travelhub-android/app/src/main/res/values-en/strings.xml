@@ -168,4 +168,12 @@
     <string name="register_success">Account created. Now sign in!</string>
     <string name="err_email_exists">This email is already registered</string>
     <string name="err_register_failed">Registration error (%1$s)</string>
+
+    <!-- Accessibility: content descriptions -->
+    <string name="cd_password_show">Show password</string>
+    <string name="cd_password_hide">Hide password</string>
+    <string name="cd_favorite_hotel">Add to favorites</string>
+    <string name="cd_clear_city">Clear city field</string>
+    <string name="cd_increment_guests">Increase %1$s</string>
+    <string name="cd_decrement_guests">Decrease %1$s</string>
 </resources>
