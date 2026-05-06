@@ -56,6 +56,7 @@ data class ReservationApi(
     val habitacion_id: Int,
     val hotel_id: Int,
     val nombre_hotel: String? = null,
+    val tipo_habitacion: String? = null,
     val fecha_checkin: String,
     val fecha_checkout: String,
     val num_huespedes: Int,
