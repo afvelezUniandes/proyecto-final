@@ -140,6 +140,7 @@ fun ReservationDetailScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color.White)
+                            .statusBarsPadding()
                             .padding(horizontal = 8.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {

@@ -72,6 +72,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit = {}) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .verticalScroll(rememberScrollState())
     ) {
         // Header azul con logo
@@ -79,7 +80,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit = {}) {
             modifier = Modifier
                 .fillMaxWidth()
                 .background(TravelBlue)
-                .padding(top = 64.dp, bottom = 40.dp),
+                .padding(top = 32.dp, bottom = 40.dp),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
