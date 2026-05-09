@@ -59,6 +59,15 @@
         </div>
       }
 
+      @if (cancelSuccessMsg) {
+        <div
+          class="bg-green-50 border border-green-200 text-green-700 rounded-xl p-3 text-sm mb-4 flex items-center gap-2"
+        >
+          <span>✉️</span>
+          <span>{{ cancelSuccessMsg }}</span>
+        </div>
+      }
+
       @if (!loading && !error) {
         <div class="space-y-4">
           @for (r of filtered(); track r.id) {
@@ -100,9 +109,7 @@
                   ) {
                     <button
                       type="button"
-                      (click)="
-                        $event.preventDefault(); $event.stopPropagation(); cancel(r.id)
-                      "
+                      (click)="$event.preventDefault(); $event.stopPropagation(); cancel(r.id)"
                       [disabled]="cancelingId === r.id"
                       class="text-red-600 border border-red-200 text-xs px-3 py-1.5 rounded-lg hover:bg-red-50 disabled:opacity-50 transition"
                     >

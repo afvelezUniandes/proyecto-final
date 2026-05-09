@@ -23,6 +23,7 @@ export class ReservationsComponent implements OnInit {
   activeTab: TabKey = 'todas';
   tabs: TabKey[] = ['todas', 'confirmada', 'completada', 'cancelada'];
   cancelingId: number | null = null;
+  cancelSuccessMsg = '';
 
   constructor(
     private reservationService: ReservationService,
@@ -35,6 +36,7 @@ export class ReservationsComponent implements OnInit {
   }
 
   load() {
+    this.cancelSuccessMsg = '';
     this.loading = true;
     this.reservationService.getReservations().subscribe({
       next: (r) => {
@@ -91,16 +93,18 @@ export class ReservationsComponent implements OnInit {
   }
 
   cancel(id: number) {
-    if (!confirm('¿Estás seguro de que deseas cancelar esta reserva?')) return;
+    if (!confirm(this.translate.instant('RESERVATIONS.CONFIRM_CANCEL'))) return;
     this.cancelingId = id;
     this.reservationService.cancelReservation(id).subscribe({
       next: () => {
         this.cancelingId = null;
+        this.cancelSuccessMsg = this.translate.instant('RESERVATIONS.CANCEL_SUCCESS');
         this.load();
       },
       error: () => {
         this.cancelingId = null;
-        alert('No se pudo cancelar.');
+        this.cancelSuccessMsg = '';
+        alert(this.translate.instant('RESERVATIONS.ERR_CANCEL'));
       },
     });
   }
