@@ -81,7 +81,10 @@ export interface Room {
 
 export interface WeeklyOccupancy {
   dia: string;
+  dia_num: number;
+  mes_num: number;
   porcentaje: number;
+  es_hoy: boolean;
 }
 
 export interface RevenueByRoom {

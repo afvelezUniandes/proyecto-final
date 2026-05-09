@@ -104,9 +104,23 @@
     "SEE_ALL": "Ver todas →",
     "COL_GUEST": "Huésped",
     "COL_ROOM": "Habitación",
+    "COL_CODE": "Código",
+    "COL_CHECKIN": "Check-in",
+    "COL_TOTAL": "Total",
     "COL_STATUS": "Estado",
+    "CURRENT_MONTH": "Mes actual",
+    "SUMMARY": "Resumen del mes",
     "LOADING": "Cargando...",
-    "ERR_LOAD": "No se pudieron cargar las estadísticas."
+    "ERR_LOAD": "No se pudieron cargar las estadísticas.",
+    "DAY": {
+      "Lun": "Lun",
+      "Mar": "Mar",
+      "Mié": "Mié",
+      "Jue": "Jue",
+      "Vie": "Vie",
+      "Sáb": "Sáb",
+      "Dom": "Dom"
+    }
   },
   "ROOMS": {
     "TITLE": "Habitaciones",

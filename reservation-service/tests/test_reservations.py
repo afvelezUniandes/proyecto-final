@@ -16,8 +16,8 @@ class MockReserva:
     usuario_id = 1
     habitacion_id = 10
     hotel_id = 2
-    fecha_checkin = datetime.date(2026, 3, 15)
-    fecha_checkout = datetime.date(2026, 3, 20)
+    fecha_checkin = datetime.date(2099, 3, 15)
+    fecha_checkout = datetime.date(2099, 3, 20)
     num_huespedes = 2
     fecha_creacion = datetime.datetime(2026, 3, 1, 12, 0, 0)
     fecha_cancelacion = None
@@ -177,8 +177,8 @@ class TestCreateReservation:
         payload = {
             'habitacion_id': 10,
             'hotel_id': 2,
-            'fecha_checkin': '2026-03-15',
-            'fecha_checkout': '2026-03-20',
+            'fecha_checkin': '2099-03-15',
+            'fecha_checkout': '2099-03-20',
             'num_huespedes': 2,
             'monto_total': 2250000
         }

@@ -364,7 +364,11 @@ def get_hotel_stats(hotel_id):
         reservations = resp.json()
         now = datetime.date.today()
         month_start = now.replace(day=1)
+        import calendar as cal_mod
+        days_in_month = cal_mod.monthrange(now.year, now.month)[1]
+        month_end = now.replace(day=days_in_month)
 
+        # ── KPIs ──
         reservas_activas = sum(1 for r in reservations if r.get('estado') == 'confirmada')
         ingresos_mes = sum(
             float(r.get('monto_total', 0)) for r in reservations
@@ -372,25 +376,67 @@ def get_hotel_stats(hotel_id):
             and r.get('fecha_creacion', '')[:10] >= str(month_start)
         )
 
-        # Ocupación semanal: porcentaje de días con al menos una reserva activa en los últimos 7 días
+        # ── Tasa de ocupación del mes: días-habitación ocupados / (habitaciones * días del mes) ──
+        total_rooms = 0
+        try:
+            rooms_resp = requests.get(
+                f'{CATALOG_SERVICE_URL}/rooms', params={'hotel_id': hotel_id}, timeout=3
+            )
+            if rooms_resp.status_code == 200:
+                total_rooms = len(rooms_resp.json())
+        except Exception:
+            pass
+
+        occupied_room_days: set = set()
+        for r in reservations:
+            if r.get('estado') not in ('confirmada', 'completada'):
+                continue
+            try:
+                ci = datetime.date.fromisoformat(r['fecha_checkin'])
+                co = datetime.date.fromisoformat(r['fecha_checkout'])
+                start = max(ci, month_start)
+                end = min(co, month_end)
+                d = start
+                while d < end:
+                    occupied_room_days.add((r.get('habitacion_id'), str(d)))
+                    d += datetime.timedelta(days=1)
+            except Exception:
+                pass
+
+        if total_rooms > 0:
+            tasa_ocupacion = round(len(occupied_room_days) / (total_rooms * days_in_month) * 100)
+        else:
+            tasa_ocupacion = min(100, reservas_activas * 10)
+
+        # ── Ocupación semanal (lunes a domingo de la semana actual) ──
         weekly = []
         dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
-        today_weekday = now.weekday()
+        # Lunes de la semana actual
+        week_start = now - datetime.timedelta(days=now.weekday())
         for i in range(7):
-            day_offset = (i - today_weekday) % 7
-            day = now + datetime.timedelta(days=day_offset - 6)
-            count = sum(
-                1 for r in reservations
-                if r.get('estado') == 'confirmada'
-                and r.get('fecha_checkin', '') <= str(day) <= r.get('fecha_checkout', '')
-            )
-            total_rooms = max(count, 1)
-            weekly.append({'dia': dias[i], 'porcentaje': min(100, count * 20)})
+            day = week_start + datetime.timedelta(days=i)
+            if day > now:
+                # Días futuros: sin datos todavía
+                pct = 0
+            else:
+                count = sum(
+                    1 for r in reservations
+                    if r.get('estado') in ('confirmada', 'completada')
+                    and r.get('fecha_checkin', '') <= str(day) < r.get('fecha_checkout', '')
+                )
+                pct = round(count / total_rooms * 100) if total_rooms > 0 else min(100, count * 20)
+            weekly.append({
+                'dia': dias[day.weekday()],
+                'dia_num': day.day,
+                'mes_num': day.month,
+                'porcentaje': min(100, pct),
+                'es_hoy': day == now,
+            })
 
         return jsonify({
             'reservas_activas': reservas_activas,
             'reservas_activas_delta': 0,
-            'tasa_ocupacion': min(100, reservas_activas * 10),
+            'tasa_ocupacion': min(100, tasa_ocupacion),
             'tasa_ocupacion_delta': 0,
             'ingresos_mes': ingresos_mes,
             'ingresos_mes_delta': 0,
