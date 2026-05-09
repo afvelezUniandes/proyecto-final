@@ -62,6 +62,7 @@ fun HotelDetailScreen(
     var selectedRoom by remember { mutableStateOf<Room?>(null) }
     var isReserving by remember { mutableStateOf(false) }
     var reserveError by remember { mutableStateOf<String?>(null) }
+    var reserveSuccess by remember { mutableStateOf(false) }
 
     // Datos mock del hotel (en una app real vendría del API)
     val hotelColors = listOf(
@@ -112,6 +113,14 @@ fun HotelDetailScreen(
                         .background(Color.White)
                         .padding(horizontal = 20.dp, vertical = 12.dp)
                 ) {
+                    if (reserveSuccess) {
+                        Text(
+                            stringResource(R.string.booking_email_sent),
+                            color = TravelGreen,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(bottom = 6.dp)
+                        )
+                    }
                     if (reserveError != null) {
                         Text(
                             reserveError!!,
@@ -162,11 +171,14 @@ fun HotelDetailScreen(
                                                 fecha_checkin = checkIn,
                                                 fecha_checkout = checkOut,
                                                 num_huespedes = numHuespedes,
-                                                monto_total = room.precio_noche * nights
+                                                monto_total = room.precio_noche * nights,
+                                                nombre_hotel = hotel?.nombre ?: "",
+                                                tipo_habitacion = room.tipo ?: room.nombre ?: ""
                                             )
                                         )
                                         if (resp.isSuccessful) {
-                                            onReserveDone()
+                                            reserveSuccess = true
+                                            reserveError = null
                                         } else {
                                             reserveError = context.getString(R.string.err_reserving, resp.code().toString())
                                         }
@@ -176,9 +188,11 @@ fun HotelDetailScreen(
                                     isReserving = false
                                 }
                             },
-                            enabled = !isReserving && selectedRoom != null,
+                            enabled = !isReserving && selectedRoom != null && !reserveSuccess,
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = TravelOrange),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (reserveSuccess) TravelGreen else TravelOrange
+                            ),
                             modifier = Modifier.height(48.dp)
                         ) {
                             if (isReserving) {
@@ -187,6 +201,10 @@ fun HotelDetailScreen(
                                     color = Color.White,
                                     strokeWidth = 2.dp
                                 )
+                            } else if (reserveSuccess) {
+                                TextButton(onClick = onReserveDone) {
+                                    Text(stringResource(R.string.booking_see_reservations), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                }
                             } else {
                             Text(stringResource(R.string.hotel_reserve_btn), fontWeight = FontWeight.Bold, fontSize = 16.sp)
                             }

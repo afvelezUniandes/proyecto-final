@@ -74,7 +74,9 @@ data class CreateReservationRequest(
     val fecha_checkout: String,
     val num_huespedes: Int,
     val monto_total: Double,
-    val moneda: String = "COP"
+    val moneda: String = "COP",
+    val nombre_hotel: String = "",
+    val tipo_habitacion: String = ""
 )
 
 // --- Reservas (UI local — para pantallas sin API) ---
