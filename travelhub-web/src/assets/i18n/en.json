@@ -120,6 +120,7 @@
     "BOOKING_SUMMARY": "Your selection summary",
     "BOOKING_CONFIRMED": "Booking confirmed!",
     "BOOKING_CODE": "Booking code",
+    "BOOKING_EMAIL_SENT": "A confirmation email has been sent to your address.",
     "SEE_RESERVATIONS": "View my reservations",
     "CHECKIN_LABEL": "Check-in",
     "CHECKOUT_LABEL": "Check-out",
@@ -154,7 +155,8 @@
     "CANCELLING": "Cancelling...",
     "ERR_LOAD": "Error loading your reservations.",
     "CONFIRM_CANCEL": "Are you sure you want to cancel this reservation?",
-    "ERR_CANCEL": "Could not cancel."
+    "ERR_CANCEL": "Could not cancel.",
+    "CANCEL_SUCCESS": "Reservation cancelled. A confirmation email has been sent to your address."
   },
   "RESERVATION_DETAIL": {
     "BREADCRUMB": "My Reservations",
