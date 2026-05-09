@@ -136,7 +136,8 @@
     "RESERVING": "Reservando...",
     "NOT_FOUND": "Hotel no encontrado.",
     "BACK_TO_SEARCH": "← Volver a búsqueda",
-    "RESERVE_ERROR": "Error al crear la reserva."
+    "RESERVE_ERROR": "Error al crear la reserva.",
+    "BOOKING_EMAIL_SENT": "✉️ Se ha enviado un correo de confirmación a tu dirección."
   },
   "RESERVATIONS": {
     "TITLE": "Mis Reservas",
@@ -154,8 +155,12 @@
     "CANCEL_BTN": "Cancelar",
     "CANCELLING": "Cancelando...",
     "ERR_LOAD": "Error al cargar tus reservas.",
-    "CONFIRM_CANCEL": "¿Estás seguro de que deseas cancelar esta reserva?",
-    "ERR_CANCEL": "No se pudo cancelar."
+    "CONFIRM_CANCEL_TITLE": "¿Cancelar reserva?",
+    "CONFIRM_CANCEL": "¿Estás seguro de que deseas cancelar esta reserva? Esta acción no se puede deshacer.",
+    "KEEP_BTN": "No, mantener",
+    "CONFIRM_BTN": "Sí, cancelar",
+    "ERR_CANCEL": "No se pudo cancelar.",
+    "CANCEL_SUCCESS": "Reserva cancelada. Se ha enviado un correo de confirmación a tu dirección."
   },
   "RESERVATION_DETAIL": {
     "BREADCRUMB": "Mis Reservas",

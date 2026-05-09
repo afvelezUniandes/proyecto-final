@@ -1100,6 +1100,110 @@ class TestAdditionalEndpoints:
         data = json.loads(response.data)
         assert all(r.get('eliminada', False) is False for r in data)
 
+    def test_restore_room(self, client, monkeypatch):
+        """PATCH /rooms/<id>/restore reactiva una habitación eliminada."""
+        class MockRoom:
+            id = 5
+            hotel_id = 1
+            nombre = 'Suite Eliminada'
+            tipo = 'suite'
+            capacidad = 2
+            precio_noche = Decimal('200000')
+            moneda = 'COP'
+            disponible = False
+            descripcion = None
+            eliminada = True
+
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def first(self):
+                return MockRoom()
+
+        class MockSession:
+            def query(self, *args):
+                return MockQuery()
+            def commit(self):
+                pass
+            def rollback(self):
+                pass
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSession()
+
+        response = client.patch('/rooms/5/restore')
+
+        hotels_module.Session = original_session
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert data['eliminada'] is False
+        assert data['disponible'] is True
+
+    def test_restore_room_not_found(self, client, monkeypatch):
+        """PATCH /rooms/<id>/restore retorna 404 si la habitación no existe o no está eliminada."""
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def first(self):
+                return None
+
+        class MockSession:
+            def query(self, *args):
+                return MockQuery()
+            def rollback(self):
+                pass
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSession()
+
+        response = client.patch('/rooms/999/restore')
+
+        hotels_module.Session = original_session
+        assert response.status_code == 404
+
+    def test_get_rooms_includes_deleted_with_param(self, client, monkeypatch):
+        """GET /rooms?include_deleted=true retorna también habitaciones eliminadas."""
+        class MockRoomActive:
+            id = 1; hotel_id = 1; nombre = 'Activa'; tipo = 'doble'
+            capacidad = 2; precio_noche = Decimal('100000'); moneda = 'COP'
+            disponible = True; descripcion = None; eliminada = False
+
+        class MockRoomDeleted:
+            id = 2; hotel_id = 1; nombre = 'Eliminada'; tipo = 'suite'
+            capacidad = 3; precio_noche = Decimal('200000'); moneda = 'COP'
+            disponible = False; descripcion = None; eliminada = True
+
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def all(self):
+                return [MockRoomActive(), MockRoomDeleted()]
+
+        class MockSession:
+            def query(self, *args):
+                return MockQuery()
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSession()
+
+        response = client.get('/rooms?hotel_id=1&include_deleted=true')
+
+        hotels_module.Session = original_session
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert len(data) == 2
+        eliminadas = [r for r in data if r.get('eliminada') is True]
+        assert len(eliminadas) == 1
+
 
     def test_clear_cache(self, client):
         response = client.post('/cache/clear')
