@@ -37,7 +37,7 @@
         >
           🖨️ {{ 'RESERVATION_DETAIL.PRINT_BTN' | translate }}
         </button>
-        @if (r.estado !== 'cancelada') {
+        @if (r.estado !== 'cancelada' && r.estado !== 'completada') {
           <button
             (click)="marcarCancelada()"
             [disabled]="canceling()"

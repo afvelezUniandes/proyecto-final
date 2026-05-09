@@ -104,9 +104,23 @@
     "SEE_ALL": "View all →",
     "COL_GUEST": "Guest",
     "COL_ROOM": "Room",
+    "COL_CODE": "Code",
+    "COL_CHECKIN": "Check-in",
+    "COL_TOTAL": "Total",
     "COL_STATUS": "Status",
+    "CURRENT_MONTH": "Current month",
+    "SUMMARY": "Monthly summary",
     "LOADING": "Loading...",
-    "ERR_LOAD": "Could not load statistics."
+    "ERR_LOAD": "Could not load statistics.",
+    "DAY": {
+      "Lun": "Mon",
+      "Mar": "Tue",
+      "Mié": "Wed",
+      "Jue": "Thu",
+      "Vie": "Fri",
+      "Sáb": "Sat",
+      "Dom": "Sun"
+    }
   },
   "ROOMS": {
     "TITLE": "Rooms",
