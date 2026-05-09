@@ -74,71 +74,162 @@
     </button>
   </div>
 
+  <!-- Filter tabs -->
+  <div class="flex gap-2">
+    <button
+      type="button"
+      (click)="roomFilter.set('active')"
+      class="text-sm px-4 py-1.5 rounded-full border font-medium transition"
+      [class.bg-blue-600]="roomFilter() === 'active'"
+      [class.text-white]="roomFilter() === 'active'"
+      [class.border-blue-600]="roomFilter() === 'active'"
+      [class.bg-white]="roomFilter() !== 'active'"
+      [class.text-gray-600]="roomFilter() !== 'active'"
+      [class.border-gray-200]="roomFilter() !== 'active'"
+    >
+      {{ 'ROOMS.FILTER_ACTIVE' | translate }}
+      <span class="ml-1 opacity-70">{{ rooms().length }}</span>
+    </button>
+    <button
+      type="button"
+      (click)="roomFilter.set('deleted')"
+      class="text-sm px-4 py-1.5 rounded-full border font-medium transition"
+      [class.bg-red-600]="roomFilter() === 'deleted'"
+      [class.text-white]="roomFilter() === 'deleted'"
+      [class.border-red-600]="roomFilter() === 'deleted'"
+      [class.bg-white]="roomFilter() !== 'deleted'"
+      [class.text-gray-600]="roomFilter() !== 'deleted'"
+      [class.border-gray-200]="roomFilter() !== 'deleted'"
+    >
+      {{ 'ROOMS.FILTER_DELETED' | translate }}
+      <span class="ml-1 opacity-70">{{ deletedRooms().length }}</span>
+    </button>
+    <button
+      type="button"
+      (click)="roomFilter.set('all')"
+      class="text-sm px-4 py-1.5 rounded-full border font-medium transition"
+      [class.bg-gray-700]="roomFilter() === 'all'"
+      [class.text-white]="roomFilter() === 'all'"
+      [class.border-gray-700]="roomFilter() === 'all'"
+      [class.bg-white]="roomFilter() !== 'all'"
+      [class.text-gray-600]="roomFilter() !== 'all'"
+      [class.border-gray-200]="roomFilter() !== 'all'"
+    >
+      {{ 'ROOMS.FILTER_ALL' | translate }}
+      <span class="ml-1 opacity-70">{{ rooms().length + deletedRooms().length }}</span>
+    </button>
+  </div>
+
+  @if (restoreSuccessMsg) {
+    <div
+      class="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-700 flex items-center gap-2"
+    >
+      ✅ {{ 'ROOMS.RESTORE_SUCCESS' | translate }}
+    </div>
+  }
+
   <!-- Room cards -->
   <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-    @for (room of rooms(); track room.id) {
-      <div
-        class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
-      >
+    @for (room of filteredRooms(); track room.id) {
+      @if (room.eliminada) {
+        <!-- Deleted room card -->
         <div
-          class="h-36 bg-linear-to-br from-blue-100 to-blue-300 flex items-center justify-center"
+          class="bg-gray-50 rounded-2xl border border-dashed border-gray-300 overflow-hidden opacity-75"
         >
-          <span class="text-5xl">🛏️</span>
-        </div>
-        <div class="p-4 space-y-3">
-          <div class="flex items-start justify-between gap-2">
-            <h3 class="font-bold text-gray-900">{{ room.nombre }}</h3>
-            <span
-              class="text-xs px-2 py-0.5 rounded-full font-medium"
-              [class.bg-green-100]="room.disponible"
-              [class.text-green-700]="room.disponible"
-              [class.bg-yellow-100]="!room.disponible"
-              [class.text-yellow-700]="!room.disponible"
-              >{{
-                room.disponible ? ('ROOMS.AVAILABLE' | translate) : ('ROOMS.OCCUPIED' | translate)
-              }}</span
-            >
+          <div class="h-36 bg-gray-200 flex items-center justify-center">
+            <span class="text-5xl grayscale">🛏️</span>
           </div>
-          <div class="text-sm text-gray-500 space-y-1">
-            <p>
-              👤 {{ 'ROOMS.CAPACITY_LABEL' | translate }}
-              <span class="font-medium text-gray-800"
-                >{{ room.capacidad }} {{ 'ROOMS.PERSONS' | translate }}</span
+          <div class="p-4 space-y-2">
+            <div class="flex items-start justify-between gap-2">
+              <h3 class="font-bold text-gray-500 line-through">{{ room.nombre }}</h3>
+              <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-600">
+                {{ 'ROOMS.DELETED_TAG' | translate }}
+              </span>
+            </div>
+            <div class="text-sm text-gray-400 space-y-1">
+              <p>👤 {{ room.capacidad }} {{ 'ROOMS.PERSONS' | translate }}</p>
+              <p class="capitalize">🏷️ {{ room.tipo }}</p>
+            </div>
+            <div class="pt-1 border-t border-gray-200">
+              <p class="text-gray-400 font-medium text-sm">
+                {{ formatPrice(room.precio_noche) }}
+                <span class="text-xs font-normal">{{ 'ROOMS.PER_NIGHT' | translate }}</span>
+              </p>
+            </div>
+            <button
+              type="button"
+              (click)="restore(room.id)"
+              class="w-full text-xs text-green-700 border border-green-300 py-1.5 rounded-lg hover:bg-green-50 transition font-medium"
+            >
+              ♻️ {{ 'ROOMS.RESTORE_BTN' | translate }}
+            </button>
+          </div>
+        </div>
+      } @else {
+        <!-- Active room card -->
+        <div
+          class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+        >
+          <div
+            class="h-36 bg-linear-to-br from-blue-100 to-blue-300 flex items-center justify-center"
+          >
+            <span class="text-5xl">🛏️</span>
+          </div>
+          <div class="p-4 space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <h3 class="font-bold text-gray-900">{{ room.nombre }}</h3>
+              <span
+                class="text-xs px-2 py-0.5 rounded-full font-medium"
+                [class.bg-green-100]="room.disponible"
+                [class.text-green-700]="room.disponible"
+                [class.bg-yellow-100]="!room.disponible"
+                [class.text-yellow-700]="!room.disponible"
+                >{{
+                  room.disponible ? ('ROOMS.AVAILABLE' | translate) : ('ROOMS.OCCUPIED' | translate)
+                }}</span
               >
-            </p>
-            <p>
-              🏷️ {{ 'ROOMS.TYPE_LABEL' | translate }}
-              <span class="font-medium text-gray-800 capitalize">{{ room.tipo }}</span>
-            </p>
-            @if (room.descripcion) {
-              <p class="text-xs text-gray-400 line-clamp-2">{{ room.descripcion }}</p>
-            }
-          </div>
-          <div class="pt-2 border-t border-gray-100">
-            <p class="text-[#1D4ED8] font-bold">
-              {{ formatPrice(room.precio_noche) }}
-              <span class="text-gray-400 text-xs font-normal">{{
-                'ROOMS.PER_NIGHT' | translate
-              }}</span>
-            </p>
-          </div>
-          <!-- Actions -->
-          <div class="flex gap-2 pt-1">
-            <button
-              (click)="openEdit(room)"
-              class="flex-1 text-xs text-[#1D4ED8] border border-[#1D4ED8]/30 py-1.5 rounded-lg hover:bg-blue-50 transition font-medium"
-            >
-              ✏️ {{ 'ROOMS.EDIT_BTN' | translate }}
-            </button>
-            <button
-              (click)="confirmDelete(room.id)"
-              class="flex-1 text-xs text-red-600 border border-red-200 py-1.5 rounded-lg hover:bg-red-50 transition font-medium"
-            >
-              🗑️ {{ 'ROOMS.DELETE_BTN' | translate }}
-            </button>
+            </div>
+            <div class="text-sm text-gray-500 space-y-1">
+              <p>
+                👤 {{ 'ROOMS.CAPACITY_LABEL' | translate }}
+                <span class="font-medium text-gray-800"
+                  >{{ room.capacidad }} {{ 'ROOMS.PERSONS' | translate }}</span
+                >
+              </p>
+              <p>
+                🏷️ {{ 'ROOMS.TYPE_LABEL' | translate }}
+                <span class="font-medium text-gray-800 capitalize">{{ room.tipo }}</span>
+              </p>
+              @if (room.descripcion) {
+                <p class="text-xs text-gray-400 line-clamp-2">{{ room.descripcion }}</p>
+              }
+            </div>
+            <div class="pt-2 border-t border-gray-100">
+              <p class="text-[#1D4ED8] font-bold">
+                {{ formatPrice(room.precio_noche) }}
+                <span class="text-gray-400 text-xs font-normal">{{
+                  'ROOMS.PER_NIGHT' | translate
+                }}</span>
+              </p>
+            </div>
+            <!-- Actions -->
+            <div class="flex gap-2 pt-1">
+              <button
+                (click)="openEdit(room)"
+                class="flex-1 text-xs text-[#1D4ED8] border border-[#1D4ED8]/30 py-1.5 rounded-lg hover:bg-blue-50 transition font-medium"
+              >
+                ✏️ {{ 'ROOMS.EDIT_BTN' | translate }}
+              </button>
+              <button
+                (click)="confirmDelete(room.id)"
+                class="flex-1 text-xs text-red-600 border border-red-200 py-1.5 rounded-lg hover:bg-red-50 transition font-medium"
+              >
+                🗑️ {{ 'ROOMS.DELETE_BTN' | translate }}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      }
     }
   </div>
 
@@ -158,20 +249,35 @@
         <h3 id="delete-dialog-title" class="font-bold text-gray-900 text-center mb-1">
           {{ 'ROOMS.DELETE_TITLE' | translate }}
         </h3>
-        <p class="text-gray-500 text-sm text-center mb-6">{{ 'ROOMS.DELETE_MSG' | translate }}</p>
+        <p class="text-gray-500 text-sm text-center mb-4">{{ 'ROOMS.DELETE_MSG' | translate }}</p>
+        @if (deleteError) {
+          <p
+            class="text-red-600 text-sm text-center bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4"
+          >
+            {{
+              deleteError === 'ROOMS.DELETE_ERR_ACTIVE'
+                ? ('ROOMS.DELETE_ERR_ACTIVE' | translate)
+                : deleteError
+            }}
+          </p>
+        }
         <div class="flex gap-3">
           <button
             (click)="cancelDelete()"
             class="flex-1 border border-gray-200 text-gray-600 text-sm font-semibold py-2.5 rounded-xl hover:border-gray-300 transition"
           >
-            {{ 'ROOMS.CANCEL_BTN' | translate }}
+            {{
+              deleteError ? ('ROOMS.UNDERSTOOD_BTN' | translate) : ('ROOMS.CANCEL_BTN' | translate)
+            }}
           </button>
-          <button
-            (click)="doDelete(deleteConfirmId!)"
-            class="flex-1 bg-red-600 text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-red-700 transition"
-          >
-            {{ 'ROOMS.DELETE_CONFIRM' | translate }}
-          </button>
+          @if (!deleteError) {
+            <button
+              (click)="doDelete(deleteConfirmId!)"
+              class="flex-1 bg-red-600 text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-red-700 transition"
+            >
+              {{ 'ROOMS.DELETE_CONFIRM' | translate }}
+            </button>
+          }
         </div>
       </div>
     </div>

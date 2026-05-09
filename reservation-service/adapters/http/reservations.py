@@ -46,7 +46,7 @@ def _get_hotel_room_info(hotel_id: int, habitacion_id: int) -> tuple[str, str]:
     try:
         resp = http_requests.get(
             f'{CATALOG_SERVICE_URL}/rooms',
-            params={'hotel_id': hotel_id},
+            params={'hotel_id': hotel_id, 'include_deleted': 'true'},
             timeout=3,
         )
         if resp.status_code == 200:
@@ -55,8 +55,10 @@ def _get_hotel_room_info(hotel_id: int, habitacion_id: int) -> tuple[str, str]:
                 if r.get('id') == habitacion_id:
                     tipo_habitacion = r.get('tipo') or r.get('nombre', '')
                     break
+            if not tipo_habitacion:
+                tipo_habitacion = f'Habitación #{habitacion_id}'
     except Exception:
-        pass
+        tipo_habitacion = f'Habitación #{habitacion_id}'
     return nombre_hotel, tipo_habitacion
 
 

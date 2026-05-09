@@ -920,6 +920,7 @@ class TestAdditionalEndpoints:
     # ── DELETE /rooms/<id> ────────────────────────────────────────────────────
 
     def test_delete_room(self, client, monkeypatch):
+        """Soft delete exitoso: habitación sin reservas activas."""
         MockRoom = self._mock_room()
         room_obj = MockRoom()
 
@@ -932,8 +933,12 @@ class TestAdditionalEndpoints:
         class MockSession:
             def query(self, *args):
                 return MockQuery()
-            def delete(self, obj):
-                pass
+            def execute(self, stmt, params=None):
+                # Sin reservas activas
+                class Result:
+                    def scalar(self):
+                        return 0
+                return Result()
             def commit(self):
                 pass
             def rollback(self):
@@ -951,8 +956,12 @@ class TestAdditionalEndpoints:
         assert response.status_code == 200
         data = json.loads(response.data)
         assert 'deleted' in data['message'].lower()
+        # Soft delete: disponible=False, eliminada=True
+        assert room_obj.eliminada is True
+        assert room_obj.disponible is False
 
     def test_delete_room_not_found(self, client, monkeypatch):
+        """404 cuando la habitación no existe o ya está eliminada."""
         class MockQuery:
             def filter(self, *args):
                 return self
@@ -976,7 +985,121 @@ class TestAdditionalEndpoints:
         hotels_module.Session = original_session
         assert response.status_code == 404
 
-    # ── Cache endpoints ───────────────────────────────────────────────────────
+    def test_delete_room_with_active_reservations_returns_409(self, client, monkeypatch):
+        """409 cuando la habitación tiene reservas confirmadas activas."""
+        MockRoom = self._mock_room()
+        room_obj = MockRoom()
+
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def first(self):
+                return room_obj
+
+        class MockSession:
+            def query(self, *args):
+                return MockQuery()
+            def execute(self, stmt, params=None):
+                # 2 reservas activas
+                class Result:
+                    def scalar(self):
+                        return 2
+                return Result()
+            def rollback(self):
+                pass
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSession()
+
+        response = client.delete('/rooms/1')
+
+        hotels_module.Session = original_session
+        assert response.status_code == 409
+        data = json.loads(response.data)
+        assert 'reservas activas' in data['error'].lower()
+
+    def test_delete_room_preserves_historical_data(self, client, monkeypatch):
+        """El registro de la habitación permanece en BD tras el soft delete."""
+        MockRoom = self._mock_room()
+        room_obj = MockRoom()
+        room_obj.eliminada = False
+        room_obj.disponible = True
+
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def first(self):
+                return room_obj
+
+        class MockSession:
+            def query(self, *args):
+                return MockQuery()
+            def execute(self, stmt, params=None):
+                class Result:
+                    def scalar(self):
+                        return 0
+                return Result()
+            def commit(self):
+                pass
+            def rollback(self):
+                pass
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSession()
+
+        response = client.delete('/rooms/1')
+
+        hotels_module.Session = original_session
+        assert response.status_code == 200
+        # El objeto sigue existiendo en memoria (no fue borrado de BD)
+        assert room_obj is not None
+        assert room_obj.id == 1
+        assert room_obj.eliminada is True
+
+    def test_get_rooms_excludes_deleted(self, client, monkeypatch):
+        """GET /rooms no retorna habitaciones con eliminada=True."""
+        class MockRoom:
+            id = 1
+            hotel_id = 1
+            nombre = 'Activa'
+            tipo = 'doble'
+            capacidad = 2
+            precio_noche = Decimal('150000')
+            moneda = 'COP'
+            disponible = True
+            descripcion = None
+            eliminada = False
+
+        # Solo retorna la habitación activa (el filtro eliminada==False ya aplicó)
+        class MockQuery:
+            def filter(self, *args):
+                return self
+            def all(self):
+                return [MockRoom()]
+
+        class MockSession:
+            def query(self, *args):
+                return MockQuery()
+            def close(self):
+                pass
+
+        import adapters.http.hotels as hotels_module
+        original_session = hotels_module.Session
+        hotels_module.Session = lambda: MockSession()
+
+        response = client.get('/rooms?hotel_id=1')
+
+        hotels_module.Session = original_session
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert all(r.get('eliminada', False) is False for r in data)
+
 
     def test_clear_cache(self, client):
         response = client.post('/cache/clear')

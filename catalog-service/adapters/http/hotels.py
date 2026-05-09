@@ -398,14 +398,70 @@ def update_room(room_id):
 def delete_room(room_id):
     session = Session()
     try:
-        room = session.query(Habitacion).filter(Habitacion.id == room_id).first()
+        room = session.query(Habitacion).filter(
+            Habitacion.id == room_id,
+            Habitacion.eliminada == False
+        ).first()
         if not room:
             return jsonify({'error': 'Room not found'}), 404
-        session.delete(room)
+
+        # Verificar reservas activas (confirmadas) en el schema de reservations
+        from sqlalchemy import text as sa_text
+        import datetime
+        active = session.execute(
+            sa_text(
+                "SELECT COUNT(*) FROM reservation.reservas "
+                "WHERE habitacion_id = :rid "
+                "  AND estado = 'confirmada' "
+                "  AND fecha_checkout >= :today"
+            ),
+            {'rid': room_id, 'today': datetime.date.today()}
+        ).scalar()
+        if active and active > 0:
+            return jsonify({'error': 'No se puede eliminar: la habitación tiene reservas activas'}), 409
+
+        # Soft delete: marcar como eliminada y no disponible
+        room.eliminada = True
+        room.disponible = False
         session.commit()
         cache = current_app.cache
         cache.clear()
         return jsonify({'message': 'Room deleted'}), 200
+    except Exception as e:
+        session.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        session.close()
+
+
+@bp.route('/rooms/<int:room_id>/restore', methods=['PATCH'])
+def restore_room(room_id):
+    session = Session()
+    try:
+        room = session.query(Habitacion).filter(
+            Habitacion.id == room_id,
+            Habitacion.eliminada == True
+        ).first()
+        if not room:
+            return jsonify({'error': 'Room not found or not deleted'}), 404
+
+        room.eliminada = False
+        room.disponible = True
+        session.commit()
+        cache = current_app.cache
+        cache.clear()
+        return jsonify({
+            'id': room.id,
+            'hotel_id': room.hotel_id,
+            'nombre': room.nombre,
+            'tipo': room.tipo,
+            'capacidad': room.capacidad,
+            'precio_noche': float(room.precio_noche),
+            'moneda': room.moneda,
+            'disponible': room.disponible,
+            'descripcion': room.descripcion,
+            'eliminada': room.eliminada,
+        }), 200
     except Exception as e:
         session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -418,7 +474,8 @@ def get_rooms():
     cache = current_app.cache
 
     hotel_id = request.args.get('hotel_id')
-    cache_key = f'rooms:hotel:{hotel_id}' if hotel_id else 'rooms:all'
+    include_deleted = request.args.get('include_deleted', 'false').lower() == 'true'
+    cache_key = f'rooms:hotel:{hotel_id}:deleted:{include_deleted}' if hotel_id else f'rooms:all:deleted:{include_deleted}'
 
     # Intentar obtener del cache
     cached_result = cache.get(cache_key)
@@ -430,6 +487,8 @@ def get_rooms():
     # Si no está en cache, consultar la base de datos
     session = Session()
     query = session.query(Habitacion)
+    if not include_deleted:
+        query = query.filter(Habitacion.eliminada == False)
     if hotel_id:
         query = query.filter(Habitacion.hotel_id == int(hotel_id))
     rooms = query.all()
@@ -444,6 +503,7 @@ def get_rooms():
             'moneda': r.moneda,
             'disponible': r.disponible,
             'descripcion': r.descripcion,
+            'eliminada': getattr(r, 'eliminada', False),
         } for r in rooms
     ]
     session.close()

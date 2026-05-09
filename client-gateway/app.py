@@ -283,6 +283,16 @@ def delete_room(room_id):
         return jsonify({'error': 'Catalog service unavailable'}), 503
 
 
+@app.route('/catalog/rooms/<int:room_id>/restore', methods=['PATCH'])
+@verify_token
+def restore_room(room_id):
+    try:
+        response = requests.patch(f'{CATALOG_SERVICE_URL}/rooms/{room_id}/restore', timeout=5)
+        return jsonify(response.json()), response.status_code
+    except requests.exceptions.RequestException:
+        return jsonify({'error': 'Catalog service unavailable'}), 503
+
+
 @app.route('/reservations/hotel/<int:hotel_id>', methods=['GET'])
 @verify_token
 def get_hotel_reservations(hotel_id):

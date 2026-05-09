@@ -75,6 +75,12 @@ export class DashboardComponent implements OnInit {
     return Math.max(...this.weeklyOccupancy().map((d) => d.porcentaje), 1);
   }
 
+  barHeightPx(pct: number): number {
+    const max = this.maxOccupancy();
+    if (!max || !pct) return 3;
+    return Math.max(3, Math.round((pct / max) * 88));
+  }
+
   onImageSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;

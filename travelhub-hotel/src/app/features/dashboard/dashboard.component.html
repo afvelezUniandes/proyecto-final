@@ -149,30 +149,48 @@
         <h2 class="font-semibold text-gray-900 mb-6">
           {{ 'DASHBOARD.WEEKLY_OCCUPANCY' | translate }}
         </h2>
+
+        <!-- Bars -->
         <div
-          class="flex items-end gap-3 h-40"
+          class="flex items-end gap-2"
+          style="height: 120px"
           role="img"
           [attr.aria-label]="'DASHBOARD.WEEKLY_OCCUPANCY' | translate"
         >
           @for (day of weeklyOccupancy(); track day.dia) {
-            <div class="flex-1 flex flex-col items-center gap-1">
+            <div class="flex-1 flex flex-col items-center justify-end">
               <span
-                class="text-xs font-medium"
-                [class]="day.es_hoy ? 'text-[#1D4ED8]' : 'text-gray-500'"
+                class="text-[11px] font-semibold leading-none mb-1.5 transition-colors"
+                [class]="
+                  day.es_hoy
+                    ? 'text-orange-500'
+                    : day.porcentaje > 0
+                      ? 'text-gray-600'
+                      : 'text-gray-300'
+                "
                 >{{ day.porcentaje }}%</span
               >
               <div
-                class="w-full rounded-t-lg transition-all"
-                [class]="day.es_hoy ? 'bg-[#F97316]' : 'bg-[#1D4ED8]'"
-                [style.height.%]="(day.porcentaje / maxOccupancy()) * 100"
-                style="min-height: 4px"
+                class="w-full rounded-t-md transition-all duration-700"
+                [class]="
+                  day.es_hoy ? 'bg-[#F97316]' : day.porcentaje >= 80 ? 'bg-red-500' : 'bg-[#1D4ED8]'
+                "
+                [style.height.px]="barHeightPx(day.porcentaje)"
               ></div>
+            </div>
+          }
+        </div>
+
+        <!-- Day labels -->
+        <div class="flex gap-2 mt-2 border-t border-gray-100 pt-2">
+          @for (day of weeklyOccupancy(); track day.dia) {
+            <div class="flex-1 flex flex-col items-center">
               <span
                 class="text-xs font-semibold"
-                [class]="day.es_hoy ? 'text-[#1D4ED8]' : 'text-gray-600'"
+                [class]="day.es_hoy ? 'text-[#1D4ED8] font-bold' : 'text-gray-600'"
                 >{{ 'DASHBOARD.DAY.' + day.dia | translate }}</span
               >
-              <span class="text-xs text-gray-400">{{ day.dia_num }}/{{ day.mes_num }}</span>
+              <span class="text-[10px] text-gray-400">{{ day.dia_num }}/{{ day.mes_num }}</span>
             </div>
           }
         </div>

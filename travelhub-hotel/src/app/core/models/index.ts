@@ -77,6 +77,7 @@ export interface Room {
   moneda: string;
   descripcion?: string;
   imagen_url?: string;
+  eliminada?: boolean;
 }
 
 export interface WeeklyOccupancy {
