@@ -102,10 +102,7 @@
                   }
                 </div>
                 <div class="flex flex-col gap-2">
-                  @if (
-                    r.estado.toLowerCase() !== 'cancelada' &&
-                    r.estado.toLowerCase() !== 'completada'
-                  ) {
+                  @if (r.estado.toLowerCase() === 'confirmada') {
                     <button
                       type="button"
                       (click)="$event.preventDefault(); $event.stopPropagation(); cancel(r.id)"
@@ -144,12 +141,11 @@
   @if (confirmCancelId !== null) {
     <div
       class="fixed inset-0 bg-black/40 z-40 flex items-center justify-center p-4"
-      role="presentation"
     >
-      <div
-        role="dialog"
+      <dialog
+        open
         aria-modal="true"
-        class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm"
+        class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm m-0"
       >
         <div class="text-3xl mb-3 text-center">⚠️</div>
         <h3 class="font-bold text-gray-900 text-center mb-1">
@@ -174,7 +170,7 @@
             {{ 'RESERVATIONS.CONFIRM_BTN' | translate }}
           </button>
         </div>
-      </div>
+      </dialog>
     </div>
   }
 </div>

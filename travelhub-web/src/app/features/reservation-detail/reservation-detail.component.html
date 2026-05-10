@@ -155,10 +155,7 @@
           >
             ← Volver al listado
           </a>
-          @if (
-            reservation.estado.toLowerCase() !== 'cancelada' &&
-            reservation.estado.toLowerCase() !== 'completada'
-          ) {
+          @if (reservation.estado.toLowerCase() === 'confirmada') {
             @if (cancelSuccess) {
               <div
                 class="flex-1 text-center bg-green-50 border border-green-200 text-green-700 text-sm font-semibold py-3 rounded-xl"
