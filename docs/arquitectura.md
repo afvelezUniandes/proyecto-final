@@ -154,10 +154,20 @@ sequenceDiagram
     DB-->>Res: Disponible
     Res->>DB: INSERT reserva
     DB-->>Res: Reserva creada (codigo: TH-2026-0042)
-    Res->>Notif: POST /notifications (evento reserva_creada)
+    Res->>Notif: POST /notifications (reserva_creada)
     Notif-->>Res: 200 OK
     Res-->>GW: 201 {reserva...}
     GW-->>C: 201 {reserva...}
+
+    Note over C,Notif: Cancelación (cliente o hotel)
+
+    C->>GW: PATCH /reservations/{id}/cancel
+    GW->>Res: PATCH /cancel (X-User-Id: 42)
+    Res->>DB: UPDATE estado = 'cancelada', fecha_cancelacion = now()
+    Res->>Notif: POST /notifications (reserva_cancelada)
+    Notif-->>Res: 200 OK
+    Res-->>GW: 200 {reserva...}
+    GW-->>C: 200 {reserva...}
 ```
 
 ---
