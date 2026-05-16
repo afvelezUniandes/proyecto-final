@@ -36,7 +36,16 @@ import com.uniandes.travelhub_android.ui.theme.*
 import com.uniandes.travelhub_android.util.DateUtils
 import kotlinx.coroutines.launch
 
-private val amenidades = listOf("WiFi", "Piscina", "Gym", "Restaurante", "Spa", "Bar")
+private data class AmenidadItem(val labelResId: Int, val icon: androidx.compose.ui.graphics.vector.ImageVector)
+
+private val amenidades = listOf(
+    AmenidadItem(R.string.amenity_wifi, Icons.Default.Wifi),
+    AmenidadItem(R.string.amenity_pool, Icons.Default.Pool),
+    AmenidadItem(R.string.amenity_gym, Icons.Default.FitnessCenter),
+    AmenidadItem(R.string.amenity_restaurant, Icons.Default.Restaurant),
+    AmenidadItem(R.string.amenity_spa, Icons.Default.Spa),
+    AmenidadItem(R.string.amenity_bar, Icons.Default.LocalBar),
+)
 
 private val reviews = listOf(
     Triple("Maria C.", 5, "Feb 2026"),
@@ -374,18 +383,10 @@ fun HotelDetailScreen(
                                             .background(TravelBackground),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        val icon = when (amenity) {
-                                            "WiFi" -> Icons.Default.Wifi
-                                            "Piscina" -> Icons.Default.Pool
-                                            "Gym" -> Icons.Default.FitnessCenter
-                                            "Restaurante" -> Icons.Default.Restaurant
-                                            "Spa" -> Icons.Default.Spa
-                                            else -> Icons.Default.LocalBar
-                                        }
-                                        Icon(icon, null, tint = TravelGray, modifier = Modifier.size(24.dp))
+                                        Icon(amenity.icon, null, tint = TravelGray, modifier = Modifier.size(24.dp))
                                     }
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    Text(amenity, fontSize = 11.sp, color = TravelGray)
+                                    Text(stringResource(amenity.labelResId), fontSize = 11.sp, color = TravelGray)
                                 }
                             }
                         }

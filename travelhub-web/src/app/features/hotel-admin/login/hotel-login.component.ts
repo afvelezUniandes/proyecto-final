@@ -163,7 +163,7 @@ export class HotelLoginComponent {
         error: (err) => {
           this.regLoading = false;
           this.regError.set(
-            err?.status === 400
+            err?.status === 409
               ? this.translate.instant('HOTEL_ADMIN.ERR_EMAIL_TAKEN')
               : this.translate.instant('HOTEL_ADMIN.ERR_REGISTER'),
           );

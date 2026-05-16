@@ -143,6 +143,12 @@
     <string name="hotel_description_text">Ubicado en el corazón de Bogotá, ofrece una experiencia única con vistas panorámicas a los cerros orientales. Elegancia clásica y confort.</string>
     <string name="hotel_read_more">Leer más →</string>
     <string name="hotel_amenities_sec">Amenidades</string>
+    <string name="amenity_wifi">WiFi</string>
+    <string name="amenity_pool">Piscina</string>
+    <string name="amenity_gym">Gimnasio</string>
+    <string name="amenity_restaurant">Restaurante</string>
+    <string name="amenity_spa">Spa</string>
+    <string name="amenity_bar">Bar</string>
     <string name="hotel_rooms_sec">Habitaciones Disponibles</string>
     <string name="hotel_no_rooms">No hay habitaciones disponibles</string>
     <string name="hotel_no_rooms_dates">⛔ No hay habitaciones disponibles para las fechas seleccionadas</string>
@@ -151,6 +157,7 @@
     <string name="hotel_per_night">por noche</string>
     <string name="hotel_cop_per_night">COP / noche</string>
     <string name="hotel_cop_per_night_compact">COP/noche</string>
+    <string name="hotel_price_from">Desde %1$s COP/noche</string>
     <string name="hotel_reserve_btn">Reservar</string>
     <string name="hotel_persons_label">personas</string>
 

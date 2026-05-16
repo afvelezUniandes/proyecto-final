@@ -143,6 +143,12 @@
     <string name="hotel_description_text">Located in the heart of Bogotá, it offers a unique experience with panoramic views of the eastern hills. Classic elegance and comfort.</string>
     <string name="hotel_read_more">Read more →</string>
     <string name="hotel_amenities_sec">Amenities</string>
+    <string name="amenity_wifi">Wi-Fi</string>
+    <string name="amenity_pool">Pool</string>
+    <string name="amenity_gym">Gym</string>
+    <string name="amenity_restaurant">Restaurant</string>
+    <string name="amenity_spa">Spa</string>
+    <string name="amenity_bar">Bar</string>
     <string name="hotel_rooms_sec">Available Rooms</string>
     <string name="hotel_no_rooms">No rooms available</string>
     <string name="hotel_no_rooms_dates">⛔ No rooms available for the selected dates</string>
@@ -151,6 +157,7 @@
     <string name="hotel_per_night">per night</string>
     <string name="hotel_cop_per_night">COP / night</string>
     <string name="hotel_cop_per_night_compact">COP/night</string>
+    <string name="hotel_price_from">From %1$s COP/night</string>
     <string name="hotel_reserve_btn">Book now</string>
     <string name="hotel_persons_label">guests</string>
 
