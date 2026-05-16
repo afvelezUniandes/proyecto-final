@@ -404,12 +404,9 @@
           </div>
 
           <div>
-            <label for="room-descripcion" class="block text-sm font-medium text-gray-700 mb-1.5"
-              >{{ 'ROOMS.DESC_LABEL' | translate }}
-              <span class="text-gray-400 font-normal"
-                >({{ 'COMMON.OPTIONAL' | translate }})</span
-              ></label
-            >
+            <label for="room-descripcion" class="block text-sm font-medium text-gray-700 mb-1.5">{{
+              'ROOMS.DESC_LABEL' | translate
+            }}</label>
             <textarea
               id="room-descripcion"
               [(ngModel)]="form.descripcion"

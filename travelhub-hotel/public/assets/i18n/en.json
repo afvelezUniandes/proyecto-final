@@ -278,6 +278,7 @@
     }
   },
   "COMMON": {
+    "OPTIONAL": "optional",
     "LOADING": "Loading...",
     "CANCEL": "Cancel",
     "SAVE": "Save",
