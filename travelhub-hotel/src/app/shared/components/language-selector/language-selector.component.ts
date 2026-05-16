@@ -5,9 +5,9 @@ import { LangService } from '../../../core/services/lang.service';
 export type Lang = 'es' | 'en';
 type Theme = 'dark' | 'light';
 
-const LANGS: Record<Lang, { flag: string; label: string }> = {
-  es: { flag: '🇪🇸', label: 'ES' },
-  en: { flag: '🇺🇸', label: 'EN' },
+const LANGS: Record<Lang, { flagCode: string; label: string }> = {
+  es: { flagCode: 'es', label: 'ES' },
+  en: { flagCode: 'us', label: 'EN' },
 };
 
 @Component({
@@ -23,7 +23,7 @@ const LANGS: Record<Lang, { flag: string; label: string }> = {
         [attr.aria-expanded]="open"
         [attr.aria-label]="'Idioma: ' + langs[current()].label"
       >
-        <span aria-hidden="true">{{ langs[current()].flag }}</span>
+        <span class="fi" [ngClass]="'fi-' + langs[current()].flagCode" aria-hidden="true"></span>
         <span>{{ langs[current()].label }}</span>
         <svg
           class="w-3 h-3 transition-transform"
@@ -56,7 +56,7 @@ const LANGS: Record<Lang, { flag: string; label: string }> = {
                 [class.font-semibold]="current() === entry.key"
                 [class.text-blue-700]="current() === entry.key"
               >
-                <span aria-hidden="true">{{ entry.flag }}</span>
+                <span class="fi" [ngClass]="'fi-' + entry.flagCode" aria-hidden="true"></span>
                 <span>{{ entry.full }}</span>
                 @if (current() === entry.key) {
                   <span class="ml-auto text-blue-600" aria-hidden="true">✓</span>
@@ -76,8 +76,8 @@ export class LanguageSelectorComponent {
   private doc = inject(DOCUMENT);
 
   langEntries = [
-    { key: 'es' as Lang, flag: '🇪🇸', full: 'Español' },
-    { key: 'en' as Lang, flag: '🇺🇸', full: 'English' },
+    { key: 'es' as Lang, flagCode: 'es', full: 'Español' },
+    { key: 'en' as Lang, flagCode: 'us', full: 'English' },
   ];
 
   constructor(public langService: LangService) {}
@@ -93,7 +93,7 @@ export class LanguageSelectorComponent {
     const base =
       'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border';
     if (this.theme() === 'light') {
-      return `${base} text-gray-600 border-gray-300 hover:bg-gray-100 hover:text-gray-800`;
+      return `${base} text-white bg-travelBlue-700 border-travelBlue-700 hover:bg-travelBlue-800 hover:border-travelBlue-800`;
     }
     return `${base} text-white/80 border-white/20 hover:text-white hover:bg-white/10`;
   }

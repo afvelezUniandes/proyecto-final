@@ -9,10 +9,13 @@ import { AuthService } from '../../../core/services/auth.service';
 
 const mockApiService = {
   post: () => of({ message: 'User created' }),
+  uploadFile: () => of({}),
 };
 
 const mockAuthService = {
   isLoggedIn: () => false,
+  setToken: (_token: string) => {},
+  fetchProfile: () => {},
 };
 
 async function createComponent() {
@@ -205,6 +208,46 @@ describe('RegisterComponent', () => {
       fillHotelFields(component);
       component.onRegister();
       expect(component.success()).toBe(true);
+    });
+
+    it('llama a fetchProfile directamente cuando hay token pero no imagen', async () => {
+      vi.spyOn(mockApiService, 'post').mockReturnValue(
+        of({ message: 'ok', token: 'fake-token', hotel_id: 1 }),
+      );
+      const fetchSpy = vi.spyOn(mockAuthService, 'fetchProfile');
+      const { component } = await createComponent();
+      fillHotelFields(component);
+      component.onRegister();
+      expect(fetchSpy).toHaveBeenCalled();
+    });
+
+    it('espera el upload de imagen antes de llamar a fetchProfile', async () => {
+      vi.spyOn(mockApiService, 'post').mockReturnValue(
+        of({ message: 'ok', token: 'fake-token', hotel_id: 42 }),
+      );
+      const uploadSpy = vi.spyOn(mockApiService, 'uploadFile').mockReturnValue(of({}));
+      const fetchSpy = vi.spyOn(mockAuthService, 'fetchProfile');
+      const { component } = await createComponent();
+      fillHotelFields(component);
+      component.hotelImageFile = new File(['data'], 'hotel.jpg', { type: 'image/jpeg' });
+      component.onRegister();
+      expect(uploadSpy).toHaveBeenCalledWith('/catalog/hotels/42/image', component.hotelImageFile);
+      expect(fetchSpy).toHaveBeenCalled();
+    });
+
+    it('llama a fetchProfile aunque falle el upload de imagen', async () => {
+      vi.spyOn(mockApiService, 'post').mockReturnValue(
+        of({ message: 'ok', token: 'fake-token', hotel_id: 42 }),
+      );
+      vi.spyOn(mockApiService, 'uploadFile').mockReturnValue(
+        throwError(() => new Error('upload error')),
+      );
+      const fetchSpy = vi.spyOn(mockAuthService, 'fetchProfile');
+      const { component } = await createComponent();
+      fillHotelFields(component);
+      component.hotelImageFile = new File(['data'], 'hotel.jpg', { type: 'image/jpeg' });
+      component.onRegister();
+      expect(fetchSpy).toHaveBeenCalled();
     });
 
     it('muestra error de correo duplicado cuando el backend retorna 409', async () => {

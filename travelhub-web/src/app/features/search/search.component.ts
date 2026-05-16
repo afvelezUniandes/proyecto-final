@@ -79,6 +79,7 @@ export class SearchComponent implements OnInit {
       this.checkOut = params['checkOut'] || this.localDateStr(tomorrow);
       this.huespedes = +params['huespedes'] || 1;
       this.page = +params['page'] || 1;
+      this.sortBy = (params['sortBy'] as typeof this.sortBy) || 'default';
       this.loadHotels();
     });
   }
@@ -140,6 +141,8 @@ export class SearchComponent implements OnInit {
         checkIn: this.checkIn || '',
         checkOut: this.checkOut || '',
         huespedes: this.huespedes || 1,
+        page: this.page,
+        sortBy: this.sortBy,
       },
     });
   }

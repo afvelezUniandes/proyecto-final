@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { finalize } from 'rxjs';
 import { LanguageSelectorComponent } from '../../../shared/components/language-selector/language-selector.component';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -144,19 +145,24 @@ export class RegisterComponent {
           if (this.hotelImageFile && res.hotel_id) {
             this.api
               .uploadFile(`/catalog/hotels/${res.hotel_id}/image`, this.hotelImageFile)
-              .subscribe({
-                error: () => {
-                  /* image upload failed silently */
-                },
-              });
-          }
-          this.loading = false;
-          if (res.token) {
-            // Auto-login: ya tenemos token, ir directo al dashboard
-            this.auth.fetchProfile();
+              .pipe(
+                finalize(() => {
+                  this.loading = false;
+                  if (res.token) {
+                    this.auth.fetchProfile();
+                  } else {
+                    this.success.set(true);
+                  }
+                }),
+              )
+              .subscribe({ error: () => {} });
           } else {
-            // Fallback: mostrar pantalla de éxito para ir a login
-            this.success.set(true);
+            this.loading = false;
+            if (res.token) {
+              this.auth.fetchProfile();
+            } else {
+              this.success.set(true);
+            }
           }
         },
         error: (err) => {
