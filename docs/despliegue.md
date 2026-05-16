@@ -69,6 +69,10 @@ graph TB
         ECS_GW --> ECS_Res["ECS Task: reservation-service\nPort 5002"]
         ECS_Notif["ECS Task: notification-service\nPort 5004"]
         ECS_Res --> ECS_Notif
+
+        subgraph AS["Auto Scaling — travelhub-service (1–3 tasks)"]
+            AS_Policy["Target Tracking\nCPU ≥ 70% → scale out\nCPU ↓ → scale in"]
+        end
     end
 
     ECS_Auth & ECS_Cat & ECS_Res & ECS_Notif --> RDS[("AWS RDS\nPostgreSQL 15")]
@@ -81,6 +85,21 @@ graph TB
 | ALB (endpoint público) | `proyecto-final-alb-1238672503.us-east-1.elb.amazonaws.com`   |
 | ECR Repository         | `108633434648.dkr.ecr.us-east-1.amazonaws.com/proyecto-final` |
 | Región                 | `us-east-1`                                                   |
+
+### Auto Scaling
+
+El servicio ECS (`travelhub-service`) tiene configurada una política de **Target Tracking** para escalar automáticamente según la carga de CPU:
+
+| Parámetro          | Valor                             |
+| ------------------ | --------------------------------- |
+| Mínimo de tareas   | 1                                 |
+| Máximo de tareas   | 3                                 |
+| Métrica objetivo   | `ECSServiceAverageCPUUtilization` |
+| Umbral             | 70%                               |
+| Scale out cooldown | 300 s                             |
+| Scale in cooldown  | 300 s                             |
+
+Cuando el uso promedio de CPU supera el 70%, ECS lanza tareas adicionales (hasta 3). Cuando baja, reduce hasta la tarea mínima.
 
 ### Tags de imágenes en ECR
 

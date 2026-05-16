@@ -5,7 +5,7 @@ TravelHub usa **PostgreSQL 15**. Cada microservicio tiene su propio **schema** d
 | Microservicio        | Schema PostgreSQL             |
 | -------------------- | ----------------------------- |
 | auth-service         | `public` (schema por defecto) |
-| catalog-service      | `public`                      |
+| catalog-service      | `catalog`                     |
 | reservation-service  | `reservation`                 |
 | notification-service | `notifications`               |
 
