@@ -51,6 +51,8 @@
     "PHONE_LABEL": "Teléfono",
     "PHONE_PLACEHOLDER": "+57 300 000 0000",
     "STARS_LABEL": "Estrellas",
+    "STAR": "estrella",
+    "STARS": "estrellas",
     "HOTEL_EMAIL_LABEL": "Correo del hotel (opcional)",
     "HOTEL_EMAIL_PLACEHOLDER": "contacto@mihotel.com",
     "HOTEL_DESC_LABEL": "Descripción del hotel (opcional)",
@@ -115,6 +117,7 @@
     "SUMMARY": "Resumen del mes",
     "LOADING": "Cargando...",
     "ERR_LOAD": "No se pudieron cargar las estadísticas.",
+    "ERR_IMAGE": "Error al subir la imagen.",
     "DAY": {
       "Lun": "Lun",
       "Mar": "Mar",
@@ -175,7 +178,12 @@
     "ERR_PRICE": "El precio debe ser un entero positivo.",
     "ERR_DESC": "La descripción solo admite caracteres alfanuméricos.",
     "ERR_DUPLICATE": "Ya existe una habitación con ese nombre.",
-    "ERR_SAVE": "No se pudo guardar la habitación."
+    "ERR_SAVE": "No se pudo guardar la habitación.",
+    "ERR_HOTEL_LOAD": "No se pudo cargar el hotel. Verifica la conexión.",
+    "ERR_RESTORE": "No se pudo restaurar la habitación.",
+    "ERR_IMAGE": "Error al subir la imagen.",
+    "ERR_URL": "Error al guardar la URL.",
+    "DESC_PLACEHOLDER": "WiFi, TV, baño privado..."
   },
   "TARIFFS": {
     "TITLE": "Tarifas",
@@ -197,7 +205,8 @@
     "LOADING": "Cargando...",
     "ERR_INVALID_PRICE": "Ingresa un precio válido mayor a 0.",
     "ERR_INTEGER_PRICE": "El precio debe ser un número entero (sin decimales).",
-    "ERR_UPDATE": "Error al actualizar el precio."
+    "ERR_UPDATE": "Error al actualizar el precio.",
+    "ERR_LOAD": "No se pudieron cargar las habitaciones."
   },
   "RESERVATIONS": {
     "TITLE": "Reservas",

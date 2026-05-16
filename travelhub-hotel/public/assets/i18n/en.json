@@ -51,6 +51,8 @@
     "PHONE_LABEL": "Phone",
     "PHONE_PLACEHOLDER": "+1 300 000 0000",
     "STARS_LABEL": "Stars",
+    "STAR": "star",
+    "STARS": "stars",
     "HOTEL_EMAIL_LABEL": "Hotel email (optional)",
     "HOTEL_EMAIL_PLACEHOLDER": "contact@myhotel.com",
     "HOTEL_DESC_LABEL": "Hotel description (optional)",
@@ -115,6 +117,7 @@
     "SUMMARY": "Monthly summary",
     "LOADING": "Loading...",
     "ERR_LOAD": "Could not load statistics.",
+    "ERR_IMAGE": "Error uploading image.",
     "DAY": {
       "Lun": "Mon",
       "Mar": "Tue",
@@ -175,7 +178,12 @@
     "ERR_PRICE": "Price must be a positive integer.",
     "ERR_DESC": "Description only allows alphanumeric characters.",
     "ERR_DUPLICATE": "A room with that name already exists.",
-    "ERR_SAVE": "Could not save room."
+    "ERR_SAVE": "Could not save room.",
+    "ERR_HOTEL_LOAD": "Could not load hotel. Check your connection.",
+    "ERR_RESTORE": "Could not restore the room.",
+    "ERR_IMAGE": "Error uploading image.",
+    "ERR_URL": "Error saving the URL.",
+    "DESC_PLACEHOLDER": "Wi-Fi, TV, private bathroom..."
   },
   "TARIFFS": {
     "TITLE": "Rates",
@@ -197,7 +205,8 @@
     "LOADING": "Loading...",
     "ERR_INVALID_PRICE": "Enter a valid price greater than 0.",
     "ERR_INTEGER_PRICE": "Price must be a whole number (no decimals).",
-    "ERR_UPDATE": "Error updating price."
+    "ERR_UPDATE": "Error updating price.",
+    "ERR_LOAD": "Could not load rooms."
   },
   "RESERVATIONS": {
     "TITLE": "Reservations",

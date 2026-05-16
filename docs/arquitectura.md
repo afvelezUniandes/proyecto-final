@@ -64,6 +64,8 @@ graph LR
     GW --> |"/auth/*"| Auth["auth-service"]
     GW --> |"/catalog/*"| Catalog["catalog-service"]
     GW --> |"/reservations/*"| Reservation["reservation-service"]
+    Reservation -->|"POST /notifications"| Notification["notification-service"]
+    Auth -->|"POST /notifications"| Notification
 ```
 
 Organización interna con Flask Blueprints:
@@ -205,12 +207,14 @@ graph TD
     GW -->|HTTP REST| Catalog["catalog-service"]
     GW -->|HTTP REST| Reservation["reservation-service"]
     Reservation -->|HTTP POST /notifications| Notification["notification-service"]
+    Auth -->|HTTP POST /notifications| Notification
 ```
 
 Las URLs de los servicios internos se configuran mediante variables de entorno:
 
-| Variable                  | Valor por defecto       |
-| ------------------------- | ----------------------- |
-| `AUTH_SERVICE_URL`        | `http://localhost:5000` |
-| `CATALOG_SERVICE_URL`     | `http://localhost:5001` |
-| `RESERVATION_SERVICE_URL` | `http://localhost:5002` |
+| Variable                   | Valor por defecto       |
+| -------------------------- | ----------------------- |
+| `AUTH_SERVICE_URL`         | `http://localhost:5000` |
+| `CATALOG_SERVICE_URL`      | `http://localhost:5001` |
+| `RESERVATION_SERVICE_URL`  | `http://localhost:5002` |
+| `NOTIFICATION_SERVICE_URL` | `http://localhost:5004` |

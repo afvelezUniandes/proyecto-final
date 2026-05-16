@@ -47,7 +47,7 @@ export class LoginComponent {
   onLogin() {
     this.error.set(null);
     if (!this.email || !this.password) {
-      this.error.set('Por favor completa todos los campos.');
+      this.error.set(this.translate.instant('AUTH.ERR_EMPTY'));
       return;
     }
     this.loading = true;
@@ -55,11 +55,11 @@ export class LoginComponent {
       error: (err) => {
         this.loading = false;
         if (err?.status === 401) {
-          this.error.set('Credenciales incorrectas.');
+          this.error.set(this.translate.instant('AUTH.ERR_CREDENTIALS'));
         } else if (err?.status === 403) {
-          this.error.set('Esta cuenta no tiene acceso al portal de hoteles.');
+          this.error.set(this.translate.instant('AUTH.ERR_NOT_HOTEL'));
         } else {
-          this.error.set('Error al conectar. Intenta de nuevo.');
+          this.error.set(this.translate.instant('AUTH.ERR_CONNECT'));
         }
       },
     });

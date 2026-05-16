@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { HotelService } from '../../core/services/hotel.service';
 import { RoomService } from '../../core/services/room.service';
 import { Room } from '../../core/models';
@@ -67,14 +67,14 @@ export class RoomsComponent implements OnInit {
   readonly hotelService = inject(HotelService);
   private readonly roomService = inject(RoomService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly translate = inject(TranslateService);
 
   ngOnInit() {
     this.hotelService.loadMyHotel().subscribe({
       next: () => this.loadRooms(),
       error: (err) => {
         console.error('[HotelService] loadMyHotel failed:', err);
-        this.hotelLoadError =
-          err?.error?.error || 'No se pudo cargar el hotel. Verifica la conexión.';
+        this.hotelLoadError = 'ROOMS.ERR_HOTEL_LOAD';
         this.cdr.detectChanges();
       },
     });
@@ -133,20 +133,20 @@ export class RoomsComponent implements OnInit {
     this.clearErrors();
     let ok = true;
     if (!this.form.nombre.trim()) {
-      this.nameError = 'El nombre es obligatorio.';
+      this.nameError = 'ROOMS.ERR_NAME';
       ok = false;
     }
     if (!Number.isInteger(this.form.capacidad) || this.form.capacidad < 0) {
-      this.capacityError = 'La capacidad debe ser un entero positivo (>= 0).';
+      this.capacityError = 'ROOMS.ERR_CAPACITY';
       ok = false;
     }
     if (!Number.isInteger(this.form.precio_noche) || this.form.precio_noche <= 0) {
-      this.priceError = 'El precio debe ser un entero positivo.';
+      this.priceError = 'ROOMS.ERR_PRICE';
       ok = false;
     }
     const desc = this.form.descripcion?.trim() || '';
     if (desc && !DESCRIPTION_PATTERN.test(desc)) {
-      this.descriptionError = 'La descripción solo admite caracteres alfanuméricos.';
+      this.descriptionError = 'ROOMS.ERR_DESC';
       ok = false;
     }
     return ok;
@@ -183,11 +183,9 @@ export class RoomsComponent implements OnInit {
         const status = err?.status;
         const backendMsg = err?.error?.error;
         if (status === 409) {
-          this.nameError = backendMsg || 'Ya existe una habitación con ese nombre.';
-        } else if (status === 400 && backendMsg) {
-          this.saveError = backendMsg;
+          this.nameError = 'ROOMS.ERR_DUPLICATE';
         } else {
-          this.saveError = backendMsg || 'No se pudo guardar la habitación.';
+          this.saveError = 'ROOMS.ERR_SAVE';
         }
         this.cdr.detectChanges();
       },
@@ -229,8 +227,8 @@ export class RoomsComponent implements OnInit {
         this.loadRooms();
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        alert(err?.error?.error || 'No se pudo restaurar la habitación.');
+      error: () => {
+        alert(this.translate.instant('ROOMS.ERR_RESTORE'));
       },
     });
   }
@@ -301,7 +299,7 @@ export class RoomsComponent implements OnInit {
       },
       error: (e) => {
         this.uploadingImage = false;
-        this.uploadError = e?.error?.error || 'Error al subir la imagen.';
+        this.uploadError = 'ROOMS.ERR_IMAGE';
         this.cdr.detectChanges();
       },
     });
@@ -330,7 +328,7 @@ export class RoomsComponent implements OnInit {
       },
       error: (e) => {
         this.savingUrl = false;
-        this.saveUrlError = e?.error?.error || 'Error al guardar la URL.';
+        this.saveUrlError = 'ROOMS.ERR_URL';
         this.cdr.detectChanges();
       },
     });

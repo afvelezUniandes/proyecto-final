@@ -73,8 +73,10 @@
                 {{ 'HOTEL_DETAIL.AMENITIES' | translate }}
               </h3>
               <div class="flex flex-wrap gap-3">
-                @for (amenity of amenities; track amenity.label) {
-                  <span class="chip-blue">{{ amenity.icon }} {{ amenity.label }}</span>
+                @for (amenity of amenities; track amenity.labelKey) {
+                  <span class="chip-blue"
+                    >{{ amenity.icon }} {{ amenity.labelKey | translate }}</span
+                  >
                 }
               </div>
             </div>

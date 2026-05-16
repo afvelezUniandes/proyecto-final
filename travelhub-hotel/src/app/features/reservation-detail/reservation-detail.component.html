@@ -60,7 +60,7 @@
     }
     @if (cancelError()) {
       <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm">
-        {{ cancelError() }}
+        {{ cancelError() | translate }}
       </div>
     }
 

@@ -100,7 +100,7 @@ export class DashboardComponent implements OnInit {
       },
       error: (e) => {
         this.uploadingImage.set(false);
-        this.uploadError.set(e?.error?.error || 'Error al subir la imagen.');
+        this.uploadError.set('DASHBOARD.ERR_IMAGE');
       },
     });
   }

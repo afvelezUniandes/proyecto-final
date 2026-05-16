@@ -372,7 +372,14 @@
           </button>
 
           <p class="text-center text-sm text-travelGray-500">
-            {{ 'AUTH.HAVE_ACCOUNT' | translate }}
+            {{ 'AUTH.HAVE_ACCOUNT_PRE' | translate }}
+            <button
+              type="button"
+              (click)="setTab('login')"
+              class="text-travelBlue font-semibold hover:underline ml-1"
+            >
+              {{ 'AUTH.TAB_LOGIN' | translate }}
+            </button>
           </p>
         </form>
       }

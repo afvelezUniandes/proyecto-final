@@ -79,7 +79,7 @@ export class ReservationDetailComponent implements OnInit {
       },
       error: () => {
         this.canceling = false;
-        alert('No se pudo cancelar.');
+        alert(this.translate.instant('RESERVATIONS.ERR_CANCEL'));
       },
     });
   }
