@@ -19,16 +19,12 @@ def get_cities():
         schema:
           type: array
           items:
-            type: object
-            properties:
-              id:
-                type: integer
-              nombre:
-                type: string
-              pais:
-                type: string
+            type: string
+          example: ["Bogotá", "Medellín", "Cartagena"]
       503:
         description: Servicio de catálogo no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         response = requests.get(f'{CATALOG_SERVICE_URL}/cities', timeout=5)
@@ -76,8 +72,12 @@ def get_hotels():
     responses:
       200:
         description: Lista paginada de hoteles
+        schema:
+          $ref: '#/definitions/HotelesResponse'
       503:
         description: Servicio de catálogo no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         response = requests.get(f'{CATALOG_SERVICE_URL}/hotels', params=request.args, timeout=5)
@@ -99,12 +99,20 @@ def get_my_hotel():
     responses:
       200:
         description: Datos del hotel administrado
+        schema:
+          $ref: '#/definitions/Hotel'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       404:
         description: Hotel no encontrado
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de catálogo no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         response = requests.get(f'{CATALOG_SERVICE_URL}/hotels/admin/{request.user_id}', timeout=5)
@@ -128,10 +136,16 @@ def get_hotel_detail(hotel_id):
     responses:
       200:
         description: Datos del hotel
+        schema:
+          $ref: '#/definitions/Hotel'
       404:
         description: Hotel no encontrado
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de catálogo no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         response = requests.get(f'{CATALOG_SERVICE_URL}/hotels/{hotel_id}', timeout=5)
@@ -175,12 +189,20 @@ def create_hotel():
     responses:
       201:
         description: Hotel creado exitosamente
+        schema:
+          $ref: '#/definitions/Hotel'
       400:
         description: Datos inválidos
+        schema:
+          $ref: '#/definitions/Error'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de catálogo no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         body = request.json or {}
@@ -225,12 +247,20 @@ def update_hotel(hotel_id):
     responses:
       200:
         description: Hotel actualizado exitosamente
+        schema:
+          $ref: '#/definitions/Hotel'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       404:
         description: Hotel no encontrado
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de catálogo no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         response = requests.put(f'{CATALOG_SERVICE_URL}/hotels/{hotel_id}', json=request.json, timeout=5)
@@ -264,10 +294,20 @@ def upload_hotel_image(hotel_id):
     responses:
       200:
         description: Imagen subida correctamente
+        schema:
+          type: object
+          properties:
+            image_url:
+              type: string
+              example: "https://bucket.s3.amazonaws.com/hotel-1.jpg"
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de catálogo no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         response = requests.post(
@@ -299,8 +339,14 @@ def get_rooms():
     responses:
       200:
         description: Lista de habitaciones
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Habitacion'
       503:
         description: Servicio de catálogo no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         response = requests.get(f'{CATALOG_SERVICE_URL}/rooms', params=request.args, timeout=5)
@@ -347,12 +393,20 @@ def create_room():
     responses:
       201:
         description: Habitación creada exitosamente
+        schema:
+          $ref: '#/definitions/Habitacion'
       400:
         description: Datos inválidos
+        schema:
+          $ref: '#/definitions/Error'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de catálogo no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         response = requests.post(f'{CATALOG_SERVICE_URL}/rooms', json=request.json, timeout=5)
@@ -395,12 +449,20 @@ def update_room(room_id):
     responses:
       200:
         description: Habitación actualizada exitosamente
+        schema:
+          $ref: '#/definitions/Habitacion'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       404:
         description: Habitación no encontrada
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de catálogo no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         response = requests.put(f'{CATALOG_SERVICE_URL}/rooms/{room_id}', json=request.json, timeout=5)
@@ -427,12 +489,20 @@ def delete_room(room_id):
     responses:
       200:
         description: Habitación marcada como eliminada
+        schema:
+          $ref: '#/definitions/MessageResponse'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       404:
         description: Habitación no encontrada
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de catálogo no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         response = requests.delete(f'{CATALOG_SERVICE_URL}/rooms/{room_id}', timeout=5)
@@ -459,12 +529,20 @@ def restore_room(room_id):
     responses:
       200:
         description: Habitación restaurada exitosamente
+        schema:
+          $ref: '#/definitions/MessageResponse'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       404:
         description: Habitación no encontrada
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de catálogo no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         response = requests.patch(f'{CATALOG_SERVICE_URL}/rooms/{room_id}/restore', timeout=5)

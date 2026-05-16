@@ -61,10 +61,18 @@ def get_reservations():
     responses:
       200:
         description: Lista de reservas del usuario
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Reserva'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de reservas no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         headers = {'X-User-Id': str(request.user_id)}
@@ -95,12 +103,20 @@ def get_reservation(reserva_id):
     responses:
       200:
         description: Detalle de la reserva
+        schema:
+          $ref: '#/definitions/Reserva'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       404:
         description: Reserva no encontrada
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de reservas no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         headers = {'X-User-Id': str(request.user_id)}
@@ -145,12 +161,20 @@ def create_reservation():
     responses:
       201:
         description: Reserva creada exitosamente
+        schema:
+          $ref: '#/definitions/Reserva'
       400:
         description: Datos inválidos o habitación no disponible
+        schema:
+          $ref: '#/definitions/Error'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de reservas no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         headers = {'X-User-Id': str(request.user_id)}
@@ -181,12 +205,20 @@ def cancel_reservation(reserva_id):
     responses:
       200:
         description: Reserva cancelada exitosamente
+        schema:
+          $ref: '#/definitions/Reserva'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       404:
         description: Reserva no encontrada
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de reservas no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         headers = {'X-User-Id': str(request.user_id)}
@@ -221,10 +253,18 @@ def get_hotel_reservations(hotel_id):
     responses:
       200:
         description: Lista enriquecida de reservas del hotel con datos de huésped y habitación
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/ReservaEnriquecida'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de reservas no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         resp = requests.get(
@@ -307,20 +347,15 @@ def get_hotel_stats(hotel_id):
       200:
         description: KPIs del hotel
         schema:
-          type: object
-          properties:
-            reservas_activas:
-              type: integer
-            tasa_ocupacion:
-              type: integer
-            ingresos_mes:
-              type: number
-            weekly_occupancy:
-              type: array
+          $ref: '#/definitions/HotelStats'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de reservas no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         resp = requests.get(
@@ -433,12 +468,20 @@ def get_hotel_reservation_detail(hotel_id, reserva_id):
     responses:
       200:
         description: Detalle de la reserva con datos del huésped y habitación
+        schema:
+          $ref: '#/definitions/ReservaEnriquecida'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       404:
         description: Reserva no encontrada
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de reservas no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         headers = {'X-Hotel-Id': str(hotel_id)}
@@ -513,12 +556,20 @@ def hotel_cancel_reservation(hotel_id, reserva_id):
     responses:
       200:
         description: Reserva cancelada por el hotel
+        schema:
+          $ref: '#/definitions/Reserva'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       404:
         description: Reserva no encontrada
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de reservas no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         headers = {'X-Hotel-Id': str(hotel_id)}

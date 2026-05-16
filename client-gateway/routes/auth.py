@@ -43,12 +43,20 @@ def sign_up():
     responses:
       201:
         description: Usuario creado exitosamente
+        schema:
+          $ref: '#/definitions/Usuario'
       400:
         description: Datos inválidos o campos faltantes
+        schema:
+          $ref: '#/definitions/Error'
       409:
         description: Email ya registrado
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de autenticación no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         response = requests.post(f'{AUTH_SERVICE_URL}/sign-up', json=request.json, timeout=5)
@@ -82,14 +90,15 @@ def sign_in():
       200:
         description: Token JWT generado
         schema:
-          type: object
-          properties:
-            token:
-              type: string
+          $ref: '#/definitions/TokenResponse'
       401:
         description: Credenciales inválidas
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de autenticación no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         response = requests.post(f'{AUTH_SERVICE_URL}/sign-in', json=request.json, timeout=5)
@@ -111,10 +120,16 @@ def sign_out():
     responses:
       200:
         description: Sesión cerrada exitosamente
+        schema:
+          $ref: '#/definitions/MessageResponse'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de autenticación no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         response = requests.post(f'{AUTH_SERVICE_URL}/sign-out', timeout=5)
@@ -137,24 +152,15 @@ def get_profile():
       200:
         description: Datos del perfil del usuario
         schema:
-          type: object
-          properties:
-            id:
-              type: integer
-            nombre:
-              type: string
-            email:
-              type: string
-            rol:
-              type: string
-            telefono:
-              type: string
-            pais:
-              type: string
+          $ref: '#/definitions/Usuario'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de autenticación no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         headers = {'X-User-Id': str(request.user_id)}
@@ -193,10 +199,16 @@ def update_profile():
     responses:
       200:
         description: Perfil actualizado exitosamente
+        schema:
+          $ref: '#/definitions/Usuario'
       401:
         description: Token inválido o expirado
+        schema:
+          $ref: '#/definitions/Error'
       503:
         description: Servicio de autenticación no disponible
+        schema:
+          $ref: '#/definitions/Error'
     """
     try:
         headers = {'X-User-Id': str(request.user_id)}
