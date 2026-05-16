@@ -40,6 +40,7 @@ export interface Reservation {
   id: number;
   usuario_id?: number;
   habitacion_id: number;
+  habitacion_nombre?: string;
   hotel_id?: number;
   fecha_checkin?: string;
   fecha_checkout?: string;

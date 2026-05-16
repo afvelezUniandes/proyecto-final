@@ -94,7 +94,7 @@
     <div class="max-w-5xl mx-auto px-6 py-8">
       <!-- Sort chips -->
       <div class="flex items-center gap-3 mb-6 flex-wrap">
-        <span class="text-sm text-gray-500 font-medium">Ordenar por:</span>
+        <span class="text-sm text-gray-500 font-medium">{{ 'SEARCH.SORT_LABEL' | translate }}</span>
         @for (opt of sortOptions; track opt.key) {
           <button
             (click)="setSortBy($any(opt.key))"
@@ -103,7 +103,7 @@
             [class.border-[#1D4ED8]]="sortBy === opt.key"
             class="px-4 py-1.5 rounded-full text-sm border border-gray-300 text-gray-600 hover:border-[#1D4ED8] hover:text-[#1D4ED8] transition"
           >
-            {{ opt.label }}
+            {{ opt.labelKey | translate }}
           </button>
         }
         @if (ciudad) {
@@ -213,7 +213,7 @@
                     (click)="goToDetail(hotel.id)"
                     class="bg-[#1D4ED8] text-white text-sm font-semibold px-5 py-2 rounded-xl hover:bg-blue-700 transition"
                   >
-                    Ver {{ 'COMMON.DETAIL' | translate }} →
+                    {{ 'SEARCH.SEE_DETAIL' | translate }} →
                   </button>
                 </div>
               </div>

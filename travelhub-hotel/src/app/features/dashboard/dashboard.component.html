@@ -288,7 +288,10 @@
                     </p>
                   </td>
                   <td class="py-3 pr-4 hidden sm:table-cell text-gray-500">
-                    {{ r.habitacion_nombre }}
+                    {{
+                      r.habitacion_nombre ||
+                        ('RESERVATIONS.ROOM_PREFIX' | translate) + r.habitacion_id
+                    }}
                   </td>
                   <td class="py-3 pr-4 hidden md:table-cell text-gray-500">
                     {{ r.fecha_checkin }}

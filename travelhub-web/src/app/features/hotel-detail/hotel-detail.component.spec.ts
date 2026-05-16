@@ -242,6 +242,70 @@ describe('HotelDetailComponent', () => {
       expect(room11?.disponible).toBe(true);
     });
 
+    it('keeps admin-disabled room unavailable even if not in occupied list', async () => {
+      const disabledRooms = [
+        { ...mockRooms[0], disponible: false },
+        { ...mockRooms[1], disponible: true },
+      ];
+      TestBed.resetTestingModule();
+      const mockCatalog = {
+        getHotel: vi.fn().mockReturnValue(of(mockHotel)),
+        getRooms: vi.fn().mockReturnValue(of(disabledRooms)),
+        getOccupiedRooms: vi.fn().mockReturnValue(of({ occupied_room_ids: [] })),
+      };
+      await TestBed.configureTestingModule({
+        imports: [HotelDetailComponent],
+        providers: [
+          provideRouter([]),
+          provideHttpClient(),
+          provideTranslateService({ fallbackLang: 'es' }),
+          { provide: LOCALE_ID, useValue: 'es' },
+          { provide: CatalogService, useValue: mockCatalog },
+          { provide: ReservationService, useValue: { createReservation: vi.fn() } },
+          {
+            provide: AuthService,
+            useValue: {
+              isLoggedIn: vi.fn().mockReturnValue(true),
+              currentUser: vi.fn().mockReturnValue(null),
+            },
+          },
+          {
+            provide: ActivatedRoute,
+            useValue: {
+              snapshot: {
+                paramMap: { get: (k: string) => (k === 'id' ? '1' : null) },
+                queryParams: { checkIn: '2026-05-01', checkOut: '2026-05-03', huespedes: '1' },
+              },
+            },
+          },
+        ],
+      }).compileComponents();
+      const translateSvc = TestBed.inject(TranslateService);
+      translateSvc.setTranslation('es', {
+        HOTEL_DETAIL: {
+          NOT_FOUND: 'Hotel no encontrado.',
+          SELECT_HINT: '',
+          ROOM_UNAVAILABLE: '',
+          RESERVE_ERROR: '',
+        },
+      });
+      translateSvc.use('es');
+      const fixture = TestBed.createComponent(HotelDetailComponent);
+      const component = fixture.componentInstance;
+      (component as any).router = {
+        navigate: vi.fn(),
+        url: '/hotel/1',
+        createUrlTree: vi.fn().mockReturnValue({}),
+        serializeUrl: vi.fn().mockReturnValue(''),
+      };
+      fixture.detectChanges();
+
+      const room10 = component.rooms.find((r) => r.id === 10);
+      const room11 = component.rooms.find((r) => r.id === 11);
+      expect(room10?.disponible).toBe(false); // admin-disabled, must stay false
+      expect(room11?.disponible).toBe(true);
+    });
+
     it('marks rooms with insufficient capacity as unavailable', async () => {
       const { component } = await createComponent({
         queryParams: { checkIn: '2026-05-01', checkOut: '2026-05-03', huespedes: '3' },

@@ -130,10 +130,10 @@
             {{ 'RESERVATION_DETAIL.PAYMENT_SUMMARY' | translate }}
           </h3>
           <div class="flex justify-between items-center py-3 border-b border-gray-50">
-            <span class="text-gray-500 text-sm"
-              >{{ 'RESERVATION_DETAIL.ROOM_PREFIX' | translate
-              }}{{ reservation.habitacion_id }}</span
-            >
+            <span class="text-gray-500 text-sm">{{
+              reservation.habitacion_nombre ||
+                ('RESERVATION_DETAIL.ROOM_PREFIX' | translate) + reservation.habitacion_id
+            }}</span>
             <span class="text-gray-700 text-sm"
               >{{ nights() }} {{ 'RESERVATION_DETAIL.NIGHTS' | translate }}</span
             >
