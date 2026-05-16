@@ -14,7 +14,7 @@
 
   @if (loadError && !loading) {
     <div class="bg-red-50 border border-red-200 rounded-2xl px-6 py-4 text-sm text-red-700">
-      ⚠️ {{ loadError }}
+      ⚠️ {{ loadError | translate }}
     </div>
   }
 
@@ -97,7 +97,7 @@
                       [class.border-gray-200]="!row.saveError"
                     />
                     @if (row.saveError) {
-                      <p class="text-red-500 text-xs mt-1">{{ row.saveError }}</p>
+                      <p class="text-red-500 text-xs mt-1">{{ row.saveError | translate }}</p>
                     }
                   </td>
                   <td class="px-6 py-4">

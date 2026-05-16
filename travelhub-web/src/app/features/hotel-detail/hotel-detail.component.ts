@@ -35,13 +35,13 @@ export class HotelDetailComponent implements OnInit {
   searchParams: Record<string, string | number> = {};
 
   readonly amenities = [
-    { icon: '🏊', label: 'Piscina' },
-    { icon: '💪', label: 'Gimnasio' },
-    { icon: '🧖', label: 'Spa' },
-    { icon: '🐾', label: 'Mascotas' },
-    { icon: '🍳', label: 'Desayuno' },
-    { icon: '🚗', label: 'Parqueadero' },
-    { icon: '📶', label: 'Wi-Fi' },
+    { icon: '🏔', labelKey: 'HOTEL_DETAIL.AMENITY_POOL' },
+    { icon: '💪', labelKey: 'HOTEL_DETAIL.AMENITY_GYM' },
+    { icon: '🧖', labelKey: 'HOTEL_DETAIL.AMENITY_SPA' },
+    { icon: '🐾', labelKey: 'HOTEL_DETAIL.AMENITY_PETS' },
+    { icon: '🍳', labelKey: 'HOTEL_DETAIL.BREAKFAST' },
+    { icon: '🚗', labelKey: 'HOTEL_DETAIL.PARKING' },
+    { icon: '📶', labelKey: 'HOTEL_DETAIL.WIFI' },
   ];
 
   constructor(

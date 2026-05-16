@@ -21,7 +21,7 @@
             <p class="text-green-600 text-xs mt-1">{{ 'DASHBOARD.IMAGE_OK' | translate }}</p>
           }
           @if (uploadError()) {
-            <p class="text-red-500 text-xs mt-1">{{ uploadError() }}</p>
+            <p class="text-red-500 text-xs mt-1">{{ uploadError() | translate }}</p>
           }
         </div>
         <label

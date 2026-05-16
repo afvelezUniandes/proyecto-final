@@ -56,7 +56,7 @@ export class TariffsComponent implements OnInit {
           }));
         },
         error: () => {
-          this.loadError = 'No se pudieron cargar las habitaciones.';
+          this.loadError = 'TARIFFS.ERR_LOAD';
         },
       });
   }
@@ -75,7 +75,7 @@ export class TariffsComponent implements OnInit {
 
     // Validar entero positivo
     if (!raw || isNaN(price) || price <= 0) {
-      row.saveError = 'Ingresa un precio válido mayor a 0.';
+      row.saveError = 'TARIFFS.ERR_INVALID_PRICE';
       this.cdr.markForCheck();
       return;
     }
@@ -83,7 +83,7 @@ export class TariffsComponent implements OnInit {
       // nunca llega aquí por el Math.round, pero lo dejamos como guarda
     }
     if (parseFloat(raw) !== Math.floor(parseFloat(raw))) {
-      row.saveError = 'El precio debe ser un número entero (sin decimales).';
+      row.saveError = 'TARIFFS.ERR_INTEGER_PRICE';
       this.cdr.markForCheck();
       return;
     }
@@ -107,7 +107,7 @@ export class TariffsComponent implements OnInit {
       },
       error: (err) => {
         row.saving = false;
-        row.saveError = err?.error?.error || 'Error al actualizar el precio.';
+        row.saveError = 'TARIFFS.ERR_UPDATE';
         this.cdr.markForCheck();
       },
     });

@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, HostListener, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { switchMap } from 'rxjs';
 import { HotelService } from '../../core/services/hotel.service';
 import { ReservationService } from '../../core/services/reservation.service';
@@ -26,6 +26,7 @@ export class ReservationDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private hotelService: HotelService,
     private reservationService: ReservationService,
+    private translate: TranslateService,
   ) {}
 
   ngOnInit() {
@@ -64,7 +65,7 @@ export class ReservationDetailComponent implements OnInit {
   }
 
   reenviarConfirmacion() {
-    alert('Confirmación reenviada al correo del huésped. (simulado)');
+    alert(this.translate.instant('RESERVATION_DETAIL.RESEND_OK'));
   }
 
   imprimir() {
@@ -103,7 +104,7 @@ export class ReservationDetailComponent implements OnInit {
         this.canceling.set(false);
       },
       error: (e) => {
-        this.cancelError.set(e?.error?.error || 'Error al cancelar la reserva.');
+        this.cancelError.set('RESERVATION_DETAIL.CANCEL_ERR');
         this.canceling.set(false);
       },
     });

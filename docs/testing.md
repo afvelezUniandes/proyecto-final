@@ -6,13 +6,14 @@ TravelHub cuenta con una suite de pruebas automatizadas en todos los microservic
 
 ## Resumen de la Suite
 
-| Servicio            | Tests   | Estado         |
-| ------------------- | ------- | -------------- |
-| auth-service        | 21      | ✅ Todos pasan |
-| catalog-service     | 45      | ✅ Todos pasan |
-| reservation-service | 30      | ✅ Todos pasan |
-| client-gateway      | 40      | ✅ Todos pasan |
-| **Total**           | **136** | **✅ 136/136** |
+| Servicio             | Tests   | Estado         |
+| -------------------- | ------- | -------------- |
+| auth-service         | 21      | ✅ Todos pasan |
+| catalog-service      | 45      | ✅ Todos pasan |
+| reservation-service  | 30      | ✅ Todos pasan |
+| client-gateway       | 40      | ✅ Todos pasan |
+| notification-service | 21      | ✅ Todos pasan |
+| **Total**            | **157** | **✅ 157/157** |
 
 ---
 
@@ -42,6 +43,35 @@ def test_get_hotels(client):
     data = response.get_json()
     assert 'hotels' in data
     assert 'total' in data
+```
+
+### Pruebas del Notification Service
+
+El notification-service cuenta con pruebas de integración y de comportamiento interno organizadas en cinco clases:
+
+- **`TestCreateNotification`** — Verifica que `POST /notifications` crea registros correctamente (201), rechaza campos faltantes (400), y que los tipos `reserva_creada` / `reserva_cancelada` con campo `email` arrancan un hilo de envío asíncrono, mientras que tipos genéricos o sin email no lo hacen.
+- **`TestGetNotifications`** — Verifica autenticación JWT (401 sin token), que el listado solo devuelve las notificaciones del usuario autenticado, y que los campos `email_enviado` / `email_error` están presentes en la respuesta.
+- **`TestMarkRead`** y **`TestMarkAllRead`** — Verifican que marcar notificaciones como leídas requiere token válido, que no se puede marcar la notificación de otro usuario (404), y que el endpoint bulk funciona correctamente.
+- **`TestSendEmailAsync`** — Prueba directamente la función interna `_send_email_async` usando mocks de SendGrid: confirmación de reserva y cancelación marcan `email_enviado = True`; un fallo de envío almacena el mensaje de error en `email_error`; sin campo `email` no llama a SendGrid.
+
+```python
+# Ejemplo: test_notifications.py — envío asíncrono de email
+def test_reserva_creada_with_email_starts_thread(self, client):
+    with patch('adapters.http.notifications.threading.Thread') as mock_thread:
+        instance = MagicMock()
+        mock_thread.return_value = instance
+        resp = client.post('/notifications', json={
+            'user_id': 1,
+            'tipo': 'reserva_creada',
+            'titulo': 'Reserva confirmada',
+            'mensaje': 'Tu reserva TH-2026-0001',
+            'email': 'viajero@test.com',
+            'codigo': 'TH-2026-0001',
+            ...
+        })
+    assert resp.status_code == 201
+    mock_thread.assert_called_once()
+    instance.start.assert_called_once()
 ```
 
 ### Pruebas del Gateway
@@ -76,6 +106,7 @@ cd auth-service        && python -m pytest tests/ -v && cd ..
 cd catalog-service     && python -m pytest tests/ -v && cd ..
 cd reservation-service && python -m pytest tests/ -v && cd ..
 cd client-gateway      && python -m pytest tests/ -v && cd ..
+cd notification-service && python -m pytest tests/ -v && cd ..
 ```
 
 ### Con reporte de cobertura

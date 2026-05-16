@@ -146,7 +146,7 @@ describe('TariffsComponent', () => {
     it('debe setear loadError y desactivar loading', async () => {
       const { component } = await createComponent({ roomsError: true });
       expect(component.loading).toBe(false);
-      expect(component.loadError).toBe('No se pudieron cargar las habitaciones.');
+      expect(component.loadError).toBe('TARIFFS.ERR_LOAD');
       expect(component.rows).toEqual([]);
     });
   });
@@ -156,7 +156,7 @@ describe('TariffsComponent', () => {
       const { component } = await createComponent();
       component.rows[0].newPrice = '0';
       component.updateTariff(component.rows[0]);
-      expect(component.rows[0].saveError).toBe('Ingresa un precio válido mayor a 0.');
+      expect(component.rows[0].saveError).toBe('TARIFFS.ERR_INVALID_PRICE');
       expect(component.rows[0].saving).toBe(false);
     });
 
@@ -164,23 +164,21 @@ describe('TariffsComponent', () => {
       const { component } = await createComponent();
       component.rows[0].newPrice = '-100';
       component.updateTariff(component.rows[0]);
-      expect(component.rows[0].saveError).toBe('Ingresa un precio válido mayor a 0.');
+      expect(component.rows[0].saveError).toBe('TARIFFS.ERR_INVALID_PRICE');
     });
 
     it('debe setear saveError si el precio no es un número', async () => {
       const { component } = await createComponent();
       component.rows[0].newPrice = 'abc';
       component.updateTariff(component.rows[0]);
-      expect(component.rows[0].saveError).toBe('Ingresa un precio válido mayor a 0.');
+      expect(component.rows[0].saveError).toBe('TARIFFS.ERR_INVALID_PRICE');
     });
 
     it('debe setear saveError si el precio tiene decimales', async () => {
       const { component } = await createComponent();
       component.rows[0].newPrice = '350000.5';
       component.updateTariff(component.rows[0]);
-      expect(component.rows[0].saveError).toBe(
-        'El precio debe ser un número entero (sin decimales).',
-      );
+      expect(component.rows[0].saveError).toBe('TARIFFS.ERR_INTEGER_PRICE');
       expect(component.rows[0].saving).toBe(false);
     });
 
@@ -244,7 +242,7 @@ describe('TariffsComponent', () => {
       component.updateTariff(component.rows[0]);
 
       expect(component.rows[0].saving).toBe(false);
-      expect(component.rows[0].saveError).toBe('Room not found');
+      expect(component.rows[0].saveError).toBe('TARIFFS.ERR_UPDATE');
     });
 
     it('debe usar mensaje genérico si el error no tiene detalle', async () => {
@@ -254,7 +252,7 @@ describe('TariffsComponent', () => {
       component.rows[0].newPrice = '400000';
       component.updateTariff(component.rows[0]);
 
-      expect(component.rows[0].saveError).toBe('Error al actualizar el precio.');
+      expect(component.rows[0].saveError).toBe('TARIFFS.ERR_UPDATE');
     });
   });
 
