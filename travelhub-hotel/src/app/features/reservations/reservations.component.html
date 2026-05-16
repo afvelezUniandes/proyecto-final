@@ -63,24 +63,31 @@
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
       <div>
-        <label for="res-fecha-desde" class="text-xs font-semibold text-gray-400 uppercase mb-1 block">{{
-          'RESERVATIONS.FILTER_DATE_FROM' | translate
-        }}</label>
+        <label
+          for="res-fecha-desde"
+          class="text-xs font-semibold text-gray-400 uppercase mb-1 block"
+          >{{ 'RESERVATIONS.FILTER_DATE_FROM' | translate }}</label
+        >
         <input
           id="res-fecha-desde"
           type="date"
           [(ngModel)]="fechaDesde"
+          [max]="fechaHasta"
+          (change)="onFechaDesdeChange()"
           class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#1D4ED8] transition text-gray-800"
         />
       </div>
       <div>
-        <label for="res-fecha-hasta" class="text-xs font-semibold text-gray-400 uppercase mb-1 block">{{
-          'RESERVATIONS.FILTER_DATE_TO' | translate
-        }}</label>
+        <label
+          for="res-fecha-hasta"
+          class="text-xs font-semibold text-gray-400 uppercase mb-1 block"
+          >{{ 'RESERVATIONS.FILTER_DATE_TO' | translate }}</label
+        >
         <input
           id="res-fecha-hasta"
           type="date"
           [(ngModel)]="fechaHasta"
+          [min]="fechaDesde"
           class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#1D4ED8] transition text-gray-800"
         />
       </div>

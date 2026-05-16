@@ -96,6 +96,12 @@ export class ReservationsComponent implements OnInit {
     this.router.navigate(['/reservations', id]);
   }
 
+  onFechaDesdeChange() {
+    if (this.fechaHasta && this.fechaHasta < this.fechaDesde) {
+      this.fechaHasta = '';
+    }
+  }
+
   resetFilters() {
     this.searchQuery = '';
     this.estadoFilter = '';
