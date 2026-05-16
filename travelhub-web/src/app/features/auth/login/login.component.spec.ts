@@ -174,8 +174,8 @@ describe('LoginComponent', () => {
       expect(component.registerSuccess()).toBe('¡Cuenta creada! Ahora inicia sesión.');
     });
 
-    it('muestra error de correo duplicado cuando el backend retorna 400', async () => {
-      vi.spyOn(mockAuthService, 'register').mockReturnValue(throwError(() => ({ status: 400 })));
+    it('muestra error de correo duplicado cuando el backend retorna 409', async () => {
+      vi.spyOn(mockAuthService, 'register').mockReturnValue(throwError(() => ({ status: 409 })));
       const { component } = await createComponent();
       component.registerNombre = 'Juan';
       component.registerEmail = 'juan@test.com';

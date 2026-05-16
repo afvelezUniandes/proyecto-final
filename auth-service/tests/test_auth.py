@@ -156,7 +156,7 @@ class TestAuthEndpoints:
         )
         
         auth_module.Session = original_session
-        assert response.status_code == 400
+        assert response.status_code == 409
         data = json.loads(response.data)
         assert 'already exists' in data['error']
 

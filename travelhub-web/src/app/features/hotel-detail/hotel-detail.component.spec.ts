@@ -89,6 +89,7 @@ async function createComponent(
 
   const mockAuthService = {
     isLoggedIn: isLoggedInFn,
+    currentUser: vi.fn().mockReturnValue(null),
   };
 
   const qp = overrides.queryParams ?? {
@@ -197,7 +198,13 @@ describe('HotelDetailComponent', () => {
           { provide: LOCALE_ID, useValue: 'es' },
           { provide: CatalogService, useValue: mockCatalog },
           { provide: ReservationService, useValue: { createReservation: vi.fn() } },
-          { provide: AuthService, useValue: { isLoggedIn: vi.fn().mockReturnValue(true) } },
+          {
+            provide: AuthService,
+            useValue: {
+              isLoggedIn: vi.fn().mockReturnValue(true),
+              currentUser: vi.fn().mockReturnValue(null),
+            },
+          },
           {
             provide: ActivatedRoute,
             useValue: {
