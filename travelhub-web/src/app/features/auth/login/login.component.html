@@ -171,7 +171,9 @@
               <button
                 type="button"
                 (click)="showPassword = !showPassword"
-                [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                [attr.aria-label]="
+                  (showPassword ? 'AUTH.HIDE_PASSWORD' : 'AUTH.SHOW_PASSWORD') | translate
+                "
                 class="absolute right-3 top-1/2 -translate-y-1/2 text-travelGray-400 hover:text-travelGray-600"
               >
                 <svg

@@ -23,7 +23,7 @@ def sign_up():
     session = Session()
     if session.query(Usuario).filter_by(email=data['email']).first():
         session.close()
-        return jsonify({'error': 'Email already exists'}), 400
+        return jsonify({'error': 'Email already exists'}), 409
     user = Usuario(
         nombre=data['nombre'],
         email=data['email'],

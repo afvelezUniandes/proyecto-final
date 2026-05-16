@@ -55,7 +55,9 @@
     "ERR_PASSWORD_MISMATCH": "Las contraseñas no coinciden.",
     "ERR_EMAIL_TAKEN": "Este correo ya está registrado.",
     "ERR_REGISTER": "Error al registrar. Intenta de nuevo.",
-    "SUCCESS_REGISTER": "¡Cuenta creada! Ahora inicia sesión."
+    "SUCCESS_REGISTER": "¡Cuenta creada! Ahora inicia sesión.",
+    "SHOW_PASSWORD": "Mostrar contraseña",
+    "HIDE_PASSWORD": "Ocultar contraseña"
   },
   "SEARCH": {
     "CITY": "Ciudad",

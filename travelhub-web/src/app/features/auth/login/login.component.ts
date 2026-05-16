@@ -110,7 +110,7 @@ export class LoginComponent {
         error: (err) => {
           this.registerLoading = false;
           this.registerError.set(
-            err?.status === 400
+            err?.status === 409
               ? this.translate.instant('AUTH.ERR_EMAIL_TAKEN')
               : this.translate.instant('AUTH.ERR_REGISTER'),
           );

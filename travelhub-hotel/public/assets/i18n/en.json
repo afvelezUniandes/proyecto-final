@@ -83,7 +83,10 @@
     "ERR_EMAIL_TAKEN": "An account with this email already exists.",
     "ERR_CREATE": "Error creating account. Please try again.",
     "OPTIONAL": "optional",
-    "HAVE_ACCOUNT": "Sign in"
+    "HAVE_ACCOUNT": "Sign in",
+    "HAVE_ACCOUNT_PRE": "Already have an account?",
+    "SHOW_PASSWORD": "Show password",
+    "HIDE_PASSWORD": "Hide password"
   },
   "DASHBOARD": {
     "TITLE": "Dashboard",
