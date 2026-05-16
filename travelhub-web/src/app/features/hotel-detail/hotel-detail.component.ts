@@ -66,6 +66,8 @@ export class HotelDetailComponent implements OnInit {
       ...(this.checkIn ? { checkIn: this.checkIn } : {}),
       ...(this.checkOut ? { checkOut: this.checkOut } : {}),
       ...(this.adultos ? { huespedes: this.adultos } : {}),
+      ...(qp['page'] ? { page: +qp['page'] } : {}),
+      ...(qp['sortBy'] ? { sortBy: qp['sortBy'] } : {}),
     };
 
     forkJoin({
@@ -99,7 +101,10 @@ export class HotelDetailComponent implements OnInit {
         this.occupiedRoomIds = res.occupied_room_ids || [];
         this.rooms = this.rooms.map((r) => ({
           ...r,
-          disponible: !this.occupiedRoomIds.includes(r.id) && r.capacidad >= this.adultos,
+          disponible:
+            r.disponible !== false &&
+            !this.occupiedRoomIds.includes(r.id) &&
+            r.capacidad >= this.adultos,
         }));
         this.autoSelectRoom();
       },
