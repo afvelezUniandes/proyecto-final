@@ -924,7 +924,7 @@
 </tr>
 <tr>
 <td>catalog-service</td>
-<td><code>public</code></td>
+<td><code>catalog</code></td>
 </tr>
 <tr>
 <td>reservation-service</td>
@@ -1284,8 +1284,8 @@
 </table>
 <div class="admonition note">
 <p class="admonition-title">Desnormalización intencional</p>
-<p><code>nombre_hotel</code> y <code>tipo_habitacion</code> se almacenan desnormalizados en la reserva para garantizar que los datos históricos sean inmutables ante cambios en el catálogo.</p>
 </div>
+<p><code>nombre_hotel</code> y <code>tipo_habitacion</code> se almacenan desnormalizados en la reserva para garantizar que los datos históricos sean inmutables ante cambios en el catálogo.</p>
 <hr />
 <h2 id="migraciones">Migraciones</h2>
 <p>Las tablas se crean automáticamente al iniciar cada servicio. Para cambios en producción existe una carpeta <code>migrations/</code> con scripts SQL numerados:</p>
