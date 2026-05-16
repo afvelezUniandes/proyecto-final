@@ -15,6 +15,7 @@ export class LangService {
     this.translate.addLangs(SUPPORTED);
     this.translate.setDefaultLang(DEFAULT_LANG);
     this.translate.use(this.currentLang());
+    document.documentElement.lang = this.currentLang();
   }
 
   setLang(lang: Lang): void {
@@ -22,6 +23,7 @@ export class LangService {
     this.translate.use(lang);
     this.currentLang.set(lang);
     localStorage.setItem(STORAGE_KEY, lang);
+    document.documentElement.lang = lang;
   }
 
   private _loadSaved(): Lang {

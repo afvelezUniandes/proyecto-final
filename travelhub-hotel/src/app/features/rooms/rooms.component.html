@@ -182,10 +182,12 @@
                 class="text-xs px-2 py-0.5 rounded-full font-medium"
                 [class.bg-green-100]="room.disponible"
                 [class.text-green-700]="room.disponible"
-                [class.bg-yellow-100]="!room.disponible"
-                [class.text-yellow-700]="!room.disponible"
+                [class.bg-red-100]="!room.disponible"
+                [class.text-red-700]="!room.disponible"
                 >{{
-                  room.disponible ? ('ROOMS.AVAILABLE' | translate) : ('ROOMS.OCCUPIED' | translate)
+                  room.disponible
+                    ? ('ROOMS.AVAILABLE' | translate)
+                    : ('ROOMS.NOT_AVAILABLE' | translate)
                 }}</span
               >
             </div>
@@ -438,7 +440,9 @@
               ></span>
             </button>
             <span class="text-sm text-gray-700">{{
-              form.disponible ? 'Disponible' : 'No disponible'
+              form.disponible
+                ? ('ROOMS.AVAILABLE' | translate)
+                : ('ROOMS.NOT_AVAILABLE' | translate)
             }}</span>
           </div>
         </div>

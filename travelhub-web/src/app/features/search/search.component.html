@@ -47,8 +47,8 @@
             <input
               id="search-checkin"
               [(ngModel)]="checkIn"
-              type="date"
-              [min]="today"
+              appDatePicker
+              [fpMin]="today"
               class="flex-1 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
             />
           </div>
@@ -59,8 +59,8 @@
             <input
               id="search-checkout"
               [(ngModel)]="checkOut"
-              type="date"
-              [min]="minCheckOut"
+              appDatePicker
+              [fpMin]="minCheckOut"
               class="flex-1 px-3 py-2 text-sm outline-none border-b border-gray-200 text-gray-800"
             />
           </div>

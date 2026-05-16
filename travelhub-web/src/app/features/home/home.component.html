@@ -42,8 +42,8 @@
             <input
               id="home-checkin"
               [(ngModel)]="checkIn"
-              type="date"
-              [min]="today"
+              appDatePicker
+              [fpMin]="today"
               class="w-full px-3 py-2 text-sm text-gray-800 border-b border-gray-200 outline-none focus:border-[#1D4ED8] transition bg-transparent"
             />
           </div>
@@ -56,8 +56,8 @@
             <input
               id="home-checkout"
               [(ngModel)]="checkOut"
-              type="date"
-              [min]="minCheckOut"
+              appDatePicker
+              [fpMin]="minCheckOut"
               class="w-full px-3 py-2 text-sm text-gray-800 border-b border-gray-200 outline-none focus:border-[#1D4ED8] transition bg-transparent"
             />
           </div>

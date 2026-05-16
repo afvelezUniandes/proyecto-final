@@ -122,7 +122,8 @@ export class ReservationsComponent implements OnInit {
 
   formatDate(d: string): string {
     const locale = this.translate.currentLang === 'en' ? 'en-US' : 'es-CO';
-    return new Date(d).toLocaleDateString(locale, {
+    const [year, month, day] = d.split('T')[0].split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

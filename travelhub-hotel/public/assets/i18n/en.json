@@ -216,6 +216,8 @@
     "FILTER_BTN": "Filter",
     "CLEAR_BTN": "Clear",
     "RESULTS_LABEL": "result(s)",
+    "ROOM_PREFIX": "Room #",
+    "GUEST_PREFIX": "Guest #",
     "COL_CODE": "Code",
     "COL_GUEST": "Guest",
     "COL_ROOM": "Room",

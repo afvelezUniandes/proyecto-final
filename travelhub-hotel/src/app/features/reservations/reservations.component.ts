@@ -7,11 +7,12 @@ import { switchMap } from 'rxjs';
 import { HotelService } from '../../core/services/hotel.service';
 import { ReservationService } from '../../core/services/reservation.service';
 import { HotelReservation } from '../../core/models';
+import { DatePickerDirective } from '../../shared/directives/date-picker.directive';
 
 @Component({
   selector: 'app-hotel-reservations',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule, DatePickerDirective],
   templateUrl: './reservations.component.html',
 })
 export class ReservationsComponent implements OnInit {

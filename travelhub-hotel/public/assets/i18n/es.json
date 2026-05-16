@@ -216,6 +216,8 @@
     "FILTER_BTN": "Filtrar",
     "CLEAR_BTN": "Limpiar",
     "RESULTS_LABEL": "resultado(s)",
+    "ROOM_PREFIX": "Hab. #",
+    "GUEST_PREFIX": "Huésped #",
     "COL_CODE": "Código",
     "COL_GUEST": "Huésped",
     "COL_ROOM": "Habitación",
