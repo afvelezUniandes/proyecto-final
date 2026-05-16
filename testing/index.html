@@ -645,6 +645,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pruebas-del-notification-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pruebas del Notification Service
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pruebas-del-gateway" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -834,6 +845,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pruebas-del-notification-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pruebas del Notification Service
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pruebas-del-gateway" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -994,9 +1016,14 @@
 <td>✅ Todos pasan</td>
 </tr>
 <tr>
+<td>notification-service</td>
+<td>21</td>
+<td>✅ Todos pasan</td>
+</tr>
+<tr>
 <td><strong>Total</strong></td>
-<td><strong>136</strong></td>
-<td><strong>✅ 136/136</strong></td>
+<td><strong>157</strong></td>
+<td><strong>✅ 157/157</strong></td>
 </tr>
 </tbody>
 </table>
@@ -1020,61 +1047,88 @@
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="k">assert</span> <span class="s1">&#39;hotels&#39;</span> <span class="ow">in</span> <span class="n">data</span>
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="k">assert</span> <span class="s1">&#39;total&#39;</span> <span class="ow">in</span> <span class="n">data</span>
 </code></pre></div>
+<h3 id="pruebas-del-notification-service">Pruebas del Notification Service</h3>
+<p>El notification-service cuenta con pruebas de integración y de comportamiento interno organizadas en cinco clases:</p>
+<ul>
+<li><strong><code>TestCreateNotification</code></strong> — Verifica que <code>POST /notifications</code> crea registros correctamente (201), rechaza campos faltantes (400), y que los tipos <code>reserva_creada</code> / <code>reserva_cancelada</code> con campo <code>email</code> arrancan un hilo de envío asíncrono, mientras que tipos genéricos o sin email no lo hacen.</li>
+<li><strong><code>TestGetNotifications</code></strong> — Verifica autenticación JWT (401 sin token), que el listado solo devuelve las notificaciones del usuario autenticado, y que los campos <code>email_enviado</code> / <code>email_error</code> están presentes en la respuesta.</li>
+<li><strong><code>TestMarkRead</code></strong> y <strong><code>TestMarkAllRead</code></strong> — Verifican que marcar notificaciones como leídas requiere token válido, que no se puede marcar la notificación de otro usuario (404), y que el endpoint bulk funciona correctamente.</li>
+<li><strong><code>TestSendEmailAsync</code></strong> — Prueba directamente la función interna <code>_send_email_async</code> usando mocks de SendGrid: confirmación de reserva y cancelación marcan <code>email_enviado = True</code>; un fallo de envío almacena el mensaje de error en <code>email_error</code>; sin campo <code>email</code> no llama a SendGrid.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Ejemplo: test_notifications.py — envío asíncrono de email</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_reserva_creada_with_email_starts_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="k">with</span> <span class="n">patch</span><span class="p">(</span><span class="s1">&#39;adapters.http.notifications.threading.Thread&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mock_thread</span><span class="p">:</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>        <span class="n">instance</span> <span class="o">=</span> <span class="n">MagicMock</span><span class="p">()</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="n">mock_thread</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">instance</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/notifications&#39;</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>            <span class="s1">&#39;user_id&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>            <span class="s1">&#39;tipo&#39;</span><span class="p">:</span> <span class="s1">&#39;reserva_creada&#39;</span><span class="p">,</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>            <span class="s1">&#39;titulo&#39;</span><span class="p">:</span> <span class="s1">&#39;Reserva confirmada&#39;</span><span class="p">,</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>            <span class="s1">&#39;mensaje&#39;</span><span class="p">:</span> <span class="s1">&#39;Tu reserva TH-2026-0001&#39;</span><span class="p">,</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>            <span class="s1">&#39;email&#39;</span><span class="p">:</span> <span class="s1">&#39;viajero@test.com&#39;</span><span class="p">,</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>            <span class="s1">&#39;codigo&#39;</span><span class="p">:</span> <span class="s1">&#39;TH-2026-0001&#39;</span><span class="p">,</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>            <span class="o">...</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>        <span class="p">})</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="k">assert</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">201</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="n">mock_thread</span><span class="o">.</span><span class="n">assert_called_once</span><span class="p">()</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="n">instance</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">assert_called_once</span><span class="p">()</span>
+</code></pre></div>
 <h3 id="pruebas-del-gateway">Pruebas del Gateway</h3>
 <p>El gateway usa <code>requests-mock</code> para interceptar las llamadas HTTP a los microservicios internos, permitiendo pruebas aisladas del comportamiento del proxy y la validación JWT.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Ejemplo: test_gateway.py en client-gateway</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_sign_in</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">requests_mock</span><span class="p">):</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">requests_mock</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>        <span class="s1">&#39;http://fake-auth/sign-in&#39;</span><span class="p">,</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;token&#39;</span><span class="p">:</span> <span class="s1">&#39;fake-jwt-token&#39;</span><span class="p">},</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="p">)</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/auth/sign-in&#39;</span><span class="p">,</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;email&#39;</span><span class="p">:</span> <span class="s1">&#39;test@test.com&#39;</span><span class="p">,</span> <span class="s1">&#39;password&#39;</span><span class="p">:</span> <span class="s1">&#39;pass&#39;</span><span class="p">})</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="k">assert</span> <span class="s1">&#39;token&#39;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Ejemplo: test_gateway.py en client-gateway</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_sign_in</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">requests_mock</span><span class="p">):</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">requests_mock</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>        <span class="s1">&#39;http://fake-auth/sign-in&#39;</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>        <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;token&#39;</span><span class="p">:</span> <span class="s1">&#39;fake-jwt-token&#39;</span><span class="p">},</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>        <span class="n">status_code</span><span class="o">=</span><span class="mi">200</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="p">)</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/auth/sign-in&#39;</span><span class="p">,</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;email&#39;</span><span class="p">:</span> <span class="s1">&#39;test@test.com&#39;</span><span class="p">,</span> <span class="s1">&#39;password&#39;</span><span class="p">:</span> <span class="s1">&#39;pass&#39;</span><span class="p">})</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="k">assert</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="k">assert</span> <span class="s1">&#39;token&#39;</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
 </code></pre></div>
 <hr />
 <h2 id="ejecutar-las-pruebas">Ejecutar las Pruebas</h2>
 <h3 id="todos-los-servicios">Todos los servicios</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Desde la raíz del proyecto con venv activado</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">source</span><span class="w"> </span>venv/bin/activate
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nb">cd</span><span class="w"> </span>auth-service<span class="w">        </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-v<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>..
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="nb">cd</span><span class="w"> </span>catalog-service<span class="w">     </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-v<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>..
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="nb">cd</span><span class="w"> </span>reservation-service<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-v<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>..
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="nb">cd</span><span class="w"> </span>client-gateway<span class="w">      </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-v<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>..
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Desde la raíz del proyecto con venv activado</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">source</span><span class="w"> </span>venv/bin/activate
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="nb">cd</span><span class="w"> </span>auth-service<span class="w">        </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-v<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>..
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nb">cd</span><span class="w"> </span>catalog-service<span class="w">     </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-v<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>..
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="nb">cd</span><span class="w"> </span>reservation-service<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-v<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>..
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="nb">cd</span><span class="w"> </span>client-gateway<span class="w">      </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-v<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>..
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="nb">cd</span><span class="w"> </span>notification-service<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-v<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>..
 </code></pre></div>
 <h3 id="con-reporte-de-cobertura">Con reporte de cobertura</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Ejemplo para catalog-service</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">cd</span><span class="w"> </span>catalog-service
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>--cov<span class="o">=</span>.<span class="w"> </span>--cov-report<span class="o">=</span>html<span class="w"> </span>--cov-report<span class="o">=</span>term-missing
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Reporte HTML en: htmlcov/index.html</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Ejemplo para catalog-service</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nb">cd</span><span class="w"> </span>catalog-service
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>--cov<span class="o">=</span>.<span class="w"> </span>--cov-report<span class="o">=</span>html<span class="w"> </span>--cov-report<span class="o">=</span>term-missing
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Reporte HTML en: htmlcov/index.html</span>
 </code></pre></div>
 <h3 id="con-script-automatizado">Con script automatizado</h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>bash<span class="w"> </span>run_tests.sh
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>bash<span class="w"> </span>run_tests.sh
 </code></pre></div>
 <hr />
 <h2 id="configuracion-de-pytest">Configuración de Pytest</h2>
 <p>Cada servicio tiene su <code>pytest.ini</code> con la configuración del entorno de prueba:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># pytest.ini (ejemplo de catalog-service)</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="k">[pytest]</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="na">testpaths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">tests</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># pytest.ini (ejemplo de catalog-service)</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">[pytest]</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="na">testpaths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">tests</span>
 </code></pre></div>
 <p>El archivo <code>tests/conftest.py</code> de cada servicio configura las variables de entorno y la base de datos en memoria <strong>antes</strong> de importar la aplicación Flask:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># conftest.py</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;DATABASE_URL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;sqlite:///:memory:&#39;</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;JWT_SECRET&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;test-secret&#39;</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="kn">from</span><span class="w"> </span><span class="nn">app</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">client</span><span class="p">():</span>
-<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;TESTING&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    <span class="k">with</span> <span class="n">app</span><span class="o">.</span><span class="n">test_client</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
-<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>        <span class="k">yield</span> <span class="n">client</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># conftest.py</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;DATABASE_URL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;sqlite:///:memory:&#39;</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;JWT_SECRET&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;test-secret&#39;</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="kn">from</span><span class="w"> </span><span class="nn">app</span><span class="w"> </span><span class="kn">import</span> <span class="n">app</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">client</span><span class="p">():</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>    <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;TESTING&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>    <span class="k">with</span> <span class="n">app</span><span class="o">.</span><span class="n">test_client</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>        <span class="k">yield</span> <span class="n">client</span>
 </code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Orden de importación</p>
@@ -1083,33 +1137,33 @@
 <hr />
 <h2 id="pruebas-e2e-playwright">Pruebas E2E (Playwright)</h2>
 <p>Los frontends Angular incluyen pruebas end-to-end con <strong>Playwright</strong>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># travelhub-web</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nb">cd</span><span class="w"> </span>travelhub-web
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>npx<span class="w"> </span>playwright<span class="w"> </span><span class="nb">test</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="c1"># travelhub-hotel</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="nb">cd</span><span class="w"> </span>travelhub-hotel
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>npx<span class="w"> </span>playwright<span class="w"> </span><span class="nb">test</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># travelhub-web</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nb">cd</span><span class="w"> </span>travelhub-web
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>npx<span class="w"> </span>playwright<span class="w"> </span><span class="nb">test</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="c1"># travelhub-hotel</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="nb">cd</span><span class="w"> </span>travelhub-hotel
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>npx<span class="w"> </span>playwright<span class="w"> </span><span class="nb">test</span>
 </code></pre></div>
 <p>Configuración en <code>playwright.config.ts</code> de cada proyecto.</p>
 <hr />
 <h2 id="pruebas-de-carga-jmeter">Pruebas de Carga (JMeter)</h2>
 <p>El archivo <code>jmeter-load-test.jmx</code> contiene el plan de prueba de carga para el gateway. Resultados almacenados en <code>jmeter-results.csv</code> y <code>results.jtl</code>.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Ejecutar con Apache JMeter instalado</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>jmeter<span class="w"> </span>-n<span class="w"> </span>-t<span class="w"> </span>jmeter-load-test.jmx<span class="w"> </span>-l<span class="w"> </span>jmeter-results.csv
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Ver reporte HTML</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>jmeter<span class="w"> </span>-g<span class="w"> </span>jmeter-results.csv<span class="w"> </span>-o<span class="w"> </span>report/
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Ejecutar con Apache JMeter instalado</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>jmeter<span class="w"> </span>-n<span class="w"> </span>-t<span class="w"> </span>jmeter-load-test.jmx<span class="w"> </span>-l<span class="w"> </span>jmeter-results.csv
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Ver reporte HTML</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>jmeter<span class="w"> </span>-g<span class="w"> </span>jmeter-results.csv<span class="w"> </span>-o<span class="w"> </span>report/
 </code></pre></div>
 <p>Ver el archivo <code>JMETER_GUIDE.md</code> en la raíz del repositorio para instrucciones detalladas.</p>
 <hr />
 <h2 id="ci-pruebas-automaticas">CI — Pruebas Automáticas</h2>
 <p>Las pruebas se ejecutan automáticamente en el pipeline de GitHub Actions antes del build Docker. Si alguna prueba falla, la imagen no se construye ni se publica a ECR.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Fragmento del workflow (conceptual)</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run tests</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="no">pip install -r requirements.txt</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="no">python -m pytest tests/ -v</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Fragmento del workflow (conceptual)</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run tests</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="no">pip install -r requirements.txt</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="no">python -m pytest tests/ -v</span>
 </code></pre></div>
 
 

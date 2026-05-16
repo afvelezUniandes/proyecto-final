@@ -992,7 +992,9 @@
     Client["Cliente"] --&gt; GW["client-gateway"]
     GW --&gt; |"/auth/*"| Auth["auth-service"]
     GW --&gt; |"/catalog/*"| Catalog["catalog-service"]
-    GW --&gt; |"/reservations/*"| Reservation["reservation-service"]</code></pre>
+    GW --&gt; |"/reservations/*"| Reservation["reservation-service"]
+    Reservation --&gt;|"POST /notifications"| Notification["notification-service"]
+    Auth --&gt;|"POST /notifications"| Notification</code></pre>
 <p>Organización interna con Flask Blueprints:</p>
 <table>
 <thead>
@@ -1090,10 +1092,20 @@
     DB--&gt;&gt;Res: Disponible
     Res-&gt;&gt;DB: INSERT reserva
     DB--&gt;&gt;Res: Reserva creada (codigo: TH-2026-0042)
-    Res-&gt;&gt;Notif: POST /notifications (evento reserva_creada)
+    Res-&gt;&gt;Notif: POST /notifications (reserva_creada)
     Notif--&gt;&gt;Res: 200 OK
     Res--&gt;&gt;GW: 201 {reserva...}
-    GW--&gt;&gt;C: 201 {reserva...}</code></pre>
+    GW--&gt;&gt;C: 201 {reserva...}
+
+    Note over C,Notif: Cancelación (cliente o hotel)
+
+    C-&gt;&gt;GW: PATCH /reservations/{id}/cancel
+    GW-&gt;&gt;Res: PATCH /cancel (X-User-Id: 42)
+    Res-&gt;&gt;DB: UPDATE estado = 'cancelada', fecha_cancelacion = now()
+    Res-&gt;&gt;Notif: POST /notifications (reserva_cancelada)
+    Notif--&gt;&gt;Res: 200 OK
+    Res--&gt;&gt;GW: 200 {reserva...}
+    GW--&gt;&gt;C: 200 {reserva...}</code></pre>
 <hr />
 <h2 id="sistema-de-cache">Sistema de Caché</h2>
 <p>El <strong>catalog-service</strong> implementa caché in-memory con <code>Flask-Caching (SimpleCache)</code> para reducir la latencia en lecturas frecuentes.</p>
@@ -1137,7 +1149,8 @@
     GW["client-gateway"] --&gt;|HTTP REST| Auth["auth-service"]
     GW --&gt;|HTTP REST| Catalog["catalog-service"]
     GW --&gt;|HTTP REST| Reservation["reservation-service"]
-    Reservation --&gt;|HTTP POST /notifications| Notification["notification-service"]</code></pre>
+    Reservation --&gt;|HTTP POST /notifications| Notification["notification-service"]
+    Auth --&gt;|HTTP POST /notifications| Notification</code></pre>
 <p>Las URLs de los servicios internos se configuran mediante variables de entorno:</p>
 <table>
 <thead>
@@ -1158,6 +1171,10 @@
 <tr>
 <td><code>RESERVATION_SERVICE_URL</code></td>
 <td><code>http://localhost:5002</code></td>
+</tr>
+<tr>
+<td><code>NOTIFICATION_SERVICE_URL</code></td>
+<td><code>http://localhost:5004</code></td>
 </tr>
 </tbody>
 </table>
