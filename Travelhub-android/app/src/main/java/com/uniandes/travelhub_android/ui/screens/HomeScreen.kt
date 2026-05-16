@@ -619,7 +619,7 @@ fun HotelCard(hotel: Hotel, onClick: () -> Unit) {
                     // Precio por noche (real desde la API)
                     if (hotel.precio_noche != null && hotel.precio_noche > 0) {
                         Text(
-                            text = "Desde ${java.text.NumberFormat.getNumberInstance(java.util.Locale("es","CO")).format(hotel.precio_noche)} COP/noche",
+                            text = stringResource(R.string.hotel_price_from, java.text.NumberFormat.getNumberInstance(java.util.Locale("es","CO")).format(hotel.precio_noche)),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = TravelBlue

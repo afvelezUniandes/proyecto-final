@@ -259,7 +259,7 @@ fun RegisterScreen(
                                             kotlinx.coroutines.delay(1500)
                                             onRegisterSuccess()
                                         }
-                                        resp.code() == 400 -> errorMsg = context.getString(R.string.err_email_exists)
+                                        resp.code() == 409 -> errorMsg = context.getString(R.string.err_email_exists)
                                         else -> errorMsg = context.getString(R.string.err_register_failed, resp.code().toString())
                                     }
                                 } catch (e: Exception) {
