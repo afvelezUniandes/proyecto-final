@@ -36,10 +36,10 @@ export class SearchComponent implements OnInit {
   error = '';
   dateError = '';
   sortOptions = [
-    { key: 'default', label: 'Relevancia' },
-    { key: 'stars', label: '⭐ Estrellas' },
-    { key: 'price_asc', label: '💰 Precio ↑' },
-    { key: 'price_desc', label: '💰 Precio ↓' },
+    { key: 'default', labelKey: 'SEARCH.SORT_RELEVANCE' },
+    { key: 'stars', labelKey: 'SEARCH.SORT_STARS' },
+    { key: 'price_asc', labelKey: 'SEARCH.SORT_PRICE_ASC' },
+    { key: 'price_desc', labelKey: 'SEARCH.SORT_PRICE_DESC' },
   ];
 
   private localDateStr(d: Date): string {

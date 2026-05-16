@@ -213,9 +213,9 @@ export class RoomsComponent implements OnInit {
       error: (err) => {
         const msg = err?.error?.error || '';
         if (err?.status === 409) {
-          this.deleteError = msg || 'ROOMS.DELETE_ERR_ACTIVE';
+          this.deleteError = 'ROOMS.DELETE_ERR_ACTIVE';
         } else {
-          this.deleteError = msg || 'No se pudo eliminar la habitación.';
+          this.deleteError = msg || 'ROOMS.DELETE_ERR_GENERIC';
         }
         this.cdr.detectChanges();
       },

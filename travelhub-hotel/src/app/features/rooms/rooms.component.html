@@ -256,11 +256,7 @@
           <p
             class="text-red-600 text-sm text-center bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4"
           >
-            {{
-              deleteError === 'ROOMS.DELETE_ERR_ACTIVE'
-                ? ('ROOMS.DELETE_ERR_ACTIVE' | translate)
-                : deleteError
-            }}
+            {{ deleteError | translate }}
           </p>
         }
         <div class="flex gap-3">

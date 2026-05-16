@@ -136,6 +136,37 @@ test.describe.serial('TravelHub E2E', () => {
     expect(url.includes('reservations') || url.includes('home')).toBeTruthy();
   });
 
+  test('7b - Detalle de reserva muestra nombre de habitación (no ID)', async ({ page }) => {
+    await login(page);
+    await page.goto('/reservations');
+    await page.waitForTimeout(4000);
+
+    // Navegar al primer detalle disponible
+    const detailLink = page.locator('a[href*="/reservation/"]').first();
+    const count = await detailLink.count();
+    if (count === 0) {
+      // No hay reservas: test no aplica
+      return;
+    }
+
+    await detailLink.click();
+    await page.waitForTimeout(3000);
+
+    const html = await page.content();
+
+    // No debe mostrar el patrón "Habitación #<número>" — debe mostrar el nombre real
+    const hasRawId = /Habitaci[oó]n\s*#\s*\d+/.test(html);
+    expect(hasRawId).toBe(false);
+
+    // Debe tener algún contenido de resumen de pago
+    const hasSummary =
+      html.includes('Resumen') ||
+      html.includes('noche') ||
+      html.includes('noches') ||
+      html.includes('Total');
+    expect(hasSummary).toBeTruthy();
+  });
+
   test('8 - Perfil muestra datos del usuario', async ({ page }) => {
     await login(page);
     await page.goto('/profile');
