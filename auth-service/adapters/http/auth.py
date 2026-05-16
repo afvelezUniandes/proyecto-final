@@ -13,6 +13,7 @@ bp = Blueprint('auth', __name__)
 DATABASE_URL = os.getenv('AUTH_DATABASE_URL', 'postgresql://user:password@localhost:5432/travelhub')
 SECRET_KEY = os.getenv('JWT_SECRET', 'supersecretkey')
 CATALOG_SERVICE_URL = os.getenv('CATALOG_SERVICE_URL', 'http://localhost:5001')
+NOTIFICATION_SERVICE_URL = os.getenv('NOTIFICATION_SERVICE_URL', 'http://localhost:5004')
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 
@@ -73,6 +74,23 @@ def sign_up():
         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=2)
     }, SECRET_KEY, algorithm='HS256')
     session.close()
+
+    try:
+        http_requests.post(
+            f'{NOTIFICATION_SERVICE_URL}/notifications',
+            json={
+                'user_id': user.id,
+                'tipo': 'registro',
+                'titulo': '¡Bienvenido a TravelHub!',
+                'mensaje': f'Tu cuenta ha sido creada exitosamente con el correo {user.email}.',
+                'email': user.email,
+                'nombre': user.nombre,
+            },
+            timeout=5,
+        )
+    except Exception:
+        pass
+
     return jsonify({
         'message': 'User created',
         'hotel_id': hotel_id if 'hotel_id' in dir() else None,

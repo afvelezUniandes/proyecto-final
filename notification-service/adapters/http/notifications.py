@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from adapters.orm.models import Notificacion
-from adapters.email.sender import send_reservation_created, send_reservation_cancelled
+from adapters.email.sender import send_reservation_created, send_reservation_cancelled, send_welcome_email
 from config import engine, JWT_SECRET
 from sqlalchemy.orm import Session
 import jwt
@@ -63,6 +63,11 @@ def _send_email_async(notif_id: int, tipo: str, extra: dict):
             monto_total=extra.get('monto_total', ''),
             moneda=extra.get('moneda', 'COP'),
         )
+    elif tipo == 'registro':
+        ok, err = send_welcome_email(
+            to_email=to_email,
+            nombre=extra.get('nombre', ''),
+        )
     else:
         return
 
@@ -117,11 +122,11 @@ def create_notification():
 
     # Disparar envío de email de forma asíncrona (no bloquea la respuesta)
     extra = {k: data.get(k) for k in (
-        'email', 'codigo', 'nombre_hotel', 'tipo_habitacion',
+        'email', 'nombre', 'codigo', 'nombre_hotel', 'tipo_habitacion',
         'fecha_checkin', 'fecha_checkout', 'num_huespedes',
         'monto_total', 'moneda',
     )}
-    if extra.get('email') and tipo in ('reserva_creada', 'reserva_cancelada'):
+    if extra.get('email') and tipo in ('reserva_creada', 'reserva_cancelada', 'registro'):
         threading.Thread(
             target=_send_email_async,
             args=(notif_id, tipo, extra),
