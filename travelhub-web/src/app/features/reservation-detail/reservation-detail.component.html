@@ -14,9 +14,9 @@
     @if (error) {
       <div class="max-w-2xl mx-auto px-6 py-8">
         <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4">{{ error }}</div>
-        <a routerLink="/reservations" class="mt-4 inline-block text-[#1D4ED8] text-sm"
-          >← Volver a mis reservas</a
-        >
+        <a routerLink="/reservations" class="mt-4 inline-block text-[#1D4ED8] text-sm">{{
+          'RESERVATION_DETAIL.BACK_TO_LIST' | translate
+        }}</a>
       </div>
     }
 
@@ -24,10 +24,13 @@
       <div class="max-w-2xl mx-auto px-6 py-8 space-y-6">
         <!-- Breadcrumb -->
         <div class="text-sm text-gray-400">
-          <a routerLink="/reservations" class="hover:text-[#1D4ED8]">Mis Reservas</a>
+          <a routerLink="/reservations" class="hover:text-[#1D4ED8]">{{
+            'RESERVATION_DETAIL.BREADCRUMB' | translate
+          }}</a>
           <span class="mx-2">›</span>
           <span class="text-gray-700"
-            >Reserva {{ reservation.codigo || '#' + reservation.id }}</span
+            >{{ 'RESERVATIONS.BOOKING_PREFIX' | translate
+            }}{{ reservation.codigo || reservation.id }}</span
           >
         </div>
 
@@ -36,11 +39,13 @@
           <div class="flex items-start justify-between gap-4">
             <div>
               <h1 class="text-xl font-bold text-gray-900">
-                Reserva {{ reservation.codigo || '#' + reservation.id }}
+                {{ 'RESERVATIONS.BOOKING_PREFIX' | translate
+                }}{{ reservation.codigo || reservation.id }}
               </h1>
               @if (reservation.fecha_creacion) {
                 <p class="text-gray-400 text-xs mt-1">
-                  Creada el {{ formatDate(reservation.fecha_creacion) }}
+                  {{ 'RESERVATION_DETAIL.CREATED_ON' | translate }}
+                  {{ formatDate(reservation.fecha_creacion) }}
                 </p>
               }
             </div>
@@ -49,7 +54,7 @@
                 estadoClass(reservation.estado)
               }}"
             >
-              {{ reservation.estado }}
+              {{ 'RESERVATION.STATUS.' + reservation.estado | translate }}
             </span>
           </div>
         </div>
@@ -79,28 +84,41 @@
 
         <!-- Dates & guests -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h3 class="font-semibold text-gray-700 mb-4">Detalles de la estadía</h3>
+          <h3 class="font-semibold text-gray-700 mb-4">
+            {{ 'RESERVATION_DETAIL.STAY_DETAILS' | translate }}
+          </h3>
           <div class="grid sm:grid-cols-2 gap-4">
             <div class="bg-gray-50 rounded-xl p-4">
-              <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Check-in</p>
+              <p class="text-xs text-gray-400 uppercase font-semibold mb-1">
+                {{ 'RESERVATION_DETAIL.CHECKIN' | translate }}
+              </p>
               <p class="text-gray-900 font-medium">
                 {{ formatDate(reservation.fecha_checkin || '') }}
               </p>
             </div>
             <div class="bg-gray-50 rounded-xl p-4">
-              <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Check-out</p>
+              <p class="text-xs text-gray-400 uppercase font-semibold mb-1">
+                {{ 'RESERVATION_DETAIL.CHECKOUT' | translate }}
+              </p>
               <p class="text-gray-900 font-medium">
                 {{ formatDate(reservation.fecha_checkout || '') }}
               </p>
             </div>
             <div class="bg-gray-50 rounded-xl p-4">
-              <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Duración</p>
-              <p class="text-gray-900 font-medium">{{ nights() }} noche(s)</p>
+              <p class="text-xs text-gray-400 uppercase font-semibold mb-1">
+                {{ 'RESERVATION_DETAIL.DURATION' | translate }}
+              </p>
+              <p class="text-gray-900 font-medium">
+                {{ nights() }} {{ 'RESERVATION_DETAIL.NIGHTS' | translate }}
+              </p>
             </div>
             <div class="bg-gray-50 rounded-xl p-4">
-              <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Huéspedes</p>
+              <p class="text-xs text-gray-400 uppercase font-semibold mb-1">
+                {{ 'RESERVATION_DETAIL.GUESTS' | translate }}
+              </p>
               <p class="text-gray-900 font-medium">
-                {{ reservation.num_huespedes || 1 }} huesped(es)
+                {{ reservation.num_huespedes || 1 }}
+                {{ 'RESERVATION_DETAIL.GUEST_SINGULAR' | translate }}
               </p>
             </div>
           </div>
@@ -108,13 +126,22 @@
 
         <!-- Payment summary -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h3 class="font-semibold text-gray-700 mb-4">Resumen de pago</h3>
+          <h3 class="font-semibold text-gray-700 mb-4">
+            {{ 'RESERVATION_DETAIL.PAYMENT_SUMMARY' | translate }}
+          </h3>
           <div class="flex justify-between items-center py-3 border-b border-gray-50">
-            <span class="text-gray-500 text-sm">Habitación #{{ reservation.habitacion_id }}</span>
-            <span class="text-gray-700 text-sm">{{ nights() }} noche(s)</span>
+            <span class="text-gray-500 text-sm"
+              >{{ 'RESERVATION_DETAIL.ROOM_PREFIX' | translate
+              }}{{ reservation.habitacion_id }}</span
+            >
+            <span class="text-gray-700 text-sm"
+              >{{ nights() }} {{ 'RESERVATION_DETAIL.NIGHTS' | translate }}</span
+            >
           </div>
           <div class="flex justify-between items-center pt-3">
-            <span class="font-bold text-gray-900">Total</span>
+            <span class="font-bold text-gray-900">{{
+              'RESERVATION_DETAIL.TOTAL' | translate
+            }}</span>
             <span class="text-[#1D4ED8] font-bold text-xl">
               {{ formatPrice(reservation.monto_total || 0) }}
               <span class="text-gray-400 text-sm font-normal">{{
@@ -130,14 +157,14 @@
             routerLink="/reservations"
             class="flex-1 text-center border border-gray-200 text-gray-600 text-sm font-semibold py-3 rounded-xl hover:border-[#1D4ED8] hover:text-[#1D4ED8] transition"
           >
-            ← Volver al listado
+            {{ 'RESERVATION_DETAIL.BACK_BTN' | translate }}
           </a>
           @if (reservation.estado.toLowerCase() === 'confirmada') {
             @if (cancelSuccess) {
               <div
                 class="flex-1 text-center bg-green-50 border border-green-200 text-green-700 text-sm font-semibold py-3 rounded-xl"
               >
-                ✓ Reserva cancelada
+                {{ 'RESERVATION_DETAIL.CANCELLED_OK' | translate }}
               </div>
             } @else {
               <button
@@ -145,7 +172,11 @@
                 [disabled]="canceling"
                 class="flex-1 bg-red-600 text-white text-sm font-semibold py-3 rounded-xl hover:bg-red-700 disabled:opacity-60 transition"
               >
-                {{ canceling ? 'Cancelando...' : '✕ Cancelar reserva' }}
+                {{
+                  canceling
+                    ? ('RESERVATION_DETAIL.CANCELLING' | translate)
+                    : ('RESERVATION_DETAIL.CANCEL_BTN' | translate)
+                }}
               </button>
             }
           }

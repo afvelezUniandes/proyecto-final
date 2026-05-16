@@ -496,9 +496,15 @@ def get_hotel_reservation_detail(hotel_id, reserva_id):
 
         room = {}
         try:
-            room_resp = requests.get(f'{CATALOG_SERVICE_URL}/rooms/{r["habitacion_id"]}', timeout=3)
+            room_resp = requests.get(
+                f'{CATALOG_SERVICE_URL}/rooms',
+                params={'hotel_id': hotel_id, 'include_deleted': 'true'},
+                timeout=3,
+            )
             if room_resp.status_code == 200:
-                room = room_resp.json()
+                rooms_list = room_resp.json()
+                habitacion_id = r.get('habitacion_id')
+                room = next((rm for rm in rooms_list if rm.get('id') == habitacion_id), {})
         except Exception:
             pass
 

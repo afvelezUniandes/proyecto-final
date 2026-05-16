@@ -258,7 +258,8 @@
     "CANCEL_MODAL_TITLE": "Cancel reservation",
     "CANCEL_MODAL_MSG": "Are you sure? The guest will be notified and this action cannot be undone.",
     "CANCEL_MODAL_CONFIRM": "Yes, cancel",
-    "CANCEL_MODAL_DISMISS": "No, keep"
+    "CANCEL_MODAL_DISMISS": "No, keep",
+    "CANCELLED_DATE": "Cancellation date"
   },
   "RESERVATION": {
     "STATUS": {

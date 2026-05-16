@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { ReservationService } from '../../core/services/reservation.service';
 import { CatalogService } from '../../core/services/catalog.service';
@@ -27,6 +27,7 @@ export class ReservationDetailComponent implements OnInit {
     private router: Router,
     private reservationService: ReservationService,
     private catalog: CatalogService,
+    private translate: TranslateService,
   ) {}
 
   ngOnInit() {
@@ -84,7 +85,8 @@ export class ReservationDetailComponent implements OnInit {
   }
 
   formatDate(d: string): string {
-    return new Date(d).toLocaleDateString('es-CO', {
+    const locale = this.translate.currentLang === 'en' ? 'en-US' : 'es-CO';
+    return new Date(d).toLocaleDateString(locale, {
       weekday: 'short',
       year: 'numeric',
       month: 'short',

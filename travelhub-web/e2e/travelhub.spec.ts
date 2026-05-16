@@ -27,7 +27,7 @@ test.describe.serial('TravelHub E2E', () => {
     await page.goto('/login');
     await page.waitForTimeout(500);
 
-    await page.locator('button', { hasText: 'Registrarse' }).click();
+    await page.locator('button', { hasText: 'Registrarse' }).first().click();
     await page.waitForTimeout(500);
 
     await page.locator('input[name="nombre"]').fill(TEST_USER.nombre);
