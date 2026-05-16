@@ -28,7 +28,7 @@
           class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#1D4ED8] transition text-gray-800"
         >
           @for (opt of estadoOptions; track opt) {
-            <option [value]="opt">{{ opt || 'Todos' }}</option>
+            <option [value]="opt">{{ opt ? (opt | titlecase) : 'Todos' }}</option>
           }
         </select>
       </div>
@@ -59,6 +59,37 @@
         >
           {{ 'RESERVATIONS.CLEAR_BTN' | translate }}
         </button>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+      <div>
+        <label
+          for="res-fecha-desde"
+          class="text-xs font-semibold text-gray-400 uppercase mb-1 block"
+          >{{ 'RESERVATIONS.FILTER_DATE_FROM' | translate }}</label
+        >
+        <input
+          id="res-fecha-desde"
+          type="date"
+          [(ngModel)]="fechaDesde"
+          [max]="fechaHasta"
+          (change)="onFechaDesdeChange()"
+          class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#1D4ED8] transition text-gray-800"
+        />
+      </div>
+      <div>
+        <label
+          for="res-fecha-hasta"
+          class="text-xs font-semibold text-gray-400 uppercase mb-1 block"
+          >{{ 'RESERVATIONS.FILTER_DATE_TO' | translate }}</label
+        >
+        <input
+          id="res-fecha-hasta"
+          type="date"
+          [(ngModel)]="fechaHasta"
+          [min]="fechaDesde"
+          class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#1D4ED8] transition text-gray-800"
+        />
       </div>
     </div>
     <p class="text-sm text-gray-400">{{ total }} resultado(s)</p>
@@ -102,6 +133,9 @@
                 {{ 'RESERVATIONS.COL_CHECKIN' | translate }}
               </th>
               <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
+                {{ 'RESERVATIONS.COL_CHECKOUT' | translate }}
+              </th>
+              <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
                 {{ 'RESERVATIONS.COL_TOTAL' | translate }}
               </th>
               <th class="text-left text-xs font-semibold text-gray-500 uppercase px-6 py-3">
@@ -124,6 +158,7 @@
                   {{ r.habitacion_nombre || 'Hab. #' + r.habitacion_id }}
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-700">{{ r.fecha_checkin }}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">{{ r.fecha_checkout }}</td>
                 <td class="px-6 py-4 text-sm font-semibold text-[#1D4ED8]">
                   {{ r.monto_total | currency: 'COP' : 'symbol' : '1.0-0' }}
                 </td>
@@ -145,7 +180,7 @@
             }
             @if (reservations.length === 0) {
               <tr>
-                <td colspan="7" class="px-6 py-16 text-center text-gray-400 text-sm">
+                <td colspan="8" class="px-6 py-16 text-center text-gray-400 text-sm">
                   Sin resultados
                 </td>
               </tr>

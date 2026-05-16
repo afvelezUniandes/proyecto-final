@@ -46,7 +46,7 @@ def _get_hotel_room_info(hotel_id: int, habitacion_id: int) -> tuple[str, str]:
     try:
         resp = http_requests.get(
             f'{CATALOG_SERVICE_URL}/rooms',
-            params={'hotel_id': hotel_id},
+            params={'hotel_id': hotel_id, 'include_deleted': 'true'},
             timeout=3,
         )
         if resp.status_code == 200:
@@ -55,8 +55,10 @@ def _get_hotel_room_info(hotel_id: int, habitacion_id: int) -> tuple[str, str]:
                 if r.get('id') == habitacion_id:
                     tipo_habitacion = r.get('tipo') or r.get('nombre', '')
                     break
+            if not tipo_habitacion:
+                tipo_habitacion = f'Habitación #{habitacion_id}'
     except Exception:
-        pass
+        tipo_habitacion = f'Habitación #{habitacion_id}'
     return nombre_hotel, tipo_habitacion
 
 
@@ -99,6 +101,17 @@ def generate_codigo():
     return f"TH-{year}-{suffix}"
 
 
+def _estado_efectivo(r):
+    """Devuelve el estado real: si la reserva no fue cancelada pero ya pasó
+    el checkout, se considera 'completada' sin modificar la BD."""
+    if r.estado == 'cancelada':
+        return 'cancelada'
+    hoy = datetime.date.today()
+    if r.fecha_checkout < hoy:
+        return 'completada'
+    return r.estado
+
+
 def reserva_to_dict(r, nombre_hotel: str = '', tipo_habitacion: str = ''):
     return {
         'id': r.id,
@@ -115,7 +128,7 @@ def reserva_to_dict(r, nombre_hotel: str = '', tipo_habitacion: str = ''):
         'codigo': r.codigo,
         'monto_total': float(r.monto_total),
         'moneda': r.moneda,
-        'estado': r.estado,
+        'estado': _estado_efectivo(r),
     }
 
 
@@ -296,8 +309,10 @@ def hotel_cancel_reservation(reserva_id):
         ).first()
         if not reserva:
             return jsonify({'error': 'Reservation not found'}), 404
-        if reserva.estado != 'confirmada':
+        if reserva.estado == 'cancelada':
             return jsonify({'error': 'Only confirmed reservations can be cancelled'}), 400
+        if reserva.fecha_checkout < datetime.date.today():
+            return jsonify({'error': 'Completed reservations cannot be cancelled'}), 400
 
         reserva.estado = 'cancelada'
         reserva.fecha_cancelacion = datetime.datetime.now()
@@ -409,8 +424,10 @@ def cancel_reservation(reserva_id):
         ).first()
         if not reserva:
             return jsonify({'error': 'Reservation not found'}), 404
-        if reserva.estado != 'confirmada':
+        if reserva.estado == 'cancelada':
             return jsonify({'error': 'Only confirmed reservations can be cancelled'}), 400
+        if reserva.fecha_checkout < datetime.date.today():
+            return jsonify({'error': 'Completed reservations cannot be cancelled'}), 400
 
         reserva.estado = 'cancelada'
         reserva.fecha_cancelacion = datetime.datetime.now()

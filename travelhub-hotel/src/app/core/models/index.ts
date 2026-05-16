@@ -77,11 +77,15 @@ export interface Room {
   moneda: string;
   descripcion?: string;
   imagen_url?: string;
+  eliminada?: boolean;
 }
 
 export interface WeeklyOccupancy {
   dia: string;
+  dia_num: number;
+  mes_num: number;
   porcentaje: number;
+  es_hoy: boolean;
 }
 
 export interface RevenueByRoom {

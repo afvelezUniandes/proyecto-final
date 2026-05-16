@@ -9,7 +9,7 @@
       <div
         class="flex items-center gap-6 bg-amber-50 border border-amber-200 rounded-2xl px-6 py-4"
       >
-        <span class="text-2xl">🖼️</span>
+        <span class="text-2xl" aria-hidden="true">🖼️</span>
         <div class="flex-1">
           <p class="text-sm font-semibold text-amber-800">
             {{ 'DASHBOARD.NO_IMAGE_TITLE' | translate }}
@@ -17,154 +17,300 @@
           <p class="text-xs text-amber-600 mt-0.5">
             {{ 'DASHBOARD.NO_IMAGE_MSG' | translate }}
           </p>
-          @if (uploadSuccess) {
+          @if (uploadSuccess()) {
             <p class="text-green-600 text-xs mt-1">{{ 'DASHBOARD.IMAGE_OK' | translate }}</p>
           }
-          @if (uploadError) {
-            <p class="text-red-500 text-xs mt-1">{{ uploadError }}</p>
+          @if (uploadError()) {
+            <p class="text-red-500 text-xs mt-1">{{ uploadError() }}</p>
           }
         </div>
         <label
           class="shrink-0 cursor-pointer inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition"
+          [attr.aria-label]="'DASHBOARD.ADD_IMAGE_BTN' | translate"
         >
-          @if (uploadingImage) {
+          @if (uploadingImage()) {
             <span
               class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+              aria-hidden="true"
             ></span>
-            Subiendo...
+            {{ 'DASHBOARD.UPLOADING' | translate }}
           } @else {
-            📷 Agregar imagen
+            📷 {{ 'DASHBOARD.ADD_IMAGE_BTN' | translate }}
           }
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp"
             class="hidden"
             (change)="onImageSelected($event)"
-            [disabled]="uploadingImage"
+            [disabled]="uploadingImage()"
+            [attr.aria-label]="'DASHBOARD.ADD_IMAGE_BTN' | translate"
           />
         </label>
       </div>
     }
   }
 
-  @if (loading) {
-    <div class="flex justify-center py-24">
+  @if (loading()) {
+    <div
+      class="flex justify-center py-24"
+      role="status"
+      aria-live="polite"
+      [attr.aria-label]="'COMMON.LOADING' | translate"
+    >
       <div
         class="w-10 h-10 border-4 border-[#1D4ED8] border-t-transparent rounded-full animate-spin"
       ></div>
     </div>
   }
 
-  @if (!loading && stats) {
+  @if (loadError()) {
+    <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm" role="alert">
+      {{ 'DASHBOARD.ERR_LOAD' | translate }}
+    </div>
+  }
+
+  @if (!loading() && stats(); as s) {
     <!-- KPI Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+      <!-- Reservas activas -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div class="flex items-center justify-between mb-4">
           <span class="text-sm font-medium text-gray-500">{{
             'DASHBOARD.KPI_ACTIVE' | translate
           }}</span>
-          <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl">
+          <div
+            class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl"
+            aria-hidden="true"
+          >
             📋
           </div>
         </div>
-        <p class="text-3xl font-bold text-gray-900">{{ stats.reservas_activas }}</p>
-        <p class="text-xs text-green-600 mt-1">
-          ↑ {{ stats.reservas_activas_delta }}% vs mes anterior
+        <p
+          class="text-3xl font-bold text-gray-900"
+          [attr.aria-label]="s.reservas_activas + ' ' + ('DASHBOARD.KPI_ACTIVE' | translate)"
+        >
+          {{ s.reservas_activas }}
         </p>
+        <p class="text-xs text-gray-400 mt-1">{{ 'DASHBOARD.CURRENT_MONTH' | translate }}</p>
       </div>
+
+      <!-- Tasa de ocupación -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div class="flex items-center justify-between mb-4">
           <span class="text-sm font-medium text-gray-500">{{
             'DASHBOARD.KPI_OCCUPANCY' | translate
           }}</span>
-          <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl">
+          <div
+            class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl"
+            aria-hidden="true"
+          >
             🏠
           </div>
         </div>
-        <p class="text-3xl font-bold text-gray-900">{{ stats.tasa_ocupacion }}%</p>
-        <div class="mt-2 h-2 bg-gray-100 rounded-full">
-          <div class="h-2 bg-[#F97316] rounded-full" [style.width.%]="stats.tasa_ocupacion"></div>
+        <p class="text-3xl font-bold text-gray-900">{{ s.tasa_ocupacion }}%</p>
+        <div
+          class="mt-2 h-2 bg-gray-100 rounded-full"
+          role="progressbar"
+          [attr.aria-valuenow]="s.tasa_ocupacion"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-label]="('DASHBOARD.KPI_OCCUPANCY' | translate) + ' ' + s.tasa_ocupacion + '%'"
+        >
+          <div
+            class="h-2 bg-[#F97316] rounded-full transition-all"
+            [style.width.%]="s.tasa_ocupacion"
+          ></div>
         </div>
+        <p class="text-xs text-gray-400 mt-1">{{ 'DASHBOARD.CURRENT_MONTH' | translate }}</p>
       </div>
+
+      <!-- Ingresos del mes -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <div class="flex items-center justify-between mb-4">
           <span class="text-sm font-medium text-gray-500">{{
             'DASHBOARD.KPI_REVENUE' | translate
           }}</span>
-          <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl">
+          <div
+            class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl"
+            aria-hidden="true"
+          >
             💰
           </div>
         </div>
-        <p class="text-3xl font-bold text-gray-900">{{ formatPrice(stats.ingresos_mes) }}</p>
-        <p class="text-xs text-green-600 mt-1">↑ {{ stats.ingresos_mes_delta }}% vs mes anterior</p>
-      </div>
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <div class="flex items-center justify-between mb-4">
-          <span class="text-sm font-medium text-gray-500">{{
-            'DASHBOARD.KPI_RATING' | translate
-          }}</span>
-          <div class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center text-xl">
-            ⭐
-          </div>
-        </div>
-        <p class="text-3xl font-bold text-gray-900">{{ stats.calificacion_promedio }}</p>
-        <p class="text-xs text-gray-400 mt-1">
-          {{ 'DASHBOARD.OF_10' | translate }} · {{ stats.total_resenas }}
-          {{ 'DASHBOARD.REVIEWS' | translate }}
-        </p>
+        <p class="text-3xl font-bold text-gray-900">{{ formatPrice(s.ingresos_mes) }}</p>
+        <p class="text-xs text-gray-400 mt-1">{{ 'DASHBOARD.CURRENT_MONTH' | translate }}</p>
       </div>
     </div>
 
     <!-- Charts row -->
-    <div class="grid lg:grid-cols-3 gap-6">
+    <div class="grid lg:grid-cols-5 gap-6">
       <!-- Bar chart occupation -->
-      <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      <div class="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <h2 class="font-semibold text-gray-900 mb-6">
           {{ 'DASHBOARD.WEEKLY_OCCUPANCY' | translate }}
         </h2>
-        <div class="flex items-end gap-3 h-40">
-          @for (day of weeklyOccupancy; track day.dia) {
-            <div class="flex-1 flex flex-col items-center gap-1">
-              <span class="text-xs text-gray-500 font-medium">{{ day.porcentaje }}%</span>
+
+        <!-- Bars -->
+        <div
+          class="flex items-end gap-2"
+          style="height: 120px"
+          role="img"
+          [attr.aria-label]="'DASHBOARD.WEEKLY_OCCUPANCY' | translate"
+        >
+          @for (day of weeklyOccupancy(); track day.dia) {
+            <div class="flex-1 flex flex-col items-center justify-end">
+              <span
+                class="text-[11px] font-semibold leading-none mb-1.5 transition-colors"
+                [class]="
+                  day.es_hoy
+                    ? 'text-orange-500'
+                    : day.porcentaje > 0
+                      ? 'text-gray-600'
+                      : 'text-gray-300'
+                "
+                >{{ day.porcentaje }}%</span
+              >
               <div
-                class="w-full bg-[#1D4ED8] rounded-t-lg"
-                [style.height.%]="(day.porcentaje / maxOccupancy()) * 100"
-                style="min-height: 4px"
+                class="w-full rounded-t-md transition-all duration-700"
+                [class]="
+                  day.es_hoy ? 'bg-[#F97316]' : day.porcentaje >= 80 ? 'bg-red-500' : 'bg-[#1D4ED8]'
+                "
+                [style.height.px]="barHeightPx(day.porcentaje)"
               ></div>
-              <span class="text-xs text-gray-400">{{ day.dia }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Day labels -->
+        <div class="flex gap-2 mt-2 border-t border-gray-100 pt-2">
+          @for (day of weeklyOccupancy(); track day.dia) {
+            <div class="flex-1 flex flex-col items-center">
+              <span
+                class="text-xs font-semibold"
+                [class]="day.es_hoy ? 'text-[#1D4ED8] font-bold' : 'text-gray-600'"
+                >{{ 'DASHBOARD.DAY.' + day.dia | translate }}</span
+              >
+              <span class="text-[10px] text-gray-400">{{ day.dia_num }}/{{ day.mes_num }}</span>
             </div>
           }
         </div>
       </div>
 
-      <!-- Recent reservations -->
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="font-semibold text-gray-900">
-            {{ 'DASHBOARD.RECENT_RESERVATIONS' | translate }}
-          </h2>
-          <a routerLink="/reservations" class="text-[#1D4ED8] text-xs hover:underline">{{
-            'DASHBOARD.SEE_ALL' | translate
-          }}</a>
-        </div>
-        <div class="space-y-3">
-          @for (r of recentReservations; track r.id) {
-            <div
-              class="flex items-center justify-between py-2 border-b border-gray-50 last:border-0"
-            >
-              <div>
-                <p class="text-sm font-medium text-gray-900">{{ r.huesped_nombre }}</p>
-                <p class="text-xs text-gray-400">{{ r.habitacion_nombre }}</p>
-              </div>
-              <span
-                class="text-xs px-2 py-0.5 rounded-full font-medium {{ estadoClass(r.estado) }}"
-                >{{ 'RESERVATION.STATUS.' + r.estado | translate }}</span
-              >
-              >
+      <!-- Summary sidebar -->
+      <div class="lg:col-span-2 flex flex-col gap-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex-1">
+          <h2 class="font-semibold text-gray-900 mb-4">{{ 'DASHBOARD.SUMMARY' | translate }}</h2>
+          <dl class="space-y-3 text-sm">
+            <div class="flex justify-between">
+              <dt class="text-gray-500">{{ 'DASHBOARD.KPI_ACTIVE' | translate }}</dt>
+              <dd class="font-semibold text-gray-900">{{ s.reservas_activas }}</dd>
             </div>
-          }
+            <div class="flex justify-between">
+              <dt class="text-gray-500">{{ 'DASHBOARD.KPI_OCCUPANCY' | translate }}</dt>
+              <dd class="font-semibold text-[#F97316]">{{ s.tasa_ocupacion }}%</dd>
+            </div>
+            <div class="flex justify-between border-t border-gray-100 pt-3">
+              <dt class="text-gray-500">{{ 'DASHBOARD.KPI_REVENUE' | translate }}</dt>
+              <dd class="font-bold text-[#1D4ED8]">{{ formatPrice(s.ingresos_mes) }}</dd>
+            </div>
+          </dl>
         </div>
       </div>
+    </div>
+
+    <!-- Reservas recientes -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-semibold text-gray-900">
+          {{ 'DASHBOARD.RECENT_RESERVATIONS' | translate }}
+        </h2>
+        <a
+          routerLink="/reservations"
+          class="text-[#1D4ED8] text-xs hover:underline"
+          [attr.aria-label]="'DASHBOARD.SEE_ALL' | translate"
+          >{{ 'DASHBOARD.SEE_ALL' | translate }}</a
+        >
+      </div>
+
+      @if (recentReservations().length === 0) {
+        <p class="text-sm text-gray-400 py-4 text-center">{{ 'RESERVATIONS.EMPTY' | translate }}</p>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm" role="table">
+            <thead>
+              <tr class="border-b border-gray-100">
+                <th scope="col" class="text-left text-xs font-medium text-gray-400 pb-3 pr-4">
+                  {{ 'DASHBOARD.COL_CODE' | translate }}
+                </th>
+                <th scope="col" class="text-left text-xs font-medium text-gray-400 pb-3 pr-4">
+                  {{ 'DASHBOARD.COL_GUEST' | translate }}
+                </th>
+                <th
+                  scope="col"
+                  class="text-left text-xs font-medium text-gray-400 pb-3 pr-4 hidden sm:table-cell"
+                >
+                  {{ 'DASHBOARD.COL_ROOM' | translate }}
+                </th>
+                <th
+                  scope="col"
+                  class="text-left text-xs font-medium text-gray-400 pb-3 pr-4 hidden md:table-cell"
+                >
+                  {{ 'DASHBOARD.COL_CHECKIN' | translate }}
+                </th>
+                <th
+                  scope="col"
+                  class="text-right text-xs font-medium text-gray-400 pb-3 pr-4 hidden md:table-cell"
+                >
+                  {{ 'DASHBOARD.COL_TOTAL' | translate }}
+                </th>
+                <th scope="col" class="text-left text-xs font-medium text-gray-400 pb-3">
+                  {{ 'DASHBOARD.COL_STATUS' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of recentReservations(); track r.id) {
+                <tr
+                  class="border-b border-gray-50 last:border-0 hover:bg-gray-50 cursor-pointer transition focus-within:bg-blue-50"
+                  role="row"
+                >
+                  <td class="py-3 pr-4">
+                    <a
+                      [routerLink]="['/reservations', r.id]"
+                      class="font-mono text-xs text-[#1D4ED8] font-semibold hover:underline focus:outline-none focus:ring-2 focus:ring-[#1D4ED8] rounded"
+                      [attr.aria-label]="('RESERVATIONS.COL_CODE' | translate) + ': ' + r.codigo"
+                      >{{ r.codigo }}</a
+                    >
+                  </td>
+                  <td class="py-3 pr-4">
+                    <p class="font-medium text-gray-900 truncate max-w-35">
+                      {{ r.huesped_nombre }}
+                    </p>
+                  </td>
+                  <td class="py-3 pr-4 hidden sm:table-cell text-gray-500">
+                    {{ r.habitacion_nombre }}
+                  </td>
+                  <td class="py-3 pr-4 hidden md:table-cell text-gray-500">
+                    {{ r.fecha_checkin }}
+                  </td>
+                  <td class="py-3 pr-4 hidden md:table-cell text-right font-medium text-gray-900">
+                    {{ formatPrice(r.monto_total) }}
+                  </td>
+                  <td class="py-3">
+                    <span
+                      [class]="
+                        'text-xs px-2 py-0.5 rounded-full font-medium ' + estadoClass(r.estado)
+                      "
+                    >
+                      {{ 'RESERVATION.STATUS.' + r.estado | translate }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
     </div>
   }
 </div>

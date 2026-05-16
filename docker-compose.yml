@@ -62,7 +62,7 @@ services:
       JWT_SECRET: tu-clave-jwt-secreta-debe-ser-mas-larga-y-compleja-en-produccion-2026
       PORT: "5004"
       SENDGRID_API_KEY: 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
-      SENDGRID_FROM_EMAIL: af.velezv1@uniandes.edu.co
+      SENDGRID_FROM_EMAIL: afvv1982@hotmail.com
     networks:
       - travelhub-net
 

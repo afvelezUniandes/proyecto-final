@@ -19,7 +19,7 @@ export class ReservationsComponent implements OnInit {
   reservations: HotelReservation[] = [];
   total = 0;
   page = 1;
-  pageSize = 10;
+  pageSize = 20;
   loading = true;
   loadError = '';
 
@@ -28,6 +28,8 @@ export class ReservationsComponent implements OnInit {
   estadoOptions = ['', 'confirmada', 'completada', 'cancelada'];
   habitacionOptions: string[] = [];
   habitacionFilter = '';
+  fechaDesde = '';
+  fechaHasta = '';
 
   constructor(
     private hotelService: HotelService,
@@ -75,6 +77,12 @@ export class ReservationsComponent implements OnInit {
     if (this.habitacionFilter) {
       filtered = filtered.filter((r) => r.habitacion_nombre === this.habitacionFilter);
     }
+    if (this.fechaDesde) {
+      filtered = filtered.filter((r) => r.fecha_checkin >= this.fechaDesde);
+    }
+    if (this.fechaHasta) {
+      filtered = filtered.filter((r) => r.fecha_checkout <= this.fechaHasta);
+    }
     this.total = filtered.length;
     this.reservations = filtered.slice((this.page - 1) * this.pageSize, this.page * this.pageSize);
   }
@@ -88,10 +96,18 @@ export class ReservationsComponent implements OnInit {
     this.router.navigate(['/reservations', id]);
   }
 
+  onFechaDesdeChange() {
+    if (this.fechaHasta && this.fechaHasta < this.fechaDesde) {
+      this.fechaHasta = '';
+    }
+  }
+
   resetFilters() {
     this.searchQuery = '';
     this.estadoFilter = '';
     this.habitacionFilter = '';
+    this.fechaDesde = '';
+    this.fechaHasta = '';
     this.page = 1;
     this.applyFilters();
   }

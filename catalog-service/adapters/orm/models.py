@@ -33,3 +33,4 @@ class Habitacion(Base):
     moneda = Column(String(3))
     imagen_url = Column(String(500))
     descripcion = Column(Text)
+    eliminada = Column(Boolean, default=False, nullable=False, server_default='false')

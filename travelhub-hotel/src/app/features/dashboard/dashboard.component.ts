@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { switchMap } from 'rxjs';
+import { switchMap, forkJoin } from 'rxjs';
 import { HotelService } from '../../core/services/hotel.service';
 import { ReservationService } from '../../core/services/reservation.service';
 import { HotelStats, HotelReservation, WeeklyOccupancy } from '../../core/models';
@@ -14,14 +14,14 @@ import { HotelStats, HotelReservation, WeeklyOccupancy } from '../../core/models
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
-  stats: HotelStats | null = null;
-  recentReservations: HotelReservation[] = [];
-  weeklyOccupancy: WeeklyOccupancy[] = [];
-  loading = true;
-  loadError = '';
-  uploadingImage = false;
-  uploadError = '';
-  uploadSuccess = false;
+  stats = signal<HotelStats | null>(null);
+  recentReservations = signal<HotelReservation[]>([]);
+  weeklyOccupancy = signal<WeeklyOccupancy[]>([]);
+  loading = signal(true);
+  loadError = signal('');
+  uploadingImage = signal(false);
+  uploadError = signal('');
+  uploadSuccess = signal(false);
 
   constructor(
     private reservationService: ReservationService,
@@ -29,33 +29,27 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const hotel = this.hotelService.hotel();
-    const hotel$ = hotel ? [hotel] : null;
-
     this.hotelService
       .loadMyHotel()
-      .pipe(switchMap((h) => this.reservationService.getStats(h.id)))
+      .pipe(
+        switchMap((h) =>
+          forkJoin({
+            statsResp: this.reservationService.getStats(h.id),
+            reservations: this.reservationService.getReservations(h.id),
+          }),
+        ),
+      )
       .subscribe({
-        next: (statsResp) => {
+        next: ({ statsResp, reservations }) => {
           const { weekly_occupancy, ...statsFields } = statsResp;
-          this.stats = statsFields;
-          this.weeklyOccupancy = weekly_occupancy || [];
+          this.stats.set(statsFields);
+          this.weeklyOccupancy.set(weekly_occupancy || []);
+          this.recentReservations.set(reservations.slice(0, 5));
+          this.loading.set(false);
         },
         error: () => {
-          this.loadError = 'No se pudieron cargar las estadísticas.';
-        },
-      });
-
-    this.hotelService
-      .loadMyHotel()
-      .pipe(switchMap((h) => this.reservationService.getReservations(h.id, { per_page: 5 })))
-      .subscribe({
-        next: (reservations) => {
-          this.recentReservations = reservations.slice(0, 5);
-          this.loading = false;
-        },
-        error: () => {
-          this.loading = false;
+          this.loadError.set('DASHBOARD.ERR_LOAD');
+          this.loading.set(false);
         },
       });
   }
@@ -78,7 +72,13 @@ export class DashboardComponent implements OnInit {
   }
 
   maxOccupancy(): number {
-    return Math.max(...this.weeklyOccupancy.map((d) => d.porcentaje), 1);
+    return Math.max(...this.weeklyOccupancy().map((d) => d.porcentaje), 1);
+  }
+
+  barHeightPx(pct: number): number {
+    const max = this.maxOccupancy();
+    if (!max || !pct) return 3;
+    return Math.max(3, Math.round((pct / max) * 88));
   }
 
   onImageSelected(event: Event) {
@@ -87,20 +87,20 @@ export class DashboardComponent implements OnInit {
     const hotel = this.hotelService.hotel();
     if (!hotel) return;
     if (file.size > 5 * 1024 * 1024) {
-      this.uploadError = 'La imagen no puede superar 5 MB.';
+      this.uploadError.set('AUTH.ERR_IMAGE_SIZE');
       return;
     }
-    this.uploadError = '';
-    this.uploadSuccess = false;
-    this.uploadingImage = true;
+    this.uploadError.set('');
+    this.uploadSuccess.set(false);
+    this.uploadingImage.set(true);
     this.hotelService.uploadImage(hotel.id, file).subscribe({
       next: () => {
-        this.uploadingImage = false;
-        this.uploadSuccess = true;
+        this.uploadingImage.set(false);
+        this.uploadSuccess.set(true);
       },
       error: (e) => {
-        this.uploadingImage = false;
-        this.uploadError = e?.error?.error || 'Error al subir la imagen.';
+        this.uploadingImage.set(false);
+        this.uploadError.set(e?.error?.error || 'Error al subir la imagen.');
       },
     });
   }

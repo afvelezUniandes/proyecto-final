@@ -24,6 +24,10 @@ export class RoomService {
     return this.api.get<Room[]>('/catalog/rooms', { hotel_id: hotelId });
   }
 
+  listAll(hotelId: number): Observable<Room[]> {
+    return this.api.get<Room[]>('/catalog/rooms', { hotel_id: hotelId, include_deleted: 'true' });
+  }
+
   create(payload: CreateRoomPayload): Observable<Room> {
     return this.api.post<Room>('/catalog/rooms', payload);
   }
@@ -34,5 +38,9 @@ export class RoomService {
 
   remove(id: number): Observable<{ message: string }> {
     return this.api.delete<{ message: string }>(`/catalog/rooms/${id}`);
+  }
+
+  restore(id: number): Observable<Room> {
+    return this.api.patch<Room>(`/catalog/rooms/${id}/restore`);
   }
 }

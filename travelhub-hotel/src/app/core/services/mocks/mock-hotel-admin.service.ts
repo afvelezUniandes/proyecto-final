@@ -19,13 +19,13 @@ export class MockHotelAdminService {
 
   getWeeklyOccupancy(): Observable<WeeklyOccupancy[]> {
     return of([
-      { dia: 'Lun', porcentaje: 55 },
-      { dia: 'Mar', porcentaje: 65 },
-      { dia: 'Mié', porcentaje: 70 },
-      { dia: 'Jue', porcentaje: 68 },
-      { dia: 'Vie', porcentaje: 85 },
-      { dia: 'Sáb', porcentaje: 92 },
-      { dia: 'Dom', porcentaje: 78 },
+      { dia: 'Lun', dia_num: 4, mes_num: 5, porcentaje: 55, es_hoy: false },
+      { dia: 'Mar', dia_num: 5, mes_num: 5, porcentaje: 65, es_hoy: true },
+      { dia: 'Mié', dia_num: 6, mes_num: 5, porcentaje: 0, es_hoy: false },
+      { dia: 'Jue', dia_num: 7, mes_num: 5, porcentaje: 0, es_hoy: false },
+      { dia: 'Vie', dia_num: 8, mes_num: 5, porcentaje: 0, es_hoy: false },
+      { dia: 'Sáb', dia_num: 9, mes_num: 5, porcentaje: 0, es_hoy: false },
+      { dia: 'Dom', dia_num: 10, mes_num: 5, porcentaje: 0, es_hoy: false },
     ]);
   }
 

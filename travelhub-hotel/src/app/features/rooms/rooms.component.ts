@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -26,8 +26,18 @@ const DESCRIPTION_PATTERN = /^[\p{L}\p{N}\s.,;:()\-_/'"¡!¿?]*$/u;
 })
 export class RoomsComponent implements OnInit {
   rooms = signal<Room[]>([]);
+  deletedRooms = signal<Room[]>([]);
   loadingRooms = signal(false);
+  roomFilter = signal<'active' | 'deleted' | 'all'>('active');
+  showDeleted = signal(false);
   panelOpen = signal(false);
+
+  filteredRooms = computed(() => {
+    const f = this.roomFilter();
+    if (f === 'active') return this.rooms();
+    if (f === 'deleted') return this.deletedRooms();
+    return [...this.rooms(), ...this.deletedRooms()];
+  });
   editingRoom: Room | null = null;
   saving = false;
   saveError = '';
@@ -36,6 +46,8 @@ export class RoomsComponent implements OnInit {
   priceError = '';
   descriptionError = '';
   deleteConfirmId: number | null = null;
+  deleteError = '';
+  restoreSuccessMsg = '';
 
   uploadingImage = false;
   uploadError = '';
@@ -72,9 +84,11 @@ export class RoomsComponent implements OnInit {
     const hotel = this.hotelService.hotel();
     if (!hotel) return;
     this.loadingRooms.set(true);
-    this.roomService.list(hotel.id).subscribe({
-      next: (r) => {
-        this.rooms.set(r);
+    this.restoreSuccessMsg = '';
+    this.roomService.listAll(hotel.id).subscribe({
+      next: (all) => {
+        this.rooms.set(all.filter((r) => !r.eliminada));
+        this.deletedRooms.set(all.filter((r) => r.eliminada));
         this.loadingRooms.set(false);
       },
       error: () => this.loadingRooms.set(false),
@@ -182,6 +196,7 @@ export class RoomsComponent implements OnInit {
 
   confirmDelete(id: number) {
     this.deleteConfirmId = id;
+    this.deleteError = '';
   }
 
   cancelDelete() {
@@ -192,7 +207,30 @@ export class RoomsComponent implements OnInit {
     this.roomService.remove(id).subscribe({
       next: () => {
         this.deleteConfirmId = null;
+        this.deleteError = '';
         this.loadRooms();
+      },
+      error: (err) => {
+        const msg = err?.error?.error || '';
+        if (err?.status === 409) {
+          this.deleteError = msg || 'ROOMS.DELETE_ERR_ACTIVE';
+        } else {
+          this.deleteError = msg || 'No se pudo eliminar la habitación.';
+        }
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  restore(id: number) {
+    this.roomService.restore(id).subscribe({
+      next: () => {
+        this.restoreSuccessMsg = 'ROOMS.RESTORE_SUCCESS';
+        this.loadRooms();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        alert(err?.error?.error || 'No se pudo restaurar la habitación.');
       },
     });
   }

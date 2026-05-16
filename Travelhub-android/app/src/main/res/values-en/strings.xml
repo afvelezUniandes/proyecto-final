@@ -131,6 +131,8 @@
     <string name="res_nights">%1$d nights</string>
     <string name="res_code_label">Code</string>
     <string name="res_total">%1$s</string>
+    <string name="booking_email_sent">✉ A confirmation email has been sent to your address.</string>
+    <string name="booking_see_reservations">View my bookings →</string>
 
     <!-- Hotel detail -->
     <string name="hotel_back">Back</string>
