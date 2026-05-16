@@ -5,12 +5,21 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageSelectorComponent } from '../../shared/language-selector/language-selector.component';
 import { CatalogService } from '../../core/services/catalog.service';
+import { LangService } from '../../core/services/lang.service';
+import { DatePickerDirective } from '../../shared/directives/date-picker.directive';
 import { Hotel } from '../../core/models';
 
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LanguageSelectorComponent, TranslateModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    LanguageSelectorComponent,
+    TranslateModule,
+    DatePickerDirective,
+  ],
   templateUrl: './search.component.html',
 })
 export class SearchComponent implements OnInit {
@@ -58,6 +67,7 @@ export class SearchComponent implements OnInit {
     private router: Router,
     private catalog: CatalogService,
     private translate: TranslateService,
+    public lang: LangService,
   ) {}
 
   ngOnInit() {

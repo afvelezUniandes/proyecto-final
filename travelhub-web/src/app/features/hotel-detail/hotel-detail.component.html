@@ -220,9 +220,13 @@
                     >
                       @for (room of rooms; track room.id) {
                         <option [ngValue]="room.id" [disabled]="!room.disponible">
-                          {{ room.nombre }} ({{ room.tipo }}) —
-                          {{ formatPrice(room.precio_noche) }}/noche
-                          {{ room.disponible ? '' : '(no disponible)' }}
+                          {{ room.nombre }} ({{ room.tipo }}) — {{ formatPrice(room.precio_noche) }}
+                          {{ 'HOTEL_DETAIL.PER_NIGHT' | translate }}
+                          {{
+                            room.disponible
+                              ? ''
+                              : '(' + ('HOTEL_DETAIL.NOT_AVAILABLE' | translate) + ')'
+                          }}
                         </option>
                       }
                     </select>
@@ -233,8 +237,8 @@
                     <div class="bg-blue-50 rounded-xl p-4 text-sm">
                       <div class="flex justify-between text-gray-600 mb-1">
                         <span
-                          >{{ formatPrice(selectedRoom()!.precio_noche) }} ×
-                          {{ nights() || 1 }} noche(s)</span
+                          >{{ formatPrice(selectedRoom()!.precio_noche) }} × {{ nights() || 1 }}
+                          {{ 'HOTEL_DETAIL.NIGHTS' | translate }}</span
                         >
                       </div>
                       <div

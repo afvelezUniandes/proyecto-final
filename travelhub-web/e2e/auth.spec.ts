@@ -20,7 +20,7 @@ const LOGIN_USER = {
 async function goToRegister(page: Page): Promise<void> {
   await page.goto('/login');
   await page.waitForTimeout(500);
-  await page.locator('button', { hasText: 'Registrarse' }).click();
+  await page.locator('button', { hasText: 'Registrarse' }).first().click();
   await page.waitForTimeout(500);
 }
 
@@ -104,7 +104,7 @@ test.describe.serial('Login de usuario (travelhub-web)', () => {
     const page = await browser.newPage();
     await page.goto('/login');
     await page.waitForTimeout(500);
-    await page.locator('button', { hasText: 'Registrarse' }).click();
+    await page.locator('button', { hasText: 'Registrarse' }).first().click();
     await page.waitForTimeout(500);
     await page.locator('input[name="nombre"]').fill(LOGIN_USER.nombre);
     await page.locator('input[name="email"]').fill(LOGIN_USER.email);

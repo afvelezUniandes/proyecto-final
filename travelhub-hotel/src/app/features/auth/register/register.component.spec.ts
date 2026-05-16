@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
-import { provideTranslateService } from '@ngx-translate/core';
+import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 import { RegisterComponent } from './register.component';
 import { ApiService } from '../../../core/services/api.service';
@@ -26,6 +26,24 @@ async function createComponent() {
       provideTranslateService({ fallbackLang: 'es' }),
     ],
   }).compileComponents();
+
+  const translate = TestBed.inject(TranslateService);
+  translate.setTranslation('es', {
+    AUTH: {
+      ERR_NAME_REQUIRED: 'El nombre es requerido.',
+      ERR_EMAIL_REQUIRED: 'El correo es requerido.',
+      ERR_WEAK_PASSWORD:
+        'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial.',
+      ERR_MISMATCH: 'Las contraseñas no coinciden.',
+      ERR_HOTEL_NAME: 'El nombre del hotel es requerido.',
+      ERR_CITY: 'La ciudad es requerida.',
+      ERR_ADDRESS: 'La dirección es requerida.',
+      ERR_IMAGE_SIZE: 'La imagen no puede superar 5 MB.',
+      ERR_EMAIL_TAKEN: 'Ya existe una cuenta con ese correo.',
+      ERR_CREATE: 'Error al crear la cuenta. Intenta de nuevo.',
+    },
+  });
+  translate.use('es');
 
   const fixture = TestBed.createComponent(RegisterComponent);
   const component = fixture.componentInstance;

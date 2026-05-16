@@ -216,6 +216,8 @@
     "FILTER_BTN": "Filtrar",
     "CLEAR_BTN": "Limpiar",
     "RESULTS_LABEL": "resultado(s)",
+    "ROOM_PREFIX": "Hab. #",
+    "GUEST_PREFIX": "Huésped #",
     "COL_CODE": "Código",
     "COL_GUEST": "Huésped",
     "COL_ROOM": "Habitación",
@@ -258,7 +260,8 @@
     "CANCEL_MODAL_TITLE": "Cancelar reserva",
     "CANCEL_MODAL_MSG": "¿Estás seguro? Se notificará al huésped y esta acción no se puede deshacer.",
     "CANCEL_MODAL_CONFIRM": "Sí, cancelar",
-    "CANCEL_MODAL_DISMISS": "No, mantener"
+    "CANCEL_MODAL_DISMISS": "No, mantener",
+    "CANCELLED_DATE": "Fecha de cancelación"
   },
   "RESERVATION": {
     "STATUS": {
@@ -278,6 +281,7 @@
     }
   },
   "COMMON": {
+    "OPTIONAL": "opcional",
     "LOADING": "Cargando...",
     "CANCEL": "Cancelar",
     "SAVE": "Guardar",

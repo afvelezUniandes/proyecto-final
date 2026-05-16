@@ -182,6 +182,7 @@
     "CANCEL_BTN": "✕ Cancelar reserva",
     "CANCELLING": "Cancelando...",
     "CANCELLED_OK": "✓ Reserva cancelada",
+    "TOTAL": "Total",
     "NOT_FOUND": "No se encontró la reserva.",
     "BACK_TO_LIST": "← Volver a mis reservas",
     "CONFIRM_CANCEL": "¿Estás seguro de que deseas cancelar esta reserva?"

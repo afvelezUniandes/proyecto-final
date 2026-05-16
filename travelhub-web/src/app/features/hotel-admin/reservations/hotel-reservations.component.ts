@@ -5,13 +5,15 @@ import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { HotelAdminService } from '../../../core/services/hotel-admin.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { LangService } from '../../../core/services/lang.service';
+import { DatePickerDirective } from '../../../shared/directives/date-picker.directive';
 import { Reservation, HotelDetail, Room } from '../../../core/models';
 import { map } from 'rxjs';
 
 @Component({
   selector: 'app-hotel-reservations',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslateModule],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, DatePickerDirective],
   templateUrl: './hotel-reservations.component.html',
 })
 export class HotelReservationsComponent implements OnInit {
@@ -28,6 +30,7 @@ export class HotelReservationsComponent implements OnInit {
   constructor(
     private hotelAdmin: HotelAdminService,
     public auth: AuthService,
+    public lang: LangService,
   ) {}
 
   ngOnInit() {

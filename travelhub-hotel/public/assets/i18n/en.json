@@ -216,6 +216,8 @@
     "FILTER_BTN": "Filter",
     "CLEAR_BTN": "Clear",
     "RESULTS_LABEL": "result(s)",
+    "ROOM_PREFIX": "Room #",
+    "GUEST_PREFIX": "Guest #",
     "COL_CODE": "Code",
     "COL_GUEST": "Guest",
     "COL_ROOM": "Room",
@@ -258,7 +260,8 @@
     "CANCEL_MODAL_TITLE": "Cancel reservation",
     "CANCEL_MODAL_MSG": "Are you sure? The guest will be notified and this action cannot be undone.",
     "CANCEL_MODAL_CONFIRM": "Yes, cancel",
-    "CANCEL_MODAL_DISMISS": "No, keep"
+    "CANCEL_MODAL_DISMISS": "No, keep",
+    "CANCELLED_DATE": "Cancellation date"
   },
   "RESERVATION": {
     "STATUS": {
@@ -278,6 +281,7 @@
     }
   },
   "COMMON": {
+    "OPTIONAL": "optional",
     "LOADING": "Loading...",
     "CANCEL": "Cancel",
     "SAVE": "Save",

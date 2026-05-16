@@ -6,11 +6,13 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CatalogService } from '../../core/services/catalog.service';
 import { AuthService } from '../../core/services/auth.service';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
+import { LangService } from '../../core/services/lang.service';
+import { DatePickerDirective } from '../../shared/directives/date-picker.directive';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, NavbarComponent, DatePickerDirective],
   templateUrl: './home.component.html',
 })
 export class HomeComponent implements OnInit {
@@ -47,6 +49,7 @@ export class HomeComponent implements OnInit {
     private router: Router,
     public auth: AuthService,
     private translate: TranslateService,
+    public lang: LangService,
   ) {}
 
   ngOnInit() {
