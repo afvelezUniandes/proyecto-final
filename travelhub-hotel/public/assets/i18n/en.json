@@ -251,7 +251,11 @@
     "CURRENCY_LABEL": "Currency",
     "NOT_FOUND": "Reservation not found.",
     "CONFIRM_CANCEL": "Do you want to cancel this reservation?",
-    "RESEND_OK": "Confirmation resent to the guest's email. (simulated)"
+    "RESEND_OK": "Confirmation resent to the guest's email. (simulated)",
+    "CANCEL_MODAL_TITLE": "Cancel reservation",
+    "CANCEL_MODAL_MSG": "Are you sure? The guest will be notified and this action cannot be undone.",
+    "CANCEL_MODAL_CONFIRM": "Yes, cancel",
+    "CANCEL_MODAL_DISMISS": "No, keep"
   },
   "RESERVATION": {
     "STATUS": {

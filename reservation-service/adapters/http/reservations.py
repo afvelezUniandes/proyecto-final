@@ -317,6 +317,26 @@ def hotel_cancel_reservation(reserva_id):
         reserva.estado = 'cancelada'
         reserva.fecha_cancelacion = datetime.datetime.now()
         session.commit()
+
+        email = _get_user_email(reserva.usuario_id)
+        nombre_hotel, tipo_habitacion = _get_hotel_room_info(reserva.hotel_id, reserva.habitacion_id)
+        _notify(
+            user_id=reserva.usuario_id,
+            tipo='reserva_cancelada',
+            titulo='Reserva cancelada por el establecimiento',
+            mensaje=f'Tu reserva {reserva.codigo} ha sido cancelada por el establecimiento.',
+            extra={
+                'email': email,
+                'codigo': reserva.codigo,
+                'nombre_hotel': nombre_hotel,
+                'tipo_habitacion': tipo_habitacion,
+                'fecha_checkin': str(reserva.fecha_checkin),
+                'fecha_checkout': str(reserva.fecha_checkout),
+                'monto_total': str(reserva.monto_total),
+                'moneda': reserva.moneda or 'COP',
+            },
+        )
+
         return jsonify(reserva_to_dict(reserva)), 200
     finally:
         session.close()

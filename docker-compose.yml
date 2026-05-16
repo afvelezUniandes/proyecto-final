@@ -58,11 +58,11 @@ services:
     ports:
       - "5004:5004"
     environment:
-      NOTIFICATION_DATABASE_URL: postgresql://postgres:ogvynJXnQk7zLG4K@travelhub-db.cipyouuaqkqn.us-east-1.rds.amazonaws.com:5432/postgres
-      JWT_SECRET: tu-clave-jwt-secreta-debe-ser-mas-larga-y-compleja-en-produccion-2026
+      NOTIFICATION_DATABASE_URL: postgresql://${RDS_USER}:${RDS_PASS}@${RDS_HOST}:5432/postgres
+      JWT_SECRET: ${JWT_SECRET}
       PORT: "5004"
-      SENDGRID_API_KEY: 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
-      SENDGRID_FROM_EMAIL: afvv1982@hotmail.com
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      SENDGRID_FROM_EMAIL: ${SENDGRID_FROM_EMAIL}
     networks:
       - travelhub-net
 

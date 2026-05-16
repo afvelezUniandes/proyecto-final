@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -19,6 +19,7 @@ export class ReservationDetailComponent implements OnInit {
   markCanceledSuccess = signal(false);
   cancelError = signal('');
   canceling = signal(false);
+  showCancelModal = signal(false);
   private hotelId = 0;
 
   constructor(
@@ -72,7 +73,23 @@ export class ReservationDetailComponent implements OnInit {
 
   marcarCancelada() {
     const d = this.detail();
-    if (!d || !confirm('¿Deseas cancelar esta reserva?')) return;
+    if (!d) return;
+    this.showCancelModal.set(true);
+  }
+
+  dismissCancelModal() {
+    this.showCancelModal.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape() {
+    if (this.showCancelModal()) this.showCancelModal.set(false);
+  }
+
+  confirmarCancelacion() {
+    const d = this.detail();
+    if (!d) return;
+    this.showCancelModal.set(false);
     this.canceling.set(true);
     this.cancelError.set('');
     this.reservationService.cancelReservation(this.hotelId, d.id).subscribe({
