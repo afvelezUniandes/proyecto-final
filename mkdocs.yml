@@ -1,0 +1,56 @@
+site_name: TravelHub — Documentación Técnica
+site_description: Documentación técnica de la plataforma TravelHub, sistema de reservas de hoteles con arquitectura de microservicios.
+site_author: Equipo TravelHub
+
+theme:
+  name: material
+  language: es
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Cambiar a modo oscuro
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Cambiar a modo claro
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - content.code.copy
+
+nav:
+  - Inicio: index.md
+  - Arquitectura: arquitectura.md
+  - APIs: apis.md
+  - Base de Datos: base-de-datos.md
+  - Despliegue: despliegue.md
+  - Desarrollo Local: desarrollo.md
+  - Testing: testing.md
+
+markdown_extensions:
+  - admonition
+  - tables
+  - attr_list
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search

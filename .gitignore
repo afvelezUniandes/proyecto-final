@@ -69,3 +69,6 @@ jmeter.log
 # Playwright
 test-results/
 playwright-report/
+
+# Static files (si no se gestionan con Git)
+site/
