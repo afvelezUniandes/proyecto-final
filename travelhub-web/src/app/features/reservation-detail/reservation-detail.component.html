@@ -1,29 +1,6 @@
 <a href="#main-content" class="skip-link">{{ 'COMMON.SKIP_TO_CONTENT' | translate }}</a>
 <div class="min-h-screen bg-gray-50">
-  <!-- Topbar -->
-  <header>
-    <nav
-      aria-label="{{ 'NAV.ARIA_LABEL' | translate }}"
-      class="bg-[#1D4ED8] px-6 py-3 flex items-center justify-between"
-    >
-      <div class="flex items-center gap-3">
-        <div
-          class="w-8 h-8 bg-[#F97316] rounded-lg flex items-center justify-center"
-          aria-hidden="true"
-        >
-          <span class="text-white font-bold">T</span>
-        </div>
-        <a routerLink="/home" class="text-white font-bold text-lg">TravelHub</a>
-      </div>
-      <div class="flex items-center gap-4">
-        <a routerLink="/home" class="text-white/90 text-sm hover:text-white">Inicio</a>
-        <a routerLink="/reservations" class="text-white/90 text-sm hover:text-white"
-          >Mis Reservas</a
-        >
-        <app-language-selector />
-      </div>
-    </nav>
-  </header>
+  <app-navbar />
 
   <main id="main-content">
     @if (loading) {

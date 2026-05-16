@@ -40,7 +40,7 @@ export class AuthService {
     this._user.set(null);
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
-    this.router.navigate(['/login']);
+    this.router.navigate(['/']);
   }
 
   fetchProfile(): Observable<User> {

@@ -1,42 +1,6 @@
 <a href="#main-content" class="skip-link">Ir al contenido principal</a>
 <div class="min-h-screen flex flex-col bg-gray-50">
-  <!-- Navbar -->
-  <header>
-    <nav
-      aria-label="Navegación principal"
-      class="bg-[#1D4ED8] px-6 py-4 flex items-center justify-between shadow-lg"
-    >
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 bg-[#F97316] rounded-xl flex items-center justify-center shadow">
-          <span class="text-white font-bold text-lg">T</span>
-        </div>
-        <span class="text-white font-bold text-xl">TravelHub</span>
-      </div>
-      <div class="flex items-center gap-6">
-        <a
-          routerLink="/home"
-          class="text-white/90 text-sm font-medium hover:text-white transition"
-          >{{ 'NAV.HOME' | translate }}</a
-        >
-        <a
-          routerLink="/reservations"
-          class="text-white/90 text-sm font-medium hover:text-white transition"
-          >{{ 'NAV.RESERVATIONS' | translate }}</a
-        >
-        <button (click)="logout()" class="text-white/80 text-sm hover:text-white transition">
-          {{ 'NAV.LOGOUT' | translate }}
-        </button>
-        <app-language-selector />
-        <a
-          routerLink="/profile"
-          class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center text-white text-sm font-bold border border-white/30 hover:bg-white/30 transition"
-          title="Mi Perfil"
-        >
-          {{ userInitials() }}
-        </a>
-      </div>
-    </nav>
-  </header>
+  <app-navbar />
 
   <main id="main-content">
     <!-- Hero -->

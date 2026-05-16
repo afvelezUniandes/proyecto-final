@@ -4,7 +4,8 @@
     "MY_RESERVATIONS": "My Reservations",
     "RESERVATIONS": "My Reservations",
     "PROFILE": "My Profile",
-    "LOGOUT": "Logout"
+    "LOGOUT": "Logout",
+    "LOGIN": "Sign in"
   },
   "HOME": {
     "HERO_TITLE": "Where do you want to travel?",

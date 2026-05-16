@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { LanguageSelectorComponent } from '../../../shared/language-selector/language-selector.component';
@@ -37,6 +37,7 @@ export class LoginComponent {
   constructor(
     private auth: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
     private translate: TranslateService,
   ) {}
 
@@ -55,7 +56,15 @@ export class LoginComponent {
     }
     this.loginLoading = true;
     this.auth.login({ email: this.loginEmail.trim(), password: this.loginPassword }).subscribe({
-      next: () => this.router.navigate(['/home']),
+      next: () => {
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+        // Only allow relative URLs to prevent open redirect
+        if (returnUrl && returnUrl.startsWith('/')) {
+          this.router.navigateByUrl(returnUrl);
+        } else {
+          this.router.navigate(['/home']);
+        }
+      },
       error: (err) => {
         this.loginLoading = false;
         const status = err?.status;

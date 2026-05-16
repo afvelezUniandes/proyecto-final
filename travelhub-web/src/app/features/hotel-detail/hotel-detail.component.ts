@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LanguageSelectorComponent } from '../../shared/language-selector/language-selector.component';
+import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { CatalogService } from '../../core/services/catalog.service';
 import { ReservationService } from '../../core/services/reservation.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -13,7 +13,7 @@ import { Hotel, Room } from '../../core/models';
 @Component({
   selector: 'app-hotel-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LanguageSelectorComponent, TranslateModule],
+  imports: [CommonModule, FormsModule, RouterLink, TranslateModule, NavbarComponent],
   templateUrl: './hotel-detail.component.html',
 })
 export class HotelDetailComponent implements OnInit {
@@ -23,6 +23,7 @@ export class HotelDetailComponent implements OnInit {
   loading = true;
   error = '';
   selectedRoomId: number | null = null;
+  requestedRoomId: number | null = null;
   checkIn = '';
   checkOut = '';
   adultos = 1;
@@ -58,6 +59,7 @@ export class HotelDetailComponent implements OnInit {
     this.checkIn = qp['checkIn'] || '';
     this.checkOut = qp['checkOut'] || '';
     this.adultos = +qp['huespedes'] || 1;
+    this.requestedRoomId = qp['roomId'] ? +qp['roomId'] : null;
 
     this.searchParams = {
       ...(qp['ciudad'] ? { ciudad: qp['ciudad'] } : {}),
@@ -85,6 +87,10 @@ export class HotelDetailComponent implements OnInit {
 
   loadOccupiedRooms(hotelId: number) {
     if (!this.checkIn || !this.checkOut) {
+      this.rooms = this.rooms.map((r) => ({
+        ...r,
+        disponible: r.disponible !== false && r.capacidad >= this.adultos,
+      }));
       this.autoSelectRoom();
       return;
     }
@@ -93,17 +99,28 @@ export class HotelDetailComponent implements OnInit {
         this.occupiedRoomIds = res.occupied_room_ids || [];
         this.rooms = this.rooms.map((r) => ({
           ...r,
-          disponible: !this.occupiedRoomIds.includes(r.id),
+          disponible: !this.occupiedRoomIds.includes(r.id) && r.capacidad >= this.adultos,
         }));
         this.autoSelectRoom();
       },
       error: () => {
+        this.rooms = this.rooms.map((r) => ({
+          ...r,
+          disponible: r.disponible !== false && r.capacidad >= this.adultos,
+        }));
         this.autoSelectRoom();
       },
     });
   }
 
   autoSelectRoom() {
+    if (this.requestedRoomId) {
+      const requested = this.rooms.find((r) => r.id === this.requestedRoomId && r.disponible);
+      if (requested) {
+        this.selectedRoomId = requested.id;
+        return;
+      }
+    }
     const firstAvailable = this.rooms.find((r) => r.disponible);
     if (firstAvailable) this.selectedRoomId = firstAvailable.id;
   }
@@ -133,7 +150,12 @@ export class HotelDetailComponent implements OnInit {
 
   reserve() {
     if (!this.auth.isLoggedIn()) {
-      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+      const returnUrl = this.router.serializeUrl(
+        this.router.createUrlTree(['/hotel', this.hotel?.id], {
+          queryParams: { ...this.route.snapshot.queryParams, roomId: this.selectedRoomId },
+        }),
+      );
+      this.router.navigate(['/login'], { queryParams: { returnUrl } });
       return;
     }
     if (!this.selectedRoomId || !this.checkIn || !this.checkOut) {

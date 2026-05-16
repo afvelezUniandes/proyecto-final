@@ -132,7 +132,24 @@ async function createComponent(
   // Override router.navigate after compile
   const fixture = TestBed.createComponent(HotelDetailComponent);
   const component = fixture.componentInstance;
-  (component as any).router = { navigate: navigateFn, url: '/hotel/1' };
+  (component as any).router = {
+    navigate: navigateFn,
+    url: '/hotel/1',
+    createUrlTree: vi.fn().mockImplementation((commands: any[], options?: any) => ({
+      _commands: commands,
+      _queryParams: options?.queryParams,
+    })),
+    serializeUrl: vi.fn().mockImplementation((tree: any) => {
+      const base = (tree._commands as any[]).join('/');
+      const qs = tree._queryParams
+        ? '?' +
+          Object.entries(tree._queryParams)
+            .map(([k, v]) => `${k}=${v}`)
+            .join('&')
+        : '';
+      return base + qs;
+    }),
+  };
   fixture.detectChanges();
 
   return { fixture, component, navigateFn, createReservationFn, mockCatalog };
@@ -217,6 +234,20 @@ describe('HotelDetailComponent', () => {
       expect(room10?.disponible).toBe(false);
       expect(room11?.disponible).toBe(true);
     });
+
+    it('marks rooms with insufficient capacity as unavailable', async () => {
+      const { component } = await createComponent({
+        queryParams: { checkIn: '2026-05-01', checkOut: '2026-05-03', huespedes: '3' },
+        getOccupiedRoomsFn: vi.fn().mockReturnValue(of({ occupied_room_ids: [] })),
+      });
+      // room 10: capacidad=2 < adultos=3 → false
+      const room10 = component.rooms.find((r) => r.id === 10);
+      // room 11: capacidad=1 < adultos=3 → false
+      const room11 = component.rooms.find((r) => r.id === 11);
+      expect(room10?.disponible).toBe(false);
+      expect(room11?.disponible).toBe(false);
+      expect(component.selectedRoomId).toBeNull();
+    });
   });
 
   describe('nights()', () => {
@@ -252,9 +283,14 @@ describe('HotelDetailComponent', () => {
     it('redirects to /login when not authenticated', async () => {
       const { component, navigateFn } = await createComponent({ isLoggedIn: false });
       component.reserve();
-      expect(navigateFn).toHaveBeenCalledWith(['/login'], {
-        queryParams: { returnUrl: '/hotel/1' },
-      });
+      expect(navigateFn).toHaveBeenCalledWith(
+        ['/login'],
+        expect.objectContaining({
+          queryParams: expect.objectContaining({
+            returnUrl: expect.stringContaining('/hotel/1'),
+          }),
+        }),
+      );
     });
 
     it('sets reserveError when no room or dates selected', async () => {
