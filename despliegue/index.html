@@ -621,6 +621,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#auto-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auto Scaling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#tags-de-imagenes-en-ecr" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -881,6 +892,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#auto-scaling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auto Scaling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#tags-de-imagenes-en-ecr" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1082,6 +1104,10 @@
         ECS_GW --&gt; ECS_Res["ECS Task: reservation-service\nPort 5002"]
         ECS_Notif["ECS Task: notification-service\nPort 5004"]
         ECS_Res --&gt; ECS_Notif
+
+        subgraph AS["Auto Scaling — travelhub-service (1–3 tasks)"]
+            AS_Policy["Target Tracking\nCPU ≥ 70% → scale out\nCPU ↓ → scale in"]
+        end
     end
 
     ECS_Auth &amp; ECS_Cat &amp; ECS_Res &amp; ECS_Notif --&gt; RDS[("AWS RDS\nPostgreSQL 15")]
@@ -1109,6 +1135,43 @@
 </tr>
 </tbody>
 </table>
+<h3 id="auto-scaling">Auto Scaling</h3>
+<p>El servicio ECS (<code>travelhub-service</code>) tiene configurada una política de <strong>Target Tracking</strong> para escalar automáticamente según la carga de CPU:</p>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mínimo de tareas</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Máximo de tareas</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Métrica objetivo</td>
+<td><code>ECSServiceAverageCPUUtilization</code></td>
+</tr>
+<tr>
+<td>Umbral</td>
+<td>70%</td>
+</tr>
+<tr>
+<td>Scale out cooldown</td>
+<td>300 s</td>
+</tr>
+<tr>
+<td>Scale in cooldown</td>
+<td>300 s</td>
+</tr>
+</tbody>
+</table>
+<p>Cuando el uso promedio de CPU supera el 70%, ECS lanza tareas adicionales (hasta 3). Cuando baja, reduce hasta la tarea mínima.</p>
 <h3 id="tags-de-imagenes-en-ecr">Tags de imágenes en ECR</h3>
 <p>Cada servicio tiene su propio tag <code>latest</code> en el mismo repositorio:</p>
 <table>
