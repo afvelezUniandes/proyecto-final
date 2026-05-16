@@ -89,7 +89,7 @@
                 [(ngModel)]="nombre"
                 name="nombre"
                 type="text"
-                placeholder="Juan Pérez"
+                [placeholder]="'AUTH.NAME_PLACEHOLDER' | translate"
                 class="input-field"
                 required
                 aria-describedby="reg-error"
@@ -104,7 +104,7 @@
                 [(ngModel)]="email"
                 name="email"
                 type="email"
-                placeholder="admin@mihotel.com"
+                [placeholder]="'AUTH.EMAIL_PLACEHOLDER' | translate"
                 class="input-field"
                 required
                 aria-describedby="reg-error"
@@ -122,7 +122,7 @@
                   [(ngModel)]="password"
                   name="password"
                   [type]="showPassword ? 'text' : 'password'"
-                  placeholder="Mín. 8 caracteres, mayúscula, número y carácter especial"
+                  [placeholder]="'AUTH.PASS_HINT' | translate"
                   class="input-field pr-10"
                   required
                   aria-describedby="reg-error"
@@ -130,6 +130,9 @@
                 <button
                   type="button"
                   (click)="showPassword = !showPassword"
+                  [attr.aria-label]="
+                    (showPassword ? 'AUTH.HIDE_PASSWORD' : 'AUTH.SHOW_PASSWORD') | translate
+                  "
                   class="absolute right-3 top-1/2 -translate-y-1/2 text-travelGray-400 hover:text-travelGray-600"
                 >
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -169,7 +172,7 @@
                 [(ngModel)]="confirmPassword"
                 name="confirmPassword"
                 type="password"
-                placeholder="Repite tu contraseña"
+                [placeholder]="'AUTH.CONFIRM_PLACEHOLDER' | translate"
                 class="input-field"
                 required
                 aria-describedby="reg-error"
@@ -191,7 +194,7 @@
             </button>
 
             <p class="text-center text-sm text-travelGray-500">
-              ¿Ya tienes cuenta?
+              {{ 'AUTH.HAVE_ACCOUNT_PRE' | translate }}
               <a routerLink="/login" class="text-travelBlue font-medium hover:underline">{{
                 'AUTH.HAVE_ACCOUNT' | translate
               }}</a>
@@ -220,7 +223,7 @@
                 [(ngModel)]="hotelNombre"
                 name="hotelNombre"
                 type="text"
-                placeholder="Hotel El Paraíso"
+                [placeholder]="'AUTH.HOTEL_NAME_PLACEHOLDER' | translate"
                 class="input-field"
               />
             </div>
@@ -253,7 +256,7 @@
                   [(ngModel)]="hotelCiudad"
                   name="hotelCiudad"
                   type="text"
-                  placeholder="Bogotá"
+                  [placeholder]="'AUTH.CITY_PLACEHOLDER' | translate"
                   class="input-field"
                 />
               </div>
@@ -269,7 +272,7 @@
                 [(ngModel)]="hotelDireccion"
                 name="hotelDireccion"
                 type="text"
-                placeholder="Cra 7 # 32-15"
+                [placeholder]="'AUTH.ADDRESS_PLACEHOLDER' | translate"
                 class="input-field"
               />
             </div>
@@ -285,7 +288,7 @@
                   [(ngModel)]="hotelTelefono"
                   name="hotelTelefono"
                   type="tel"
-                  placeholder="+57 300 000 0000"
+                  [placeholder]="'AUTH.PHONE_PLACEHOLDER' | translate"
                   class="input-field"
                 />
               </div>
@@ -321,7 +324,7 @@
                 [(ngModel)]="hotelEmail"
                 name="hotelEmail"
                 type="email"
-                placeholder="contacto@mihotel.com"
+                [placeholder]="'AUTH.HOTEL_EMAIL_PLACEHOLDER' | translate"
                 class="input-field"
               />
             </div>
@@ -341,7 +344,7 @@
                 [(ngModel)]="hotelDescripcion"
                 name="hotelDescripcion"
                 rows="3"
-                placeholder="Describe brevemente tu hotel..."
+                [placeholder]="'AUTH.HOTEL_DESC_PLACEHOLDER' | translate"
                 class="input-field resize-none"
               ></textarea>
             </div>

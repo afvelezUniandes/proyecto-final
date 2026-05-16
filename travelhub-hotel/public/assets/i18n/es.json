@@ -83,7 +83,10 @@
     "ERR_EMAIL_TAKEN": "Ya existe una cuenta con ese correo.",
     "ERR_CREATE": "Error al crear la cuenta. Intenta de nuevo.",
     "OPTIONAL": "opcional",
-    "HAVE_ACCOUNT": "Inicia sesión"
+    "HAVE_ACCOUNT": "Inicia sesión",
+    "HAVE_ACCOUNT_PRE": "¿Ya tienes cuenta?",
+    "SHOW_PASSWORD": "Mostrar contraseña",
+    "HIDE_PASSWORD": "Ocultar contraseña"
   },
   "DASHBOARD": {
     "TITLE": "Dashboard",

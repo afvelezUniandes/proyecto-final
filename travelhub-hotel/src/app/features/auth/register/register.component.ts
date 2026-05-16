@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageSelectorComponent } from '../../../shared/components/language-selector/language-selector.component';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -53,27 +53,26 @@ export class RegisterComponent {
     private api: ApiService,
     private auth: AuthService,
     private router: Router,
+    private translate: TranslateService,
   ) {}
 
   nextStep() {
     this.error.set(null);
     if (!this.nombre.trim()) {
-      this.error.set('El nombre es requerido.');
+      this.error.set(this.translate.instant('AUTH.ERR_NAME_REQUIRED'));
       return;
     }
     if (!this.email.trim()) {
-      this.error.set('El correo es requerido.');
+      this.error.set(this.translate.instant('AUTH.ERR_EMAIL_REQUIRED'));
       return;
     }
     const passwordRe = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
     if (!passwordRe.test(this.password)) {
-      this.error.set(
-        'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial.',
-      );
+      this.error.set(this.translate.instant('AUTH.ERR_WEAK_PASSWORD'));
       return;
     }
     if (this.password !== this.confirmPassword) {
-      this.error.set('Las contraseñas no coinciden.');
+      this.error.set(this.translate.instant('AUTH.ERR_MISMATCH'));
       return;
     }
     this.step.set(2);
@@ -90,7 +89,7 @@ export class RegisterComponent {
     if (!file) return;
     this.error.set(null);
     if (file.size > 5 * 1024 * 1024) {
-      this.error.set('La imagen no puede superar 5 MB.');
+      this.error.set(this.translate.instant('AUTH.ERR_IMAGE_SIZE'));
       input.value = '';
       return;
     }
@@ -103,15 +102,15 @@ export class RegisterComponent {
   onRegister() {
     this.error.set(null);
     if (!this.hotelNombre.trim()) {
-      this.error.set('El nombre del hotel es requerido.');
+      this.error.set(this.translate.instant('AUTH.ERR_HOTEL_NAME'));
       return;
     }
     if (!this.hotelCiudad.trim()) {
-      this.error.set('La ciudad es requerida.');
+      this.error.set(this.translate.instant('AUTH.ERR_CITY'));
       return;
     }
     if (!this.hotelDireccion.trim()) {
-      this.error.set('La dirección es requerida.');
+      this.error.set(this.translate.instant('AUTH.ERR_ADDRESS'));
       return;
     }
 
@@ -163,10 +162,10 @@ export class RegisterComponent {
         error: (err) => {
           this.loading = false;
           if (err?.status === 409) {
-            this.error.set('Ya existe una cuenta con ese correo.');
+            this.error.set(this.translate.instant('AUTH.ERR_EMAIL_TAKEN'));
             this.step.set(1);
           } else {
-            this.error.set('Error al crear la cuenta. Intenta de nuevo.');
+            this.error.set(this.translate.instant('AUTH.ERR_CREATE'));
           }
         },
       });

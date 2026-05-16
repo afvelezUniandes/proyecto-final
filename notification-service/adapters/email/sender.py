@@ -214,3 +214,53 @@ def send_reservation_cancelled(
         moneda=moneda,
     )
     return _send(to_email, f"❌ Reserva cancelada — {codigo} | TravelHub", html)
+
+
+_WELCOME_TEMPLATE = """
+<html>
+<body style="font-family:Arial,sans-serif;background:#f4f6f8;padding:0;margin:0;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:32px 0;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0"
+             style="background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1);">
+        <!-- Header -->
+        <tr>
+          <td style="background:#1e40af;padding:28px 32px;text-align:center;">
+            <span style="font-size:28px;font-weight:bold;color:#fff;letter-spacing:1px;">✈ TravelHub</span>
+          </td>
+        </tr>
+        <!-- Body -->
+        <tr>
+          <td style="padding:32px;">
+            <h2 style="color:#1e40af;margin-top:0;">¡Bienvenido a TravelHub, {nombre}!</h2>
+            <p style="color:#374151;">Tu cuenta ha sido creada exitosamente. Ya puedes buscar y reservar hospedajes en todo el mundo.</p>
+            <div style="background:#eff6ff;border-radius:8px;padding:20px;margin:20px 0;text-align:center;">
+              <p style="color:#1e40af;font-weight:bold;font-size:16px;margin:0;">Tu correo registrado</p>
+              <p style="color:#111827;font-size:18px;margin:8px 0 0;">{email}</p>
+            </div>
+            <p style="color:#374151;">Explora destinos, compara precios y reserva tu próxima estadía con total seguridad.</p>
+            <p style="color:#6b7280;font-size:13px;margin-top:24px;">
+              Si no creaste esta cuenta, ignora este mensaje o contáctanos a soporte.
+            </p>
+          </td>
+        </tr>
+        <!-- Footer -->
+        <tr>
+          <td style="background:#f9fafb;padding:18px 32px;text-align:center;color:#9ca3af;font-size:12px;">
+            © 2026 TravelHub · Este es un mensaje automático, no respondas a este correo.
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
+"""
+
+
+def send_welcome_email(
+    to_email: str,
+    nombre: str,
+) -> tuple[bool, str | None]:
+    html = _WELCOME_TEMPLATE.format(nombre=nombre, email=to_email)
+    return _send(to_email, "¡Bienvenido a TravelHub! Tu cuenta ha sido creada", html)

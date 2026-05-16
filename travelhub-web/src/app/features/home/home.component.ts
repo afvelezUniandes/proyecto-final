@@ -1,16 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CatalogService } from '../../core/services/catalog.service';
 import { AuthService } from '../../core/services/auth.service';
-import { LanguageSelectorComponent } from '../../shared/language-selector/language-selector.component';
+import { NavbarComponent } from '../../shared/navbar/navbar.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LanguageSelectorComponent, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule, NavbarComponent],
   templateUrl: './home.component.html',
 })
 export class HomeComponent implements OnInit {
@@ -84,20 +84,5 @@ export class HomeComponent implements OnInit {
 
   logout() {
     this.auth.logout();
-    this.router.navigate(['/login']);
-  }
-
-  userInitials(): string {
-    const user = this.auth.currentUser();
-    if (!user) return 'U';
-    const name: string = (user as any)['nombre'] || (user as any)['email'] || '';
-    return (
-      name
-        .split(' ')
-        .slice(0, 2)
-        .map((p: string) => p[0])
-        .join('')
-        .toUpperCase() || 'U'
-    );
   }
 }
